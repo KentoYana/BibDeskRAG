@@ -47,6 +47,8 @@ jobs:
         run: |
           brew tap-new local/bibdesk-rag-test
           python tools/generate_formula.py --version "$(python -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')" --homepage "https://github.com/$GITHUB_REPOSITORY" --local-sdist dist/bibdesk_rag-*.tar.gz --local-build-wheels dist/bibdesk-rag-build-wheels.tar.gz --output "$(brew --repository local/bibdesk-rag-test)/Formula/bibdesk-rag.rb"
+      - name: Trust the generated test Formula only
+        run: brew trust --formula local/bibdesk-rag-test/bibdesk-rag
       - run: brew style local/bibdesk-rag-test/bibdesk-rag
       - run: brew install --build-from-source local/bibdesk-rag-test/bibdesk-rag
       - run: brew audit --strict local/bibdesk-rag-test/bibdesk-rag

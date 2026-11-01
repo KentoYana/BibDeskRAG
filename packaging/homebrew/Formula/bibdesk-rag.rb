@@ -195,16 +195,20 @@ class BibdeskRag < Formula
   def caveats
     <<~EOS
       Register your own BibDesk library and build its read-only search index:
-        bibdesk-rag init --bib "/absolute/path/to/references.bib"
-        bibdesk-rag index
-        bibdesk-rag doctor --json
+        bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+        bibdesk-rag --config "$bibdesk_rag_config" init --bib "/absolute/path/to/references.bib" --data-dir "$HOME/.local/share/bibdesk-rag"
+        bibdesk-rag --config "$bibdesk_rag_config" index
+        bibdesk-rag --config "$bibdesk_rag_config" status --json
+
+      Index/update show terminal progress. Use --json for a full report,
+      --verbose for all diagnostics, or --no-progress to hide the bar.
 
       For command-line setup, check whether the optional Codex CLI is installed:
         codex --version
       If the command is missing, install it first:
         brew install --cask codex
-      Then register the local MCP server with the default configuration:
-        codex mcp add bibdesk-rag -- #{opt_bin}/bibdesk-rag-mcp --config "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+      Then register the local MCP server with the configuration above:
+        codex mcp add bibdesk-rag -- #{opt_bin}/bibdesk-rag-mcp --config "$HOME/.config/bibdesk-rag/config.toml"
       Restart Codex and ask it to use bibdesk-rag in a new chat.
       Setup without the CLI and custom configuration paths:
         https://github.com/KentoYana/BibDeskRAG/blob/main/docs/codex.md
@@ -214,7 +218,8 @@ class BibdeskRag < Formula
       Then close active Codex/MCP sessions and uninstall BibDesk RAG:
         brew uninstall KentoYana/tap/bibdesk-rag
 
-      Settings and indexes stay in ~/Library/Application Support/bibdesk-rag/.
+      This setup stores config in ~/.config/bibdesk-rag/ and the index in
+      ~/.local/share/bibdesk-rag/. Existing custom locations are unchanged.
       Upgrades and uninstall do not remove them or modify your BibDesk originals.
       Optional data removal and removal without the Codex CLI:
         https://github.com/KentoYana/BibDeskRAG#アンインストール

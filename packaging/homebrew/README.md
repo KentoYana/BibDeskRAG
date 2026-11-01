@@ -77,6 +77,7 @@ brew tap-new local/bibdesk-rag-test
   --local-sdist "$release_dir/bibdesk_rag-$release_version.tar.gz" \
   --local-build-wheels "$release_dir/bibdesk-rag-build-wheels.tar.gz" \
   --output "$(brew --repository local/bibdesk-rag-test)/Formula/bibdesk-rag.rb"
+brew trust --formula local/bibdesk-rag-test/bibdesk-rag
 brew style local/bibdesk-rag-test/bibdesk-rag
 brew install --build-from-source local/bibdesk-rag-test/bibdesk-rag
 brew audit --strict local/bibdesk-rag-test/bibdesk-rag

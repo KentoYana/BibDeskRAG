@@ -4,7 +4,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.1.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載します。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.1.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 ## Homebrewで導入してCodexから使う
 
@@ -36,6 +36,8 @@ bibdesk-rag --config "$bibdesk_rag_config" status --json
 
 `init` は設定を作成し、`index` は書誌情報と対応する添付ファイルの本文を索引化します。初回はファイル数・サイズに応じて時間がかかります。`status` で文献数と抽出状態を確認してください。本文を抽出できない添付があっても、書誌情報は検索できます。
 
+v0.1.1以降では、`index` / `update` をターミナルで実行すると、文献・添付ファイルの処理件数を1行の進捗バーで表示します。終了時には短い結果要約を表示し、PDF読み取り時の警告は件数と少数の例にまとめます。`--json` で集計結果と要確認事項の全件をJSON出力、`--verbose` で警告・要確認事項をすべて表示、`--no-progress` で進捗バーだけを無効にできます。出力をファイルやパイプへ渡す場合は、従来どおりJSONを出力します。[表示オプション](docs/usage.md#進捗と結果の表示)
+
 この手順では、設定と索引を次の場所に保存します。`init` と `index` が必要なフォルダを作成するため、手でフォルダを作る必要はありません。
 
 | 保存するもの | 保存先 |
@@ -45,7 +47,7 @@ bibdesk-rag --config "$bibdesk_rag_config" status --json
 
 既存の設定は上書きしません。登録済みなら `init` を繰り返さず、現在の設定を指定して `update` を使ってください。別の場所で登録済みの場合、上の変数を書き換えるだけでは設定・索引は移動しません。
 
-このREADMEでは上記を標準の手順として使います。公開済みv0.1.0は、保存先の引数・環境変数を何も指定しない場合、macOSでは `~/Library/Application Support/bibdesk-rag/` を使うため、以降も `--config` を明示します。原本やHomebrewのインストール先には保存しません。[保存先の指定](docs/usage.md#ライブラリ登録と索引化)
+このREADMEでは上記を標準の手順として使います。v0.1.0・v0.1.1では、保存先の引数・環境変数を何も指定しない場合、macOSでは `~/Library/Application Support/bibdesk-rag/` を使うため、以降も `--config` を明示します。原本やHomebrewのインストール先には保存しません。[保存先の指定](docs/usage.md#ライブラリ登録と索引化)
 
 ### 3. Codexに読み取り専用MCPを登録する
 
