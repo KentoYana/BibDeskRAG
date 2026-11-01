@@ -1,0 +1,59 @@
+name: Package validation
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  distributions:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install build
+      - run: python -m build
+      - run: python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz
+      - run: python tools/check_release.py --dist-dir dist
+      - run: |
+          python -m venv "$RUNNER_TEMP/wheel-test"
+          "$RUNNER_TEMP/wheel-test/bin/python" -m pip install dist/*.whl
+          "$RUNNER_TEMP/wheel-test/bin/python" -m pip check
+          python tools/package_smoke.py --command "$RUNNER_TEMP/wheel-test/bin/bibdesk-rag" --mcp-command "$RUNNER_TEMP/wheel-test/bin/bibdesk-rag-mcp" --workdir "$RUNNER_TEMP/wheel-data"
+      - run: |
+          python -m venv "$RUNNER_TEMP/sdist-test"
+          "$RUNNER_TEMP/sdist-test/bin/python" -m pip install dist/bibdesk_rag-*.tar.gz
+          "$RUNNER_TEMP/sdist-test/bin/python" -m pip check
+          python tools/package_smoke.py --command "$RUNNER_TEMP/sdist-test/bin/bibdesk-rag" --mcp-command "$RUNNER_TEMP/sdist-test/bin/bibdesk-rag-mcp" --workdir "$RUNNER_TEMP/sdist-data"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/*
+  homebrew:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install build
+      - run: python -m build
+      - run: python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz
+      - run: python tools/check_release.py --dist-dir dist
+      - name: Generate local-only Formula
+        run: |
+          brew tap-new local/bibdesk-rag-test
+          python tools/generate_formula.py --version "$(python -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')" --homepage "https://github.com/$GITHUB_REPOSITORY" --local-sdist dist/bibdesk_rag-*.tar.gz --local-build-wheels dist/bibdesk-rag-build-wheels.tar.gz --output "$(brew --repository local/bibdesk-rag-test)/Formula/bibdesk-rag.rb"
+      - run: brew style local/bibdesk-rag-test/bibdesk-rag
+      - run: brew install --build-from-source local/bibdesk-rag-test/bibdesk-rag
+      - run: brew audit --strict local/bibdesk-rag-test/bibdesk-rag
+      - run: brew test local/bibdesk-rag-test/bibdesk-rag
+      - name: Preserve user data across a Formula revision upgrade
+        run: |
+          python tools/package_smoke.py --workdir "$RUNNER_TEMP/brew-data"
+          python -c 'import pathlib, subprocess; p=pathlib.Path(subprocess.check_output(["brew", "--repository", "local/bibdesk-rag-test"], text=True).strip())/"Formula/bibdesk-rag.rb"; p.write_text(p.read_text().replace("  license \"MIT\"", "  license \"MIT\"\n  revision 1"))'
+          brew upgrade --build-from-source local/bibdesk-rag-test/bibdesk-rag
+          python tools/package_smoke.py --verify-existing --workdir "$RUNNER_TEMP/brew-data"

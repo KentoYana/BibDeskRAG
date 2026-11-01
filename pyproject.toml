@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools==84.2.1", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bibdesk-rag"
+version = "0.1.0"
+description = "Read-only local literature retrieval for BibDesk libraries"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "BibDesk RAG contributors"}]
+dependencies = [
+  "bibdeskparser==0.8.1",
+  "bibtexparser==2.0.0b9",
+  "defusedxml==0.7.1",
+  "pypdf==6.21.4",
+  "openpyxl==3.1.5",
+  "pylatexenc==2.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/KentoYana/BibDeskRAG"
+Documentation = "https://github.com/KentoYana/BibDeskRAG#readme"
+Issues = "https://github.com/KentoYana/BibDeskRAG/issues"
+Changelog = "https://github.com/KentoYana/BibDeskRAG/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "build>=1.2,<2", "ruff>=0.14,<1", "reportlab>=4,<5"]
+
+[project.scripts]
+bibdesk-rag = "bibdesk_rag.cli:main"
+bibdesk-rag-mcp = "bibdesk_rag.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
