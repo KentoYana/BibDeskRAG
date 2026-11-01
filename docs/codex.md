@@ -4,7 +4,20 @@
 
 ## コマンドで登録する
 
-Homebrewで導入した場合は、実行ファイルと設定ファイルを絶対パスで渡します。
+この方法にはCodex CLIが必要です。BibDesk RAG本体はCodex CLIなしで動作するため、Codex CLIは必須依存として自動インストールされません。まず次のコマンドで確認します。
+
+```sh
+codex --version
+```
+
+未導入なら、[HomebrewのCodex CLI](https://formulae.brew.sh/cask/codex)をインストールして確認します。すでに別の方法でCLIを導入している場合は、そのCLIを使い、コマンドが見つからなければ導入先とPATHを確認してください。
+
+```sh
+brew install --cask codex
+codex --version
+```
+
+CLIを使わない場合は [アプリからの設定](#codex-cliがない場合) または [設定ファイルを使う方法](#設定ファイルを使う方法) に進みます。CLIで登録する場合は、Homebrewで導入した実行ファイルと設定ファイルを絶対パスで渡します。
 
 ```sh
 codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
@@ -70,3 +83,46 @@ args = ["--config", "/absolute/path/to/bibdesk-rag/config.toml"]
 `auth_status: unsupported` はOAuth認証の対応状況を表す場合があります。このローカルstdioサーバーにOAuthログインやAPIキーは不要です。Codex自体の利用に必要なアカウントや設定は別途用意します。
 
 書誌が見つかるのに本文が空の場合は、接続とは別に添付リンクと抽出状態を確認します。原本の移動・追加があった場合は `update` が必要です。変更を確実に照合するには `update --verify-hashes` を使います。本文の未抽出や検索結果0件だけで、関連資料が存在しないとは判断しません。
+
+## 接続解除とアンインストール
+
+### 1. Codexから接続を外す
+
+CLIが使える場合は、削除する接続を確認して登録を外します。
+
+```sh
+codex mcp get bibdesk-rag
+codex mcp remove bibdesk-rag
+```
+
+別の名前で登録した場合は、その名前を指定してください。CLIがない場合は、アプリのMCP設定から対象サーバーの登録を削除します。設定ファイルを手で編集した場合は、登録先の `config.toml` にある `[mcp_servers.bibdesk-rag]` テーブルと、そのサーバー配下の設定だけを取り除く方法もあります。ほかのサーバーや設定を残し、Codex全体の `~/.codex/` は削除しません。
+
+その後、BibDesk RAGを使っていたCodexのアプリ・CLIセッションを終了し、MCPサーバーを停止してから次へ進みます。接続解除だけなら、ここで完了です。
+
+### 2. BibDesk RAG本体を削除する
+
+```sh
+brew uninstall KentoYana/tap/bibdesk-rag
+```
+
+本体とHomebrew内の専用Python環境が削除されます。**元の `.bib` と添付ファイル、アプリデータ側の設定・索引は残ります。** 再インストールして同じ設定を指定すれば、保存済みの索引を使えます。共有しているPythonやライブラリ、ほかのソフトも配布している `KentoYana/tap` を手動で削除する必要はありません。
+
+### 3. 設定・索引も不要な場合だけ削除する
+
+設定と索引を残しておく場合は、この手順を省略します。削除する場合は、先に必要な設定を控え、Finderの「移動 → フォルダへ移動」で標準の保存先 `~/Library/Application Support/bibdesk-rag/` を開いてください。
+
+標準のファイルは `config.toml` と `index.sqlite3` です。中身を確認して、このツールの設定・索引だけをゴミ箱へ移動します。`index.sqlite3-wal`、`index.sqlite3-shm`、`index.sqlite3-journal` が残っていれば、それらも同じ索引の補助ファイルです。原本の `.bib` や添付ファイルは削除しません。
+
+`--config`、`init --data-dir`、`BIBDESK_RAG_CONFIG`、`BIBDESK_RAG_HOME` などで保存先を変えた場合は、削除前に実際の設定ファイルを開き、`database` に書かれた索引の保存先を確認します。`bib` は原本の場所なので削除対象ではありません。ほかのデータと同居するフォルダをまとめて削除せず、確認した設定・索引とその補助ファイルだけをゴミ箱へ移動してください。`BIBDESK_RAG_*` をシェル設定に追加していた場合も、このツール用の設定だけを取り除きます。
+
+再開するときは、設定を削除していれば `init` でライブラリを再登録し、索引を削除していれば `index` で作り直します。CodexのMCP接続も再登録してください。
+
+### 4. Codex CLIも不要な場合
+
+この用途のためにHomebrewでCodex CLIを導入し、ほかの用途でも使わなくなった場合だけ、次を実行できます。先に上記のMCP接続解除を済ませてください。
+
+```sh
+brew uninstall --cask codex
+```
+
+ほかの方法で導入したCLIには、その導入方法に対応する削除手順を使います。Codexアプリやほかのプロジェクトと共有する設定・認証情報・履歴を保持するため、`~/.codex/` の一括削除は行いません。

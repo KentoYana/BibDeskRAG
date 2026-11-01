@@ -199,12 +199,25 @@ class BibdeskRag < Formula
         bibdesk-rag index
         bibdesk-rag doctor --json
 
-      With Codex CLI installed, register the local MCP server:
-        codex mcp add bibdesk-rag -- #{opt_bin}/bibdesk-rag-mcp
-      Then start a new Codex chat and ask it to use bibdesk-rag.
+      For command-line setup, check whether the optional Codex CLI is installed:
+        codex --version
+      If the command is missing, install it first:
+        brew install --cask codex
+      Then register the local MCP server with the default configuration:
+        codex mcp add bibdesk-rag -- #{opt_bin}/bibdesk-rag-mcp --config "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+      Restart Codex and ask it to use bibdesk-rag in a new chat.
+      Setup without the CLI and custom configuration paths:
+        https://github.com/KentoYana/BibDeskRAG/blob/main/docs/codex.md
+
+      To disconnect with the Codex CLI:
+        codex mcp remove bibdesk-rag
+      Then close active Codex/MCP sessions and uninstall BibDesk RAG:
+        brew uninstall KentoYana/tap/bibdesk-rag
 
       Settings and indexes stay in ~/Library/Application Support/bibdesk-rag/.
       Upgrades and uninstall do not remove them or modify your BibDesk originals.
+      Optional data removal and removal without the Codex CLI:
+        https://github.com/KentoYana/BibDeskRAG#アンインストール
     EOS
   end
 

@@ -8,7 +8,7 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 ## Homebrewで導入してCodexから使う
 
-必要なものは、Mac、Homebrew、手元のBibDeskライブラリと添付ファイル、ローカルMCPを利用できるCodexです。Homebrew版にはPython環境が付属するため、利用者によるpyenv・pipの設定は不要です。Codexをコマンドで設定する場合は `codex` コマンドも必要です。CLIを使わない設定方法は [Codex接続ガイド](docs/codex.md) にあります。
+必要なものは、Mac、Homebrew、手元のBibDeskライブラリと添付ファイル、ローカルMCPを利用できるCodexです。Homebrew版にはPython環境が付属するため、利用者によるpyenv・pipの設定は不要です。Codex CLIは任意の接続設定ツールで、本体の依存関係として自動インストールされません。コマンドで登録する場合は下記の手順で用意し、CLIを使わない場合は [アプリからの設定方法](docs/codex.md#codex-cliがない場合) を使ってください。
 
 この手順は**同じMac上のCodexとの接続**を対象にします。ChatGPTの通常Chatへの接続は、この配布の対応範囲に含めません。別途ローカルプラグインを登録する必要もありません。
 
@@ -37,6 +37,15 @@ bibdesk-rag --config "$bibdesk_rag_config" status --json
 既存の設定は上書きしません。登録済みなら `init` を繰り返さず、現在の設定を確認して `update` を使ってください。標準では設定と索引を `~/Library/Application Support/bibdesk-rag/` に保存します。原本やHomebrewのインストール先には保存しません。
 
 ### 3. Codexに読み取り専用MCPを登録する
+
+コマンドで登録する場合は、まず `codex --version` でCodex CLIが使えるか確認します。未導入なら、[HomebrewのCodex CLI](https://formulae.brew.sh/cask/codex)をインストールしてください。すでに使えるCLIがあれば、追加インストールは不要です。
+
+```sh
+brew install --cask codex
+codex --version
+```
+
+CLIが使えることを確認できたら、次を実行します。CLIを使わず登録する場合は [Codex接続ガイド](docs/codex.md#codex-cliがない場合) を参照してください。
 
 ```sh
 codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
@@ -85,7 +94,23 @@ brew update
 brew upgrade KentoYana/tap/bibdesk-rag
 ```
 
-更新後はCodexのMCP接続を再起動します。Homebrewのupgrade・reinstall・uninstall時に設定や索引を削除するフックはありません。利用を止める場合は `codex mcp remove bibdesk-rag` でCodexの登録を外せます。この操作もBibDeskの原本や索引を削除しません。
+更新後はCodexのMCP接続を再起動します。Homebrewのupgrade・reinstall・uninstall時に設定や索引を削除するフックはありません。
+
+## アンインストール
+
+まずCodexから `bibdesk-rag` の接続登録を外します。CLIを使う場合は次を実行し、CodexのアプリやCLIセッションを終了して、動作中のMCPサーバーを停止します。CLIがない場合の解除方法は [接続解除ガイド](docs/codex.md#接続解除とアンインストール) にあります。
+
+```sh
+codex mcp remove bibdesk-rag
+```
+
+その後、本体と専用のPython環境を削除します。
+
+```sh
+brew uninstall KentoYana/tap/bibdesk-rag
+```
+
+**元の `.bib` と添付ファイル、保存済みの設定・索引は残ります。** 設定・索引も不要なら、Finderの「移動 → フォルダへ移動」で `~/Library/Application Support/bibdesk-rag/` を開き、中身を確認して設定と索引をゴミ箱へ移動してください。保存先を変更した場合やCodex CLIも削除する場合は、[詳しい削除手順](docs/codex.md#接続解除とアンインストール) に従ってください。
 
 ## 検索できるものとデータの扱い
 
@@ -103,6 +128,7 @@ brew upgrade KentoYana/tap/bibdesk-rag
 | --- | --- |
 | `brew install` で配布先が見つからない | `brew update` の後、`brew install KentoYana/tap/bibdesk-rag` と完全な名前で指定します。[tap](https://github.com/KentoYana/homebrew-tap) とGitHubへの接続も確認してください。 |
 | `bibdesk-rag: command not found` | Homebrewのインストール完了とPATHを確認します。`"$(brew --prefix)/bin/bibdesk-rag" --version` で切り分けできます。 |
+| `codex: command not found` | 既存CLIの導入先とPATHを確認します。未導入なら `brew install --cask codex` で導入するか、[アプリから登録](docs/codex.md#codex-cliがない場合)します。 |
 | `config.toml` が見つからない | `init` の完了と、CLI・Codexが同じ `--config` を使うことを確認します。 |
 | `unable to open database file` | 同じ設定を指定して `index` が完了したか、索引の保存先にアクセスできるかを確認します。 |
 | Codexに登録済みだがツールを使えない | 新しいセッションで接続し、実行ファイルと設定ファイルの絶対パスを確認します。詳細は [接続の切り分け](docs/codex.md#接続の切り分け)。 |
