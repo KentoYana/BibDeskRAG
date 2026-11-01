@@ -223,7 +223,9 @@ def test_cli_install_commands_json_and_config(library, tmp_path):
         assert result.returncode == 0, result.stderr
         return result.stdout
 
-    assert "0.1.0" in run("--version")
+    from bibdesk_rag import __version__
+
+    assert f"bibdesk-rag {__version__}" in run("--version")
     assert "Read-only" in run("--help")
     assert json.loads(run("index", "--json"))["papers_added"] == 2
     assert json.loads(run("update", "--json"))["files_extracted"] == 0

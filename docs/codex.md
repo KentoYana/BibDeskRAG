@@ -148,7 +148,7 @@ READMEの手順で登録した場合は、Finderの「移動 → フォルダへ
 
 `index.sqlite3-wal`、`index.sqlite3-shm`、`index.sqlite3-journal` が同じ索引の隣に残っていれば、それらも索引の補助ファイルです。原本の `.bib` や添付ファイルは削除しません。
 
-以前の手順や保存先を指定しないv0.1.0で登録した場合は、設定・索引が `~/Library/Application Support/bibdesk-rag/` にあることがあります。`--config`、`init --data-dir`、`BIBDESK_RAG_CONFIG`、`BIBDESK_RAG_HOME`、`XDG_CONFIG_HOME`、`XDG_DATA_HOME` で別の保存先を指定した場合も含め、実際に使っている場所を確認してから削除します。ほかのデータと同居するフォルダをまとめて削除せず、確認した設定・索引とその補助ファイルだけをゴミ箱へ移動してください。`BIBDESK_RAG_*` をシェル設定に追加していた場合も、このツール用の設定だけを取り除きます。
+以前の手順や保存先を指定しないv0.1.0・v0.1.1で登録した場合は、設定・索引が `~/Library/Application Support/bibdesk-rag/` にあることがあります。`--config`、`init --data-dir`、`BIBDESK_RAG_CONFIG`、`BIBDESK_RAG_HOME`、`XDG_CONFIG_HOME`、`XDG_DATA_HOME` で別の保存先を指定した場合も含め、実際に使っている場所を確認してから削除します。ほかのデータと同居するフォルダをまとめて削除せず、確認した設定・索引とその補助ファイルだけをゴミ箱へ移動してください。`BIBDESK_RAG_*` をシェル設定に追加していた場合も、このツール用の設定だけを取り除きます。
 
 再開するときは、設定を削除していれば `init` でライブラリを再登録し、索引を削除していれば `index` で作り直します。CodexのMCP接続も再登録してください。
 

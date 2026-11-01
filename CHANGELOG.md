@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.1) — 2026-11-02
+
+- Single-line terminal progress for indexing and incremental updates, with concise
+  completion summaries and bounded parser/attachment diagnostics.
+- Preserve complete JSON reports with `--json` or redirected stdout; add
+  `--no-progress` and `--verbose` display options without new dependencies.
+- Clarify the desktop MCP setup fields and use explicit, separate configuration
+  and index paths throughout the onboarding instructions.
+
 ## [0.1.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.0) — 2026-11-01
 
 - Read-only BibDesk ingestion with native macOS attachment resolution.

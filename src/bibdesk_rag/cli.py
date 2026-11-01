@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sqlite3
 import sys
@@ -13,6 +14,7 @@ from .config import init_config, load_config
 from .context import build_context
 from .database import connect, doctor, status
 from .indexer import index_library
+from .progress import IndexDiagnostics, IndexProgressBar, single_line
 from .search import SQLiteSearch
 
 
@@ -34,6 +36,10 @@ def parser() -> argparse.ArgumentParser:
             "--verify-hashes", action="store_true", help="Hash even unchanged size/mtime files"
         )
         sub.add_argument("--json", action="store_true")
+        sub.add_argument("--no-progress", action="store_true", help="Disable the terminal progress bar")
+        sub.add_argument(
+            "--verbose", action="store_true", help="Show all parser diagnostics and attachment issues"
+        )
     search = commands.add_parser("search", help="Search metadata and/or indexed text")
     search.add_argument("query")
     search.add_argument("--scope", choices=["all", "metadata", "fulltext"], default="all")
@@ -84,11 +90,51 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         config = load_config(args.config)
         if args.command in ("index", "update"):
-            result = index_library(
-                config, rebuild=args.command == "index", verify_hashes=args.verify_hashes
+            human_output = not args.json and sys.stdout.isatty()
+            show_progress = (
+                human_output
+                and sys.stderr.isatty()
+                and os.environ.get("TERM") != "dumb"
+                and not args.no_progress
+                and not args.verbose
             )
-            for error in result["errors"]:
-                print(f"{error['path']}: {error['error']}", file=sys.stderr)
+            with IndexDiagnostics(verbose=args.verbose), IndexProgressBar(
+                enabled=show_progress
+            ) as progress:
+                result = index_library(
+                    config,
+                    rebuild=args.command == "index",
+                    verify_hashes=args.verify_hashes,
+                    progress=progress.update if show_progress else None,
+                )
+            # Full structured errors remain available in JSON and in the index.
+            # Default terminal previews are bounded even for huge/problematic PDFs.
+            issues = result["errors"] if args.verbose else result["errors"][:3]
+            if human_output or args.verbose:
+                for issue in issues:
+                    message = f"{issue['path']}: {issue['error']}"
+                    print(message if args.verbose else single_line(message), file=sys.stderr)
+            if human_output:
+                label = "Index" if args.command == "index" else "Update"
+                print(
+                    f"{label} complete: {result['papers_added']} papers added, "
+                    f"{result['papers_changed']} changed, {result['papers_deleted']} deleted, "
+                    f"{result['papers_renamed']} renamed."
+                )
+                print(
+                    f"Attachments: {result['files_extracted']} extraction attempts, "
+                    f"{result['files_reused']} reused, {result['files_hashed']} hashed."
+                )
+                print(
+                    f"Attachment issues: {len(result['errors'])} "
+                    "(this run; including partial/unsupported)."
+                )
+                if result["errors"]:
+                    print(
+                        "Use --json for all issue details, or attachments CITEKEY --json "
+                        "with the same --config to inspect a paper."
+                    )
+                return 0
         else:
             db = connect(config.database, readonly=True)
             try:
@@ -149,6 +195,9 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, KeyError, sqlite3.Error, RuntimeError) as exc:
         print(f"bibdesk-rag: {exc}", file=sys.stderr)
         return 1
+    except KeyboardInterrupt:
+        print("bibdesk-rag: interrupted.", file=sys.stderr)
+        return 130
 
 
 if __name__ == "__main__":

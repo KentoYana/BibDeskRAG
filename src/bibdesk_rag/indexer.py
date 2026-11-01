@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
@@ -14,6 +15,17 @@ from .config import Config
 from .database import connect, initialize
 from .extractors import extract_file
 from .normalization import normalize_search
+
+
+@dataclass(frozen=True)
+class IndexProgress:
+    """Completed work within an indexing phase; no source text or paths are exposed."""
+
+    phase: str
+    papers_done: int = 0
+    papers_total: int = 0
+    files_done: int = 0
+    files_total: int = 0
 
 
 def digest(path: Path) -> str:
@@ -42,12 +54,29 @@ def _paper_values(paper) -> dict:
     return values
 
 
-def index_library(config: Config, *, rebuild: bool = False, verify_hashes: bool = False) -> dict:
+def index_library(
+    config: Config,
+    *,
+    rebuild: bool = False,
+    verify_hashes: bool = False,
+    progress: Callable[[IndexProgress], None] | None = None,
+) -> dict:
+    papers_done = papers_total = files_done = files_total = 0
+
+    def emit(phase: str) -> None:
+        if progress is not None:
+            progress(IndexProgress(phase, papers_done, papers_total, files_done, files_total))
+
+    emit("reading")
     bib_hash = digest(config.bib)
     papers = read_library(config.bib)
     if digest(config.bib) != bib_hash:
         raise RuntimeError("BibDesk library changed during parsing; retry update")
     config.protect_sources([Path(ref.path) for paper in papers for ref in paper.files])
+    papers_total = len(papers)
+    if progress is not None:
+        files_total = len({str(Path(ref.path).resolve()) for paper in papers for ref in paper.files})
+    emit("indexing")
     options_json = json.dumps(asdict(config.extraction), sort_keys=True)
     report = dict(
         papers_added=0,
@@ -116,6 +145,8 @@ def index_library(config: Config, *, rebuild: bool = False, verify_hashes: bool 
                             db, Path(path), ref.error, config, reextract, verify_hashes, report
                         )
                         incoming_paths.add(path)
+                        files_done += 1
+                        emit("indexing")
                     attachment_id = db.execute(
                         "SELECT id FROM attachments WHERE path=?", (path,)
                     ).fetchone()[0]
@@ -123,6 +154,9 @@ def index_library(config: Config, *, rebuild: bool = False, verify_hashes: bool 
                         "INSERT OR IGNORE INTO paper_attachments VALUES (?,?,?,?)",
                         (paper_id, attachment_id, ref.role, ref.original),
                     )
+                papers_done += 1
+                emit("indexing")
+            emit("committing")
             for removed in deleted.values():
                 db.execute("DELETE FROM papers WHERE id=?", (removed["id"],))
                 report["papers_deleted"] += 1
@@ -145,6 +179,7 @@ def index_library(config: Config, *, rebuild: bool = False, verify_hashes: bool 
                 )
     finally:
         db.close()
+    emit("done")
     return report
 
 
