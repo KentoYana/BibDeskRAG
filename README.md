@@ -8,7 +8,7 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 ## Homebrewで導入してCodexから使う
 
-必要なものは、Mac、Homebrew、手元のBibDeskライブラリと添付ファイル、ローカルMCPを利用できるCodexです。Homebrew版にはPython環境が付属するため、利用者によるpyenv・pipの設定は不要です。Codex CLIは任意の接続設定ツールで、本体の依存関係として自動インストールされません。コマンドで登録する場合は下記の手順で用意し、CLIを使わない場合は [アプリからの設定方法](docs/codex.md#codex-cliがない場合) を使ってください。
+必要なものは、Mac、Homebrew、手元のBibDeskライブラリと添付ファイル、ローカルMCPを利用できるCodexです。Homebrew版にはPython環境が付属するため、利用者によるpyenv・pipの設定は不要です。MCPは下記のアプリ設定画面から登録できます。Codex CLIはコマンドで登録する場合だけ使う任意のツールで、本体の依存関係として自動インストールされません。
 
 この手順は**同じMac上のCodexとの接続**を対象にします。ChatGPTの通常Chatへの接続は、この配布の対応範囲に含めません。別途ローカルプラグインを登録する必要もありません。
 
@@ -26,36 +26,87 @@ bibdesk-rag --version
 以下は同じターミナルで実行します。`/absolute/path/to/references.bib` を自分の `.bib` の絶対パスに置き換えてください。空白を含むパスも引用符で囲んで指定できます。
 
 ```sh
-bibdesk_rag_config="$HOME/Library/Application Support/bibdesk-rag/config.toml"
-bibdesk-rag --config "$bibdesk_rag_config" init --bib "/absolute/path/to/references.bib"
+bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+bibdesk-rag --config "$bibdesk_rag_config" init \
+  --bib "/absolute/path/to/references.bib" \
+  --data-dir "$HOME/.local/share/bibdesk-rag"
 bibdesk-rag --config "$bibdesk_rag_config" index
 bibdesk-rag --config "$bibdesk_rag_config" status --json
 ```
 
 `init` は設定を作成し、`index` は書誌情報と対応する添付ファイルの本文を索引化します。初回はファイル数・サイズに応じて時間がかかります。`status` で文献数と抽出状態を確認してください。本文を抽出できない添付があっても、書誌情報は検索できます。
 
-既存の設定は上書きしません。登録済みなら `init` を繰り返さず、現在の設定を確認して `update` を使ってください。標準では設定と索引を `~/Library/Application Support/bibdesk-rag/` に保存します。原本やHomebrewのインストール先には保存しません。
+この手順では、設定と索引を次の場所に保存します。`init` と `index` が必要なフォルダを作成するため、手でフォルダを作る必要はありません。
+
+| 保存するもの | 保存先 |
+| --- | --- |
+| BibDesk RAGの設定 | `~/.config/bibdesk-rag/config.toml` |
+| 検索索引 | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+既存の設定は上書きしません。登録済みなら `init` を繰り返さず、現在の設定を指定して `update` を使ってください。別の場所で登録済みの場合、上の変数を書き換えるだけでは設定・索引は移動しません。
+
+このREADMEでは上記を標準の手順として使います。公開済みv0.1.0は、保存先の引数・環境変数を何も指定しない場合、macOSでは `~/Library/Application Support/bibdesk-rag/` を使うため、以降も `--config` を明示します。原本やHomebrewのインストール先には保存しません。[保存先の指定](docs/usage.md#ライブラリ登録と索引化)
 
 ### 3. Codexに読み取り専用MCPを登録する
 
-コマンドで登録する場合は、まず `codex --version` でCodex CLIが使えるか確認します。未導入なら、[HomebrewのCodex CLI](https://formulae.brew.sh/cask/codex)をインストールしてください。すでに使えるCLIがあれば、追加インストールは不要です。
+アプリの設定画面かCLIの、どちらか一方で登録します。
+
+#### アプリの設定画面から登録する（Codex CLIは不要）
+
+Macアプリで **設定 → 左側の「連携」にある「プラグイン」→ 右上の「追加」→「MCP サーバーを追加」** と進みます。2026年11月2日に確認した日本語画面の配置です。
+
+次の表に沿って、1つずつ入力・選択します。引数は**2つに分けて**、1件目、2件目の順に追加してください。
+
+| 入力欄 | 入力・選択する値 |
+| --- | --- |
+| 名前 / Name | `bibdesk-rag` |
+| 接続方式 / Transport | `STDIO` |
+| コマンド / Command | 下の①で表示された1行 |
+| 引数 / Arguments の1件目 | `--config` |
+| 引数 / Arguments の2件目 | 下の②で表示された1行 |
+
+① ターミナルで次を実行し、**出力されたパスだけ**を「コマンド」欄へコピーします。
+
+```sh
+printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
+```
+
+② ターミナルで次を実行し、**出力されたパスだけ**を「引数」の2件目へコピーします。
+
+```sh
+printf '%s\n' "$HOME/.config/bibdesk-rag/config.toml"
+```
+
+設定を別の場所に作った場合は、②にその保存先を指定してください。GUIにはコマンドそのものや `$HOME`、`$(brew --prefix)`、パスを囲む引用符を貼り付けません。「コマンド」欄には実行ファイルのパスだけを入れ、`--config` を混ぜないでください。環境変数や作業ディレクトリの欄がある場合は空欄のままで構いません。
+
+保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` の登録を確認します。接続を再起動し、手順4の検索へ進みます。[詳しい接続ガイド](docs/codex.md#codex-cliがない場合)
+
+#### CLIから登録する場合
+
+まず次を実行し、Codex CLIが使えるか確認します。
+
+```sh
+codex --version
+```
+
+未導入なら、[HomebrewのCodex CLI](https://formulae.brew.sh/cask/codex)をインストールしてください。すでに使えるCLIがあれば、追加インストールは不要です。
 
 ```sh
 brew install --cask codex
 codex --version
 ```
 
-CLIが使えることを確認できたら、次を実行します。CLIを使わず登録する場合は [Codex接続ガイド](docs/codex.md#codex-cliがない場合) を参照してください。
+CLIが使えることを確認できたら、次を実行します。
 
 ```sh
 codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --config "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+  --config "$HOME/.config/bibdesk-rag/config.toml"
 codex mcp get bibdesk-rag
 ```
 
 この操作でCodexのMCP設定に `bibdesk-rag` を追加します。同名の登録がある場合は、先に `codex mcp get bibdesk-rag` で内容を確認してください。Homebrewの版番号を含まない実行パスを使うため、通常のアップグレード後も登録を使えます。索引を作る操作はCLIで行い、Codexへ公開するのは検索・参照の6ツールだけです。
 
-登録内容の表示だけでは接続成功の確認にはなりません。Codexのアプリまたはセッションを再起動し、新しいチャットで次の検索を試してください。MCPサーバーはCodexが起動するため、ターミナルで常時起動したり `brew services` に登録したりする必要はありません。[OpenAI公式MCP設定手順](https://learn.chatgpt.com/docs/extend/mcp)
+GUI・CLIのどちらで登録した場合も、登録内容の表示だけでは接続成功の確認にはなりません。MCP接続を再起動し、新しいチャットで次の検索を試してください。接続できない場合はCodexのアプリまたはCLIセッションも再起動します。MCPサーバーはCodexが起動するため、ターミナルで常時起動したり `brew services` に登録したりする必要はありません。[OpenAI公式MCP設定手順](https://learn.chatgpt.com/docs/extend/mcp)
 
 ### 4. Codexで検索する
 
@@ -82,7 +133,7 @@ CodexがMCPの `search_papers` と `search_fulltext` を呼び、所蔵資料の
 BibDeskで文献や添付ファイルを追加・変更した後は、索引を更新します。自動監視・自動更新は行いません。
 
 ```sh
-bibdesk-rag --config "$HOME/Library/Application Support/bibdesk-rag/config.toml" update
+bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" update
 ```
 
 ファイルのサイズと更新日時だけでは変更を判断できない場合は `update --verify-hashes` を使います。`index` は索引全体を作り直す操作です。どちらもBibDeskの原本は変更しません。
@@ -110,7 +161,14 @@ codex mcp remove bibdesk-rag
 brew uninstall KentoYana/tap/bibdesk-rag
 ```
 
-**元の `.bib` と添付ファイル、保存済みの設定・索引は残ります。** 設定・索引も不要なら、Finderの「移動 → フォルダへ移動」で `~/Library/Application Support/bibdesk-rag/` を開き、中身を確認して設定と索引をゴミ箱へ移動してください。保存先を変更した場合やCodex CLIも削除する場合は、[詳しい削除手順](docs/codex.md#接続解除とアンインストール) に従ってください。
+**元の `.bib` と添付ファイル、保存済みの設定・索引は残ります。** このREADMEの手順で作った設定・索引も不要なら、Finderの「移動 → フォルダへ移動」で次の場所をそれぞれ開き、中身を確認して対象ファイルをゴミ箱へ移動してください。
+
+| 開くフォルダ | 削除対象 |
+| --- | --- |
+| `~/.config/bibdesk-rag/` | `config.toml` |
+| `~/.local/share/bibdesk-rag/` | `index.sqlite3` |
+
+索引の補助ファイル、以前の保存先や独自の保存先、Codex CLIも削除する場合については、[詳しい削除手順](docs/codex.md#接続解除とアンインストール) に従ってください。
 
 ## 検索できるものとデータの扱い
 
@@ -132,9 +190,9 @@ brew uninstall KentoYana/tap/bibdesk-rag
 | `config.toml` が見つからない | `init` の完了と、CLI・Codexが同じ `--config` を使うことを確認します。 |
 | `unable to open database file` | 同じ設定を指定して `index` が完了したか、索引の保存先にアクセスできるかを確認します。 |
 | Codexに登録済みだがツールを使えない | 新しいセッションで接続し、実行ファイルと設定ファイルの絶対パスを確認します。詳細は [接続の切り分け](docs/codex.md#接続の切り分け)。 |
-| 文献は見つかるが本文が返らない | `bibdesk-rag attachments CITEKEY --json` と `status --json` で添付リンク・抽出状態を確認します。独自設定では先頭に `--config PATH` を付けます。 |
+| 文献は見つかるが本文が返らない | `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" attachments CITEKEY --json` で添付リンク・抽出状態を確認します。索引全体の状態は `attachments CITEKEY` を `status` に置き換えて確認できます。 |
 
-DBの整合性は `bibdesk-rag doctor --json` で検査できます。大きなDBでは検査用のメモリが必要です。問い合わせや不具合報告には、バージョン、実行コマンド、エラー文を添えてください。パス・書誌情報・本文などの私的な情報は必要に応じて伏せてください。
+DBの整合性は `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" doctor --json` で検査できます。大きなDBでは検査用のメモリが必要です。問い合わせや不具合報告には、バージョン、実行コマンド、エラー文を添えてください。パス・書誌情報・本文などの私的な情報は必要に応じて伏せてください。
 
 ## 開発とソースからの利用
 

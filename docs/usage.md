@@ -1,17 +1,29 @@
 # CLI・設定・抽出仕様
 
-初回導入とCodexへの登録は [README](../README.md) を参照してください。以下の例は標準設定を使います。独自設定では、各コマンドの先頭に `--config /absolute/path/to/config.toml` を加えてください。
+初回導入とCodexへの登録は [README](../README.md) を参照してください。以下はREADMEと同じ保存先を明示して使う例です。独自の設定を使う場合は、各例の `bibdesk_rag_config` をその設定ファイルの絶対パスに置き換えてください。
 
 ## ライブラリ登録と索引化
 
 ```sh
-bibdesk-rag init --bib "/path/to/references.bib"
-bibdesk-rag index
-bibdesk-rag status --json
-bibdesk-rag doctor --json
+bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+bibdesk-rag --config "$bibdesk_rag_config" init \
+  --bib "/absolute/path/to/references.bib" \
+  --data-dir "$HOME/.local/share/bibdesk-rag"
+bibdesk-rag --config "$bibdesk_rag_config" index
+bibdesk-rag --config "$bibdesk_rag_config" status --json
+bibdesk-rag --config "$bibdesk_rag_config" doctor --json
 ```
 
-`init` は既存設定を上書きしません。標準のmacOS保存先は `~/Library/Application Support/bibdesk-rag/` です。設定は `config.toml`、DBは `index.sqlite3`。`.bib` は絶対パスで登録され、添付の相対パスは `.bib` の親ディレクトリが基準です。
+`/absolute/path/to/references.bib` を自分の `.bib` の絶対パスに置き換え、同じターミナルで実行します。`init` は初回登録用で、既存設定を上書きしません。登録済みなら同じ設定を指定して `update` を使ってください。
+
+| 用途 | このガイドで指定する保存先 |
+| --- | --- |
+| BibDesk RAGの設定 | `~/.config/bibdesk-rag/config.toml` |
+| 検索索引 | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+`.bib` は絶対パスで登録され、添付の相対パスは `.bib` の親ディレクトリが基準です。設定と索引は原本やHomebrewのインストール先から分離します。
+
+公開済みv0.1.0では、保存先のオプションや環境変数を指定しない場合、macOSでは設定と索引を `~/Library/Application Support/bibdesk-rag/` に置きます。上の手順では `--config` と `--data-dir` で保存先を明示するため、表の場所になります。既存の設定・索引は自動で移動しません。すでに別の場所で使っている場合は、その設定を引き続き指定できます。`init` が設定に保存する `database` は絶対パスなので、設定ファイルやシェル変数だけを変更しても索引の保存先は変わりません。
 
 保存先は次の方法で指定できます。
 
@@ -25,16 +37,17 @@ bibdesk-rag doctor --json
 ## 検索と出典の取得
 
 ```sh
-bibdesk-rag search "histone H3K4 UV damage" --top 10 --json
-bibdesk-rag search "RecQ helicase" --scope fulltext --json
-bibdesk-rag search "Neurospora" --scope metadata --json
-bibdesk-rag search "Example2025" --scope metadata
-bibdesk-rag search "10.1234/example" --scope metadata
-bibdesk-rag search "" --scope metadata --doi "https://doi.org/10.1234/example"
-bibdesk-rag search "histone" --scope metadata --year 2025 --author Muller
-bibdesk-rag get Example2025 --json
-bibdesk-rag get Example2025 --format bibtex
-bibdesk-rag attachments Example2025 --json
+bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+bibdesk-rag --config "$bibdesk_rag_config" search "histone H3K4 UV damage" --top 10 --json
+bibdesk-rag --config "$bibdesk_rag_config" search "RecQ helicase" --scope fulltext --json
+bibdesk-rag --config "$bibdesk_rag_config" search "Neurospora" --scope metadata --json
+bibdesk-rag --config "$bibdesk_rag_config" search "Example2025" --scope metadata
+bibdesk-rag --config "$bibdesk_rag_config" search "10.1234/example" --scope metadata
+bibdesk-rag --config "$bibdesk_rag_config" search "" --scope metadata --doi "https://doi.org/10.1234/example"
+bibdesk-rag --config "$bibdesk_rag_config" search "histone" --scope metadata --year 2025 --author Muller
+bibdesk-rag --config "$bibdesk_rag_config" get Example2025 --json
+bibdesk-rag --config "$bibdesk_rag_config" get Example2025 --format bibtex
+bibdesk-rag --config "$bibdesk_rag_config" attachments Example2025 --json
 ```
 
 DOIとcitekeyは完全一致を優先し、同じDOIの複数エントリを保持します。FTSの問い合わせは単語のAND検索で、入力をFTS構文やSQLとして実行しません。部分一致・同義語推論・意味検索は初期版にはありません。ハイフンの表記ゆれ、`hH3-K4R` / `hH3K4R`、`mus-9`、`Δset-1` に共通の検索正規化を適用します。返す本文抜粋は元の抽出テキストを保ち、数値や記号を検索用文字列で置き換えません。
@@ -42,10 +55,11 @@ DOIとcitekeyは完全一致を優先し、同じDOIの複数エントリを保�
 既定の `--scope all` は書誌検索で最大100件の候補を選び、その文献の本文を検索します。書誌候補がなければ本文全体へフォールバックします。本文が見つからない候補は書誌情報として返すため、`source_type` を確認してください。本文全体を横断する場合は `--scope fulltext` を使います。
 
 ```sh
-bibdesk-rag search "RecQ" --metadata-query "Neurospora" --top 10
-bibdesk-rag search "UV" --scope fulltext --citekey Example2025 --citekey Other2024
-bibdesk-rag context "UV-induced mutagenesis" --top 5 --max-chars 10000
-bibdesk-rag context "RecQ" --metadata-query "histone" --json
+bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+bibdesk-rag --config "$bibdesk_rag_config" search "RecQ" --metadata-query "Neurospora" --top 10
+bibdesk-rag --config "$bibdesk_rag_config" search "UV" --scope fulltext --citekey Example2025 --citekey Other2024
+bibdesk-rag --config "$bibdesk_rag_config" context "UV-induced mutagenesis" --top 5 --max-chars 10000
+bibdesk-rag --config "$bibdesk_rag_config" context "RecQ" --metadata-query "histone" --json
 ```
 
 1文献あたり既定2件（`--per-paper 1..10`）、取得件数は `--top 1..100`。contextの `--max-chars 256..100000` は引用ヘッダと本文を含む **context文字列全体** の上限です。JSONの構造情報はこの上限の外です。`unverified`、`truncated`、`budget_exhausted` に不足や省略を明示します。取得件数が少ないことは、他の証拠が存在しないことを意味しません。
@@ -55,9 +69,10 @@ PDFはページを跨がず約1500文字、重複200文字で分割し、1始ま
 ## 差分更新
 
 ```sh
-bibdesk-rag update
-bibdesk-rag update --verify-hashes
-bibdesk-rag index
+bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
+bibdesk-rag --config "$bibdesk_rag_config" update
+bibdesk-rag --config "$bibdesk_rag_config" update --verify-hashes
+bibdesk-rag --config "$bibdesk_rag_config" index
 ```
 
 `update` はエントリの追加・変更・削除と添付リンクを同期し、サイズとナノ秒mtimeが同じ添付の再読込を省略します。変更候補だけSHA-256を計算し、内容が同じなら既存chunk IDを再利用します。`--verify-hashes` は同一サイズ・mtimeでも全ファイルをハッシュ検査します。設定変更または `index` は再抽出します。文献キー変更は旧・新両方で一意なDOIの場合だけ内部IDを維持します。

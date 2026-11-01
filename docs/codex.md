@@ -2,6 +2,15 @@
 
 [READMEの導入手順](../README.md#homebrewで導入してcodexから使う) でライブラリを登録し、索引を作成してから接続します。このガイドはMac上で動くCodexのローカルMCP接続を扱います。ChatGPTの通常Chat・Web版やCodexのクラウド環境から、Mac内の索引へ接続する手順ではありません。
 
+以下はREADMEと同じ保存先を指定します。別の場所で登録済みの場合は、設定ファイルのパスを実際の保存先に置き換えてください。
+
+| 保存するもの | 保存先 |
+| --- | --- |
+| BibDesk RAGの設定 | `~/.config/bibdesk-rag/config.toml` |
+| 検索索引 | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+GUI・CLI・設定ファイルのうち、いずれか1つの方法でMCPを登録します。
+
 ## コマンドで登録する
 
 この方法にはCodex CLIが必要です。BibDesk RAG本体はCodex CLIなしで動作するため、Codex CLIは必須依存として自動インストールされません。まず次のコマンドで確認します。
@@ -21,7 +30,7 @@ CLIを使わない場合は [アプリからの設定](#codex-cliがない場合
 
 ```sh
 codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --config "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+  --config "$HOME/.config/bibdesk-rag/config.toml"
 codex mcp get bibdesk-rag
 ```
 
@@ -31,20 +40,37 @@ Codexのアプリまたはセッションを再起動し、新しいチャット
 
 ## Codex CLIがない場合
 
-アプリの「Settings → MCP servers → Add server」でSTDIOサーバーを追加する方法があります。入力する値は次のとおりです。保存後にMCPを再起動します。設定画面の名称や配置は利用するCodexの版によって異なるため、[公式手順](https://learn.chatgpt.com/docs/extend/mcp) も参照してください。
+Macアプリで **設定 → 左側の「連携」にある「プラグイン」→ 右上の「追加」→「MCP サーバーを追加」** と進みます。2026年11月2日に確認した日本語画面の配置です。
 
-| 項目 | 入力する値 |
+次の表の値を1つずつ入力・選択します。「引数」は2つに分け、1件目、2件目の順に追加してください。
+
+| 入力欄 | 入力・選択する値 |
 | --- | --- |
-| Name | `bibdesk-rag` |
-| Transport | STDIO |
-| Command | ターミナルで `brew --prefix` が返すパスに `/bin/bibdesk-rag-mcp` を付けた絶対パス |
-| Arguments | `--config` と、自分の `config.toml` の絶対パスを別々の引数として指定 |
+| 名前 / Name | `bibdesk-rag` |
+| 接続方式 / Transport | `STDIO` |
+| コマンド / Command | 下の①で表示された1行 |
+| 引数 / Arguments の1件目 | `--config` |
+| 引数 / Arguments の2件目 | 下の②で表示された1行 |
 
-設定画面へ `$(brew --prefix)` や `$HOME` をそのまま貼り付けず、展開済みのパスを使ってください。`/opt/homebrew` や `/usr/local` を決め打ちする必要はありません。
+① ターミナルで実行し、出力されたパスだけを「コマンド」欄へコピーします。
+
+```sh
+printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
+```
+
+② ターミナルで実行し、出力されたパスだけを「引数」の2件目へコピーします。
+
+```sh
+printf '%s\n' "$HOME/.config/bibdesk-rag/config.toml"
+```
+
+設定を別の場所に作った場合は、②にその保存先を指定します。GUIへコマンドそのものや `$(brew --prefix)`、`$HOME`、パスを囲む引用符は貼り付けません。「コマンド」欄には実行ファイルのパスだけを入れ、`--config` は引数の1件目に入れます。`/opt/homebrew` や `/usr/local` を決め打ちする必要はありません。環境変数や作業ディレクトリの欄がある場合は空欄のままで構いません。
+
+保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` を確認して接続を再起動し、新しいチャットでREADMEの検索例を試します。登録が表示されるだけでは、索引を検索できることの確認にはなりません。画面の配置は版によって変わる場合があります。[公式MCPガイド](https://learn.chatgpt.com/docs/extend/mcp) は接続方式と設定項目の参考にしてください。
 
 ## 設定ファイルを使う方法
 
-標準のユーザー設定は `~/.codex/config.toml` です。既存の内容を保持し、同名のテーブルを重複させず、次の項目を追加または更新します。実際のパスに置き換えてください。
+Codex自身の標準ユーザー設定は `~/.codex/config.toml` です。これは **BibDesk RAGの `~/.config/bibdesk-rag/config.toml` とは別のファイル** です。既存の内容を保持し、同名のテーブルを重複させず、次の項目を追加または更新します。`command` は上の①で表示したパス、`args` の2つ目は②で表示したパスに置き換えてください。
 
 ```toml
 [mcp_servers.bibdesk-rag]
@@ -71,14 +97,16 @@ args = ["--config", "/absolute/path/to/bibdesk-rag/config.toml"]
 
 サーバーはすべてのツールを読み取り専用と宣言し、既存SQLiteを読み取り専用で開きます。原本や索引を書き換えるツール、任意パスを読むツール、HTTPサーバーは公開しません。書誌フィールド・本文抜粋・ファイル名は信頼できない資料データとして扱い、それらに書かれた命令を実行しません。
 
-`bibdesk-rag-mcp` の標準出力はMCP通信専用です。手で起動したままにせず、Codexに起動を任せてください。索引の作成・更新には、別途 `bibdesk-rag index` / `bibdesk-rag update` を使います。
+`bibdesk-rag-mcp` の標準出力はMCP通信専用です。手で起動したままにせず、Codexに起動を任せてください。索引の作成・更新には、別途CLIで同じ `--config` を指定して `index` / `update` を使います。
 
 ## 接続の切り分け
 
 1. `"$(brew --prefix)/bin/bibdesk-rag-mcp" --version` で実行ファイルを確認します。
-2. `bibdesk-rag --config "/absolute/path/to/config.toml" status --json` で、Codexに渡した設定から索引を読めるか確認します。設定がなければ `init`、索引がなければ `index` を先に実行します。
+2. `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" status --json` で、Codexに渡した設定から索引を読めるか確認します。独自の保存先ならそのパスに置き換えます。設定がなければREADMEの `init`、索引がなければ同じ設定を指定した `index` を先に実行します。
 3. `codex mcp get bibdesk-rag` で実行パスと `--config` 引数を確認します。設定画面やTOMLにシェル変数が残っていないか、古いCellarの版番号を指していないかも確認します。
-4. MCP接続またはCodexを再起動して、新しいチャットでREADMEの検索例を実行します。CLIで `bibdesk-rag search "所蔵文献の語" --scope metadata --json` が成功し、MCPだけ失敗する場合はCodex側の起動エラーを確認します。
+4. MCP接続またはCodexを再起動して、新しいチャットでREADMEの検索例を実行します。CLIで `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" search "所蔵文献の語" --scope metadata --json` が成功し、MCPだけ失敗する場合はCodex側の起動エラーを確認します。
+
+`Transport closed` が出た場合は、MCP接続を再起動して新しいチャットで試してください。継続する場合は上記1〜3で起動パスと設定を確認します。このエラーだけでは索引の破損や文献の不在を意味しません。
 
 `auth_status: unsupported` はOAuth認証の対応状況を表す場合があります。このローカルstdioサーバーにOAuthログインやAPIキーは不要です。Codex自体の利用に必要なアカウントや設定は別途用意します。
 
@@ -95,7 +123,7 @@ codex mcp get bibdesk-rag
 codex mcp remove bibdesk-rag
 ```
 
-別の名前で登録した場合は、その名前を指定してください。CLIがない場合は、アプリのMCP設定から対象サーバーの登録を削除します。設定ファイルを手で編集した場合は、登録先の `config.toml` にある `[mcp_servers.bibdesk-rag]` テーブルと、そのサーバー配下の設定だけを取り除く方法もあります。ほかのサーバーや設定を残し、Codex全体の `~/.codex/` は削除しません。
+別の名前で登録した場合は、その名前を指定してください。CLIがない場合は、アプリの **設定 → プラグイン → MCP** タブから対象サーバーの登録を削除します。設定ファイルを手で編集した場合は、登録先の `config.toml` にある `[mcp_servers.bibdesk-rag]` テーブルと、そのサーバー配下の設定だけを取り除く方法もあります。ほかのサーバーや設定を残し、Codex全体の `~/.codex/` は削除しません。
 
 その後、BibDesk RAGを使っていたCodexのアプリ・CLIセッションを終了し、MCPサーバーを停止してから次へ進みます。接続解除だけなら、ここで完了です。
 
@@ -109,11 +137,18 @@ brew uninstall KentoYana/tap/bibdesk-rag
 
 ### 3. 設定・索引も不要な場合だけ削除する
 
-設定と索引を残しておく場合は、この手順を省略します。削除する場合は、先に必要な設定を控え、Finderの「移動 → フォルダへ移動」で標準の保存先 `~/Library/Application Support/bibdesk-rag/` を開いてください。
+設定と索引を残しておく場合は、この手順を省略します。削除する場合は、先に必要な設定を控え、実際の `config.toml` にある `database` の値で索引の保存先を確認してください。`bib` は原本の場所なので削除対象ではありません。
 
-標準のファイルは `config.toml` と `index.sqlite3` です。中身を確認して、このツールの設定・索引だけをゴミ箱へ移動します。`index.sqlite3-wal`、`index.sqlite3-shm`、`index.sqlite3-journal` が残っていれば、それらも同じ索引の補助ファイルです。原本の `.bib` や添付ファイルは削除しません。
+READMEの手順で登録した場合は、Finderの「移動 → フォルダへ移動」で次のフォルダをそれぞれ開き、中身を確認して対象ファイルをゴミ箱へ移動します。
 
-`--config`、`init --data-dir`、`BIBDESK_RAG_CONFIG`、`BIBDESK_RAG_HOME` などで保存先を変えた場合は、削除前に実際の設定ファイルを開き、`database` に書かれた索引の保存先を確認します。`bib` は原本の場所なので削除対象ではありません。ほかのデータと同居するフォルダをまとめて削除せず、確認した設定・索引とその補助ファイルだけをゴミ箱へ移動してください。`BIBDESK_RAG_*` をシェル設定に追加していた場合も、このツール用の設定だけを取り除きます。
+| 開くフォルダ | 削除対象 |
+| --- | --- |
+| `~/.config/bibdesk-rag/` | `config.toml` |
+| `~/.local/share/bibdesk-rag/` | `index.sqlite3` |
+
+`index.sqlite3-wal`、`index.sqlite3-shm`、`index.sqlite3-journal` が同じ索引の隣に残っていれば、それらも索引の補助ファイルです。原本の `.bib` や添付ファイルは削除しません。
+
+以前の手順や保存先を指定しないv0.1.0で登録した場合は、設定・索引が `~/Library/Application Support/bibdesk-rag/` にあることがあります。`--config`、`init --data-dir`、`BIBDESK_RAG_CONFIG`、`BIBDESK_RAG_HOME`、`XDG_CONFIG_HOME`、`XDG_DATA_HOME` で別の保存先を指定した場合も含め、実際に使っている場所を確認してから削除します。ほかのデータと同居するフォルダをまとめて削除せず、確認した設定・索引とその補助ファイルだけをゴミ箱へ移動してください。`BIBDESK_RAG_*` をシェル設定に追加していた場合も、このツール用の設定だけを取り除きます。
 
 再開するときは、設定を削除していれば `init` でライブラリを再登録し、索引を削除していれば `index` で作り直します。CodexのMCP接続も再登録してください。
 
