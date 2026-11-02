@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.2.0) — 2026-11-02
+
+- Add `bibdesk-rag setup`: an interactive, resumable onboarding wizard using the
+  existing configuration, indexing, status and terminal progress functions.
+- Preserve existing configuration and indexes; require explicit selection for a
+  rebuild and confirmation for optional Codex MCP registration. Detect conflicting
+  registrations without replacing them, and show manual connection details when
+  the Codex CLI is unavailable.
+- Check local MCP initialization and tool discovery separately from registration
+  and actual Codex searches; handle interruptions and non-interactive execution.
+- Recommend setup in the onboarding guides while retaining manual CLI instructions;
+  extend installed-package smoke checks with setup help and non-TTY safety.
+- Keep the existing CLI arguments and JSON output, database schema, and runtime
+  dependencies unchanged. BibDesk libraries and attachments remain read-only.
+
 ## [0.1.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.1) — 2026-11-02
 
 - Single-line terminal progress for indexing and incremental updates, with concise

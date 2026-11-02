@@ -25,6 +25,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     p.add_argument("--config", type=Path, help="Configuration path (or BIBDESK_RAG_CONFIG)")
     commands = p.add_subparsers(dest="command", required=True)
+    commands.add_parser("setup", help="Interactively configure a library and local Codex connection")
     init = commands.add_parser("init", help="Register a library without changing it")
     init.add_argument("--bib", required=True, type=Path)
     init.add_argument("--data-dir", type=Path)
@@ -80,6 +81,10 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
+        if args.command == "setup":
+            from .setup import run_setup
+
+            return run_setup(args.config)
         if args.command == "init":
             print(
                 json.dumps(

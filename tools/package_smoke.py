@@ -76,6 +76,24 @@ def main() -> None:
                                    text=True, capture_output=True, timeout=60)
         return completed.stdout
 
+    def check_unattended_setup(config_path: Path) -> None:
+        before = hashes_for(path for path in workdir.rglob("*") if path.is_file())
+        completed = subprocess.run(
+            [args.command, "--config", str(config_path), "setup"], env=env,
+            input="This input must never be read.\n", text=True, capture_output=True,
+            timeout=10,
+        )
+        assert completed.returncode == 1, completed
+        assert "init" in completed.stderr and "index" in completed.stderr, completed.stderr
+        assert "Traceback" not in completed.stderr, completed.stderr
+        after = hashes_for(path for path in workdir.rglob("*") if path.is_file())
+        assert before == after, "Non-TTY setup changed synthetic files"
+
+    assert "setup" in cli("--help")
+    assert "setup" in cli("setup", "--help")
+    check_unattended_setup(workdir / "unattended/config.toml")
+    assert not (workdir / "unattended").exists(), "Non-TTY setup created a directory"
+
     if not args.verify_existing:
         supplementary.write_text("gene,result\nRecQ,observed\nmus-9,measured\n")
         paper_pdf.write_bytes(synthetic_pdf())
@@ -111,6 +129,7 @@ def main() -> None:
     cli("update")
     assert hashes == source_hashes()
     persisted = (workdir / "data/config.toml", workdir / "data/index.sqlite3")
+    check_unattended_setup(persisted[0])
     before_mcp = hashes_for(persisted)
 
     def mcp_request(method: str, params: dict) -> dict:
@@ -165,8 +184,8 @@ def main() -> None:
                for citation in chunk["citations"]), chunk
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
-    print("Installed CLI, PDF page citations, CSV, source immutability, persisted index "
-          "and read-only MCP passed")
+    print("Installed CLI, setup help/non-TTY safety, PDF page citations, CSV, "
+          "source immutability, persisted index and read-only MCP passed")
 
 
 if __name__ == "__main__":
