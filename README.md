@@ -4,7 +4,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.1.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.2.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.2.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 ## Homebrewで導入してCodexから使う
 
@@ -12,16 +12,61 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 この手順は**同じMac上のCodexとの接続**を対象にします。ChatGPTの通常Chatへの接続は、この配布の対応範囲に含めません。別途ローカルプラグインを登録する必要もありません。
 
-### 1. インストールする
-
-Homebrewの外部tapからインストールします。
+### 1. インストールし、対話型セットアップを実行する
 
 ```sh
 brew install KentoYana/tap/bibdesk-rag
-bibdesk-rag --version
+bibdesk-rag setup
 ```
 
-### 2. 自分のライブラリを登録し、索引を作る
+`setup` はv0.2.0以降で利用できます。v0.1.xから更新する場合は `brew update`、`brew upgrade KentoYana/tap/bibdesk-rag` を実行してください。既存の設定・索引はそのまま使用できます。個別のコマンドで設定する場合は、下の [Manual Setup](#manual-setup) を使えます。
+
+ターミナルの案内に沿って `.bib` のパスを入力し、表示された文献数・添付数を確認します。Finderからドラッグしたパス、空白や日本語を含むパス、`~`、相対パスも使えます。確認後に設定を作成し、初回索引の作成を提案します。BibDeskアプリ自体が未インストールでも、有効なライブラリがあれば利用できます。
+
+Codex CLIが見つかれば、承認した場合だけMCPを登録します。同名の登録が一致する場合は再登録せず、異なる場合は変更しません。CLIがなくても索引は作成でき、アプリに手動登録するための実行ファイル・設定ファイルの絶対パスを表示します。Codex CLIを自動インストールすることはありません。
+
+保存先の指定や環境変数がないmacOSでは、設定と索引を次の場所に作ります。Homebrewのアップグレードや再インストールでこれらを削除しません。
+
+| 保存するもの | 既定の保存先 |
+| --- | --- |
+| BibDesk RAGの設定 | `~/Library/Application Support/bibdesk-rag/config.toml` |
+| 検索索引 | `~/Library/Application Support/bibdesk-rag/index.sqlite3` |
+
+すでに別の場所に設定がある場合は、その場所を指定します。設定・索引の自動移動や上書きはしません。
+
+```sh
+bibdesk-rag --config "/absolute/path/to/config.toml" setup
+```
+
+再実行時は既存設定を確認し、索引の「そのまま使用」「差分更新」「明示的な全件再構築」を選べます。Ctrl+C・EOFで中断でき、作成済み設定は保持するので、同じコマンドで再開できます。入力と標準エラー出力が端末でない場合は入力待ちせず終了します。自動処理には [既存のCLI](docs/usage.md#ライブラリ登録と索引化) を使ってください。
+
+最後に設定・索引の読み取りとローカルMCPの初期化・ツール一覧を確認します。「MCP登録済み」「MCPサーバー疎通確認済み」「Codexからの実検索は未検証」を区別して表示するため、完了後は次の検索も試してください。[詳しい動作と再開方法](docs/usage.md#対話型セットアップ)
+
+### 2. Codexで検索する
+
+次の依頼をCodexに送ります。「調べたいテーマ」を、自分が調べたい研究テーマやキーワードに置き換えてください。
+
+```text
+bibdesk-rag MCPを使って、私の文献ライブラリから
+「調べたいテーマ」に関連する文献を最大5件探してください。
+
+まず書誌情報から候補を選び、取得できる本文で内容を確認してください。
+
+タイトル、著者、発表年、citekey、DOIを一覧にし、
+それぞれがテーマとどう関係するかを短く説明してください。
+本文に基づく説明には、短い抜粋とPDFページ番号を添えてください。
+
+本文を確認できなかった文献や、検索機能を利用できない場合は、
+その旨を明記してください。
+```
+
+CodexがMCPの `search_papers` と `search_fulltext` を呼び、所蔵資料の出典を伴う結果を返すことが接続確認になります。結果が0件でも接続失敗とは限りません。PDFページ番号はファイル先頭を1とする番号で、論文に印刷されたページ番号とは異なる場合があります。
+
+## Manual Setup
+
+個別の処理を実行したい場合や、v0.1.xを利用する場合の手順です。先に `brew install KentoYana/tap/bibdesk-rag` で本体を導入します。以下の保存先は手動設定例であり、対話型セットアップの既定保存先とは異なります。
+
+### 1. 自分のライブラリを登録し、索引を作る
 
 以下は同じターミナルで実行します。`/absolute/path/to/references.bib` を自分の `.bib` の絶対パスに置き換えてください。空白を含むパスも引用符で囲んで指定できます。
 
@@ -47,9 +92,9 @@ v0.1.1以降では、`index` / `update` をターミナルで実行すると、�
 
 既存の設定は上書きしません。登録済みなら `init` を繰り返さず、現在の設定を指定して `update` を使ってください。別の場所で登録済みの場合、上の変数を書き換えるだけでは設定・索引は移動しません。
 
-このREADMEでは上記を標準の手順として使います。v0.1.0・v0.1.1では、保存先の引数・環境変数を何も指定しない場合、macOSでは `~/Library/Application Support/bibdesk-rag/` を使うため、以降も `--config` を明示します。原本やHomebrewのインストール先には保存しません。[保存先の指定](docs/usage.md#ライブラリ登録と索引化)
+この手動設定例では上記の保存先を使うため、以降も `--config` を明示します。保存先の引数・環境変数を何も指定しない場合、macOSでは対話型セットアップと同じ `~/Library/Application Support/bibdesk-rag/` を使います。原本やHomebrewのインストール先には保存しません。[保存先の指定](docs/usage.md#ライブラリ登録と索引化)
 
-### 3. Codexに読み取り専用MCPを登録する
+### 2. Codexに読み取り専用MCPを登録する
 
 アプリの設定画面かCLIの、どちらか一方で登録します。
 
@@ -81,7 +126,7 @@ printf '%s\n' "$HOME/.config/bibdesk-rag/config.toml"
 
 設定を別の場所に作った場合は、②にその保存先を指定してください。GUIにはコマンドそのものや `$HOME`、`$(brew --prefix)`、パスを囲む引用符を貼り付けません。「コマンド」欄には実行ファイルのパスだけを入れ、`--config` を混ぜないでください。環境変数や作業ディレクトリの欄がある場合は空欄のままで構いません。
 
-保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` の登録を確認します。接続を再起動し、手順4の検索へ進みます。[詳しい接続ガイド](docs/codex.md#codex-cliがない場合)
+保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` の登録を確認します。接続を再起動し、[Codexで検索する](#2-codexで検索する) へ進みます。[詳しい接続ガイド](docs/codex.md#codex-cliがない場合)
 
 #### CLIから登録する場合
 
@@ -110,33 +155,15 @@ codex mcp get bibdesk-rag
 
 GUI・CLIのどちらで登録した場合も、登録内容の表示だけでは接続成功の確認にはなりません。MCP接続を再起動し、新しいチャットで次の検索を試してください。接続できない場合はCodexのアプリまたはCLIセッションも再起動します。MCPサーバーはCodexが起動するため、ターミナルで常時起動したり `brew services` に登録したりする必要はありません。[OpenAI公式MCP設定手順](https://learn.chatgpt.com/docs/extend/mcp)
 
-### 4. Codexで検索する
-
-次の依頼をCodexに送ります。「調べたいテーマ」を、自分が調べたい研究テーマやキーワードに置き換えてください。
-
-```text
-bibdesk-rag MCPを使って、私の文献ライブラリから
-「調べたいテーマ」に関連する文献を最大5件探してください。
-
-まず書誌情報から候補を選び、取得できる本文で内容を確認してください。
-
-タイトル、著者、発表年、citekey、DOIを一覧にし、
-それぞれがテーマとどう関係するかを短く説明してください。
-本文に基づく説明には、短い抜粋とPDFページ番号を添えてください。
-
-本文を確認できなかった文献や、検索機能を利用できない場合は、
-その旨を明記してください。
-```
-
-CodexがMCPの `search_papers` と `search_fulltext` を呼び、所蔵資料の出典を伴う結果を返すことが接続確認になります。結果が0件でも接続失敗とは限りません。PDFページ番号はファイル先頭を1とする番号で、論文に印刷されたページ番号とは異なる場合があります。
-
 ## 日常の使い方
 
 BibDeskで文献や添付ファイルを追加・変更した後は、索引を更新します。自動監視・自動更新は行いません。
 
 ```sh
-bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" update
+bibdesk-rag update
 ```
+
+独自の設定や上のManual Setupを使った場合は、`bibdesk-rag --config "/absolute/path/to/config.toml" update` のように実際の保存先を指定します。
 
 ファイルのサイズと更新日時だけでは変更を判断できない場合は `update --verify-hashes` を使います。`index` は索引全体を作り直す操作です。どちらもBibDeskの原本は変更しません。
 
@@ -163,12 +190,13 @@ codex mcp remove bibdesk-rag
 brew uninstall KentoYana/tap/bibdesk-rag
 ```
 
-**元の `.bib` と添付ファイル、保存済みの設定・索引は残ります。** このREADMEの手順で作った設定・索引も不要なら、Finderの「移動 → フォルダへ移動」で次の場所をそれぞれ開き、中身を確認して対象ファイルをゴミ箱へ移動してください。
+**元の `.bib` と添付ファイル、保存済みの設定・索引は残ります。** 設定・索引も不要なら、実際に使用している設定の `database` の値を確認し、Finderの「移動 → フォルダへ移動」で次の場所をそれぞれ開き、中身を確認して対象ファイルをゴミ箱へ移動してください。
 
 | 開くフォルダ | 削除対象 |
 | --- | --- |
-| `~/.config/bibdesk-rag/` | `config.toml` |
-| `~/.local/share/bibdesk-rag/` | `index.sqlite3` |
+| `~/Library/Application Support/bibdesk-rag/`（既定） | `config.toml`、`index.sqlite3` |
+| `~/.config/bibdesk-rag/`（Manual Setupの例） | `config.toml` |
+| `~/.local/share/bibdesk-rag/`（Manual Setupの例） | `index.sqlite3` |
 
 索引の補助ファイル、以前の保存先や独自の保存先、Codex CLIも削除する場合については、[詳しい削除手順](docs/codex.md#接続解除とアンインストール) に従ってください。
 
@@ -189,12 +217,12 @@ brew uninstall KentoYana/tap/bibdesk-rag
 | `brew install` で配布先が見つからない | `brew update` の後、`brew install KentoYana/tap/bibdesk-rag` と完全な名前で指定します。[tap](https://github.com/KentoYana/homebrew-tap) とGitHubへの接続も確認してください。 |
 | `bibdesk-rag: command not found` | Homebrewのインストール完了とPATHを確認します。`"$(brew --prefix)/bin/bibdesk-rag" --version` で切り分けできます。 |
 | `codex: command not found` | 既存CLIの導入先とPATHを確認します。未導入なら `brew install --cask codex` で導入するか、[アプリから登録](docs/codex.md#codex-cliがない場合)します。 |
-| `config.toml` が見つからない | `init` の完了と、CLI・Codexが同じ `--config` を使うことを確認します。 |
+| `config.toml` が見つからない | `setup` または `init` の完了と、CLI・Codexが同じ設定を使うことを確認します。 |
 | `unable to open database file` | 同じ設定を指定して `index` が完了したか、索引の保存先にアクセスできるかを確認します。 |
 | Codexに登録済みだがツールを使えない | 新しいセッションで接続し、実行ファイルと設定ファイルの絶対パスを確認します。詳細は [接続の切り分け](docs/codex.md#接続の切り分け)。 |
-| 文献は見つかるが本文が返らない | `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" attachments CITEKEY --json` で添付リンク・抽出状態を確認します。索引全体の状態は `attachments CITEKEY` を `status` に置き換えて確認できます。 |
+| 文献は見つかるが本文が返らない | `bibdesk-rag attachments CITEKEY --json` で添付リンク・抽出状態を確認します。索引全体の状態は `attachments CITEKEY` を `status` に置き換えて確認できます。 |
 
-DBの整合性は `bibdesk-rag --config "$HOME/.config/bibdesk-rag/config.toml" doctor --json` で検査できます。大きなDBでは検査用のメモリが必要です。問い合わせや不具合報告には、バージョン、実行コマンド、エラー文を添えてください。パス・書誌情報・本文などの私的な情報は必要に応じて伏せてください。
+DBの整合性は `bibdesk-rag doctor --json` で検査できます。独自の設定・Manual Setupの場合は、`attachments`・`status`・`doctor` にも同じ `--config` を指定してください。大きなDBでは検査用のメモリが必要です。問い合わせや不具合報告には、バージョン、実行コマンド、エラー文を添えてください。パス・書誌情報・本文などの私的な情報は必要に応じて伏せてください。
 
 ## 開発とソースからの利用
 
