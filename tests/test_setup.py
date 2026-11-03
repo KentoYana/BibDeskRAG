@@ -449,16 +449,18 @@ def test_declining_codex_registration_leaves_index_ready(sources, monkeypatch, t
 
 
 @pytest.mark.parametrize("registered", [True, False])
-def test_codex_registration_result_is_separate_from_index_and_uses_custom_config(
+def test_codex_registration_result_is_separate_from_index_and_follows_custom_selection(
     sources, monkeypatch, tmp_path, registered
 ):
     config, bib, _ = sources
     calls, codex, mcp = fake_connection(monkeypatch, tmp_path, registered=registered)
     code, output = invoke(config, str(bib), "y", "y", "y")
     assert code == 0, output
-    assert ("inspect", (codex, mcp, config.resolve())) in calls
-    assert ("register", (codex, mcp, config.resolve())) in calls
-    assert ("probe", (mcp, config.resolve())) in calls
+    assert ("inspect", (codex, mcp, None)) in calls
+    assert ("register", (codex, mcp, None)) in calls
+    assert ("probe", (mcp, None)) in calls
+    assert default_config_path() == config.resolve()
+    assert "MCP will follow the selected configuration (no arguments)" in output
     assert index_status(config)["counts"]["papers"] == 1
     assert "Actual search from Codex is not verified" in output
 
@@ -486,8 +488,43 @@ def test_without_codex_cli_manual_connection_uses_detected_absolute_paths(
     assert code == 0, output
     assert str(mcp) in output and str(config.resolve()) in output
     assert not any(name in {"inspect", "register"} for name, _ in calls)
-    assert ("probe", (mcp, config.resolve())) in calls
+    assert ("probe", (mcp, None)) in calls
+    assert "Arguments: leave empty" in output
+    command = next(line.strip() for line in output.splitlines() if "codex mcp add" in line)
+    assert shlex.split(command) == ["codex", "mcp", "add", "bibdesk-rag", "--", str(mcp)]
     assert index_status(config)["counts"]["papers"] == 1
+
+
+@pytest.mark.parametrize("has_codex", [True, False])
+def test_temporary_setup_pins_registration_and_probe_without_changing_selection(
+    sources, monkeypatch, tmp_path, has_codex,
+):
+    temporary, bib, pdf = sources
+    saved = tmp_path / "saved/config.toml"
+    init_config(bib, saved, tmp_path / "saved data")
+    index_library(load_config(saved))
+    activate_config(saved)
+    before = fingerprints(saved, load_config(saved).database, active_config_path(), bib, pdf)
+    calls, codex, mcp = fake_connection(monkeypatch, tmp_path)
+    if not has_codex:
+        monkeypatch.setattr(
+            setup, "discover_executable", lambda name: mcp if name == "bibdesk-rag-mcp" else None
+        )
+    stdin, stderr = Terminal([str(bib), "y", "y", "y"]), Terminal()
+    assert setup.run_setup(temporary, stdin=stdin, stderr=stderr, remember=False) == 0
+    assert ("probe", (mcp, temporary.resolve())) in calls
+    if has_codex:
+        assert ("inspect", (codex, mcp, temporary.resolve())) in calls
+        assert ("register", (codex, mcp, temporary.resolve())) in calls
+    else:
+        output = stderr.getvalue()
+        command = next(line.strip() for line in output.splitlines() if "codex mcp add" in line)
+        assert shlex.split(command) == [
+            "codex", "mcp", "add", "bibdesk-rag", "--", str(mcp), "--temp", str(temporary),
+        ]
+        assert "Arguments (two separate values)" in output
+    assert default_config_path() == saved
+    assert fingerprints(*before) == before
 
 
 def test_missing_mcp_executable_does_not_attempt_codex_registration(

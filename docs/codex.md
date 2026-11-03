@@ -16,7 +16,7 @@ bibdesk-rag --setup
 
 対話型セットアップは `--setup` で開始します。別の場所に既存設定がある場合は、先に `bibdesk-rag --config use "/absolute/path/to/config.toml"` で選んでから `bibdesk-rag --setup` を実行してください。一度だけ使う場合は `bibdesk-rag --temp PATH --setup` で、保存済みの選択を変更せずに実行できます。
 
-ウィザードはライブラリ登録・索引作成の後、Codex CLIがあればMCP登録を提案します。承認した場合だけ、検出した `bibdesk-rag-mcp` と設定ファイルの絶対パスを渡して登録します。既存の同名登録が一致すれば再登録せず、異なる場合や登録状況を判定できない場合は変更しません。Codexのほかの設定・サーバー登録も変更しません。
+ウィザードはライブラリ登録・索引作成の後、Codex CLIがあればMCP登録を提案します。承認した場合だけ、検出した `bibdesk-rag-mcp` の絶対パスを引数なしで登録し、選択中の設定に追従させます。`--temp PATH --setup` の場合だけ、その設定を固定する引数付きで登録します。既存の同名登録が一致すれば再登録せず、異なる場合や登録状況を判定できない場合は変更しません。
 
 CLIがない場合、登録を省略した場合、登録に失敗した場合にも、作成済み索引はCLIで利用できます。画面に表示した手動接続情報を [アプリ設定](#codex-cliがない場合) に入力してください。実行ファイルを検出できなかった場合は、パッケージの導入先・PATHを確認してから再実行します。CLIの自動インストールはしません。
 
@@ -25,7 +25,7 @@ CLIがない場合、登録を省略した場合、登録に失敗した場合�
 | 表示する状態 | 確認した範囲 |
 | --- | --- |
 | 設定・索引が利用可能 | 設定を読み込み、SQLiteを読み取り専用で開いて件数を取得 |
-| MCP登録済み | Codexの登録内容が実行ファイル・設定パスと一致 |
+| MCP登録済み | 実行ファイルと引数が登録予定の内容に一致（通常は引数なし） |
 | MCPサーバー疎通確認済み | ローカルstdioで `initialize` と `tools/list` に成功 |
 | Codexからの実検索は未検証 | Codexを再起動し、READMEの検索例で別途確認が必要 |
 
@@ -57,11 +57,10 @@ brew install --cask codex
 codex --version
 ```
 
-CLIを使わない場合は [アプリからの設定](#codex-cliがない場合) または [設定ファイルを使う方法](#設定ファイルを使う方法) に進みます。CLIで登録する場合は、Homebrewで導入した実行ファイルと設定ファイルを絶対パスで渡します。
+CLIを使わない場合は [アプリからの設定](#codex-cliがない場合) または [設定ファイルを使う方法](#設定ファイルを使う方法) に進みます。CLIで登録する場合は、Homebrewの実行ファイルの絶対パスだけを渡し、引数なしで選択中の設定に追従させます。
 
 ```sh
-codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --temp "$(bibdesk-rag --config path)"
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
@@ -73,49 +72,44 @@ Codexのアプリまたはセッションを再起動し、新しいチャット
 
 Macアプリで **設定 → 左側の「連携」にある「プラグイン」→ 右上の「追加」→「MCP サーバーを追加」** と進みます。2026年11月2日に確認した日本語画面の配置です。
 
-`--setup` が表示した実行ファイル・設定ファイルの絶対パスを使って、次の表の値を1つずつ入力・選択します。未実行の場合は①・②でパスを確認できます。「引数」は2つに分け、1件目、2件目の順に追加してください。
+`--setup` が表示した実行ファイルの絶対パスを使って、次の表を入力・選択します。未実行の場合は下のコマンドでパスを確認できます。通常は引数を追加しません。
 
 | 入力欄 | 入力・選択する値 |
 | --- | --- |
 | 名前 / Name | `bibdesk-rag` |
 | 接続方式 / Transport | `STDIO` |
-| コマンド / Command | 下の①で表示された1行 |
-| 引数 / Arguments の1件目 | `--temp` |
-| 引数 / Arguments の2件目 | 下の②で表示された1行 |
+| コマンド / Command | 下のコマンドで表示された1行 |
+| 引数 / Arguments | 空欄（追加しない） |
 
-① ターミナルで実行し、出力されたパスだけを「コマンド」欄へコピーします。
+ターミナルで実行し、出力されたパスだけを「コマンド」欄へコピーします。
 
 ```sh
 printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
 ```
 
-② ターミナルで実行し、出力されたパスだけを「引数」の2件目へコピーします。
-
-```sh
-bibdesk-rag --config path
-```
-
-`--config path` は選択中の設定パスを表示します。別の設定を確認するには `bibdesk-rag --temp PATH --config path` と指定します。GUIへコマンドそのものや `$(brew --prefix)`、`$HOME`、パスを囲む引用符は貼り付けません。「コマンド」欄には実行ファイルのパスだけを入れ、`--temp` は引数の1件目に入れます。`/opt/homebrew` や `/usr/local` を決め打ちする必要はありません。環境変数や作業ディレクトリの欄がある場合は空欄のままで構いません。
+`bibdesk-rag --config path` は選択中の設定を表示します。`bibdesk-rag --config use PATH` で選び直すと、引数なしのMCPもその選択に追従します。GUIへコマンドそのものや `$(brew --prefix)`、`$HOME`、パスを囲む引用符は貼り付けません。環境変数や作業ディレクトリも通常は空欄にします。
 
 保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` を確認して接続を再起動し、新しいチャットでREADMEの検索例を試します。登録が表示されるだけでは、索引を検索できることの確認にはなりません。画面の配置は版によって変わる場合があります。[公式MCPガイド](https://learn.chatgpt.com/docs/extend/mcp) は接続方式と設定項目の参考にしてください。
 
 ## 設定ファイルを使う方法
 
-Codex自身の標準ユーザー設定は `~/.codex/config.toml` です。これは **BibDesk RAGの設定ファイルとは別のファイル** です。既存の内容を保持し、同名のテーブルを重複させず、次の項目を追加または更新します。`command` は上の①で表示したパス、`args` の2つ目は②で表示したパスに置き換えてください。
+Codex自身の標準ユーザー設定は `~/.codex/config.toml` です。これは **BibDesk RAGの設定ファイルとは別のファイル** です。既存の内容を保持し、同名のテーブルを重複させず、次の項目を追加または更新します。`command` は上のコマンドで表示した実行ファイルのパスに置き換えてください。通常は `args` を空にします。
 
 ```toml
 [mcp_servers.bibdesk-rag]
 command = "/absolute/homebrew/prefix/bin/bibdesk-rag-mcp"
-args = ["--temp", "/absolute/path/to/bibdesk-rag/config.toml"]
+args = []
 ```
 
 ソースから導入した場合は `command` を `/absolute/path/to/BibDeskRAG/.venv/bin/bibdesk-rag-mcp` にします。GUIアプリのPATHや、ターミナルだけで設定した環境変数の継承に頼らず接続できます。
 
 設定を分けて複数のライブラリを使う場合は、ライブラリごとに設定と索引を作り、Codexにも `bibdesk-rag-project-a` など別のサーバー名で登録します。[保存先の指定](usage.md#ライブラリ登録と索引化)
 
-`--temp` はMCPサーバーの起動単位で設定を指定するため、登録先の設定に固定されます。CLIで `--config use PATH` を実行しても、既存のCodex登録を変更しません。MCPもCLIの保存済み選択に従わせたい場合は、登録時の `--temp` とパスを省略します。同じ設定用ディレクトリを使用する必要があり、ターミナルだけで指定した `BIBDESK_RAG_HOME` や `XDG_CONFIG_HOME` はGUIに引き継がれない場合があります。設定を固定する場合は、このガイドのように絶対パスを登録してください。
+引数なしのMCPは、CLIと同じ設定選択を使います。`--config use PATH` で保存済みの選択を変えると、次のツール呼び出しから追従します。CLIとMCPで同じ設定用ディレクトリを使用する必要があります。`BIBDESK_RAG_CONFIG` は保存済み選択より優先され、ターミナルだけで指定した `BIBDESK_RAG_HOME` や `XDG_CONFIG_HOME` はGUIに引き継がれない場合があります。
 
-以前のMCP登録にある `--config` は、`bibdesk-rag-mcp` に限り互換用として受け付けます。同じ設定を指す登録は `--setup` で書き換えません。通常の `bibdesk-rag` の `--config` は設定管理用の操作引数を受け取り、一時的な設定ファイルの指定には `--temp` を使います。
+特定の設定に固定する場合だけ `args = ["--temp", "/absolute/path/to/config.toml"]` を指定します。GUIでは `--temp` と絶対パスを2つの引数として追加します。複数ライブラリを同時に使う登録や `--temp PATH --setup` はこの方式です。既存の `--temp PATH`・`--config PATH` 登録を選択追従へ変更する場合は、両方の引数を削除します。通常のセットアップはパス固定登録を一致とみなさず、変更せずに手動確認を案内します。
+
+以前のMCP登録にある `--config` は、`bibdesk-rag-mcp` に限り互換用として受け付けます。一時セットアップで同じ設定を固定する登録は `--setup` で書き換えません。通常の `bibdesk-rag` の `--config` は設定管理用の操作引数を受け取り、一時的な設定ファイルの指定には `--temp` を使います。
 
 ## 検索の流れとツール
 
@@ -138,7 +132,7 @@ args = ["--temp", "/absolute/path/to/bibdesk-rag/config.toml"]
 
 1. `"$(brew --prefix)/bin/bibdesk-rag-mcp" --version` で実行ファイルを確認します。
 2. `bibdesk-rag --config show` で設定と索引の場所を確認し、`bibdesk-rag --index status --format json` で索引を読めるか確認します。Codexに別の設定を登録している場合は `bibdesk-rag --temp PATH --index status --format json` で照合します。設定・索引がなければ同じ設定パスで `--setup` を実行するか、READMEの手動手順で `--config create`・`--index update` を実行します。
-3. `codex mcp get bibdesk-rag` で実行パスと `--temp` 引数を確認します。設定画面やTOMLにシェル変数が残っていないか、古いCellarの版番号を指していないかも確認します。
+3. `codex mcp get bibdesk-rag` で実行パスと引数（通常は空欄）を確認します。設定画面やTOMLにシェル変数が残っていないか、古いCellarの版番号を指していないかも確認します。
 4. MCP接続またはCodexを再起動して、新しいチャットでREADMEの検索例を実行します。同じ設定を使ったCLIの `bibdesk-rag --paper search "所蔵文献の語" --scope metadata --format json` が成功し、MCPだけ失敗する場合はCodex側の起動エラーを確認します。
 
 `Transport closed` が出た場合は、MCP接続を再起動して新しいチャットで試してください。継続する場合は上記1〜3で起動パスと設定を確認します。このエラーだけでは索引の破損や文献の不在を意味しません。
@@ -215,7 +209,7 @@ bibdesk-rag --setup
 
 Start with `--setup`. To reuse configuration elsewhere, first run `bibdesk-rag --config use "/absolute/path/to/config.toml"`, then setup. For a one-time choice without changing the saved selection, use `bibdesk-rag --temp PATH --setup`.
 
-After library registration/index creation, the wizard offers MCP registration if Codex CLI exists. Only after approval does it register the detected `bibdesk-rag-mcp` executable and configuration using absolute paths. Matching registrations are retained; conflicting or indeterminate registrations are not changed. Other Codex settings and servers are untouched.
+After library registration/index creation, the wizard offers MCP registration if Codex CLI exists. Only after approval does it register the detected absolute `bibdesk-rag-mcp` path without arguments, following the selected configuration. Only `--temp PATH --setup` registers arguments that pin that temporary configuration. Matching registrations are retained; conflicting or indeterminate registrations are not changed.
 
 Without the CLI, after skipping registration or after registration failure, the completed index is still usable from the CLI. Enter the displayed manual connection details in [application settings](#without-codex-cli). If the executable cannot be found, check package installation/PATH and rerun. Codex CLI is never automatically installed.
 
@@ -224,7 +218,7 @@ Completion reports distinguish these checks:
 | Reported state | Verified scope |
 | --- | --- |
 | Configuration/index available | Configuration read; SQLite opened read-only and counts obtained |
-| MCP registered | Codex registration matches executable/configuration paths |
+| MCP registered | Executable and arguments match the intended registration (normally no arguments) |
 | Local MCP server verified | Local stdio `initialize` and `tools/list` succeeded |
 | Actual Codex search unverified | Restart Codex and separately try the README search example |
 
@@ -256,11 +250,10 @@ brew install --cask codex
 codex --version
 ```
 
-To avoid CLI registration, use [application settings](#without-codex-cli) or the [configuration file](#using-the-configuration-file). For CLI registration, pass absolute Homebrew executable/configuration paths:
+To avoid CLI registration, use [application settings](#without-codex-cli) or the [configuration file](#using-the-configuration-file). For CLI registration, pass only the absolute Homebrew executable path, without arguments, to follow the selected configuration:
 
 ```sh
-codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --temp "$(bibdesk-rag --config path)"
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
@@ -272,49 +265,44 @@ Restart the Codex application/session and search in a new chat. `codex mcp list`
 
 In the Mac application, go to **Settings → Plugins under “Integrations” on the left → Add at the upper right → Add MCP server**. This is the Japanese UI layout observed on November 2, 2026.
 
-Use the absolute executable/configuration paths shown by `--setup`. If setup has not run, obtain them with ① and ② below. Enter each field separately, adding two distinct arguments in order:
+Use the absolute executable path shown by `--setup`, or obtain it with the command below. Enter each field separately and normally leave arguments empty:
 
 | Field | Value |
 | --- | --- |
 | Name | `bibdesk-rag` |
 | Transport | `STDIO` |
-| Command | The single path printed by ① |
-| Argument 1 | `--temp` |
-| Argument 2 | The single path printed by ② |
+| Command | The single path printed below |
+| Arguments | Leave empty |
 
-① Run in a terminal; copy only the printed path into Command:
+Run in a terminal; copy only the printed path into Command:
 
 ```sh
 printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
 ```
 
-② Run in a terminal; copy only the printed path into Argument 2:
-
-```sh
-bibdesk-rag --config path
-```
-
-`--config path` prints the selected configuration. To inspect another, use `bibdesk-rag --temp PATH --config path`. Do not paste shell commands, `$(brew --prefix)`, `$HOME` or surrounding quotes into GUI fields. Command contains only the executable path; `--temp` is Argument 1. There is no need to assume `/opt/homebrew` or `/usr/local`. Environment-variable/working-directory fields can stay empty.
+`bibdesk-rag --config path` prints the selected configuration. Choose another with `bibdesk-rag --config use PATH`; MCP without arguments follows that selection. Do not paste shell commands, `$(brew --prefix)`, `$HOME` or surrounding quotes into GUI fields. Environment-variable/working-directory fields can normally stay empty.
 
 After saving, check `bibdesk-rag` in Plugins → **MCP**, restart the connection and try the README search in a new chat. A displayed registration alone does not verify index searches. UI layout may vary by version; consult the [official MCP guide](https://learn.chatgpt.com/docs/extend/mcp) for transport/configuration concepts.
 
 ## Using the configuration file
 
-Codex's default user configuration is `~/.codex/config.toml`, **a different file from BibDesk RAG's configuration**. Preserve existing settings and add/update the following without duplicating table names. Replace `command` with the path from ① and the second `args` item with the path from ②.
+Codex's default user configuration is `~/.codex/config.toml`, **a different file from BibDesk RAG's configuration**. Preserve existing settings and add/update the following without duplicating table names. Replace `command` with the executable path printed above. Normally keep `args` empty.
 
 ```toml
 [mcp_servers.bibdesk-rag]
 command = "/absolute/homebrew/prefix/bin/bibdesk-rag-mcp"
-args = ["--temp", "/absolute/path/to/bibdesk-rag/config.toml"]
+args = []
 ```
 
 For source installations, use `/absolute/path/to/BibDeskRAG/.venv/bin/bibdesk-rag-mcp` as `command`. Absolute paths avoid reliance on GUI PATH or terminal-only environment variables.
 
 For multiple libraries, create separate configuration/index files and register each under a distinct server name such as `bibdesk-rag-project-a`. See [Custom storage](usage.md#registering-and-indexing-a-library).
 
-`--temp` pins configuration for each MCP server process. CLI `--config use PATH` does not change existing Codex registrations. To let MCP follow the CLI's saved selection, omit `--temp` and its path when registering. Both must use the same configuration directory; terminal-only `BIBDESK_RAG_HOME`/`XDG_CONFIG_HOME` may not reach the GUI. To pin configuration, register absolute paths as shown here.
+MCP without arguments uses the same configuration selection as the CLI. Changes saved with `--config use PATH` take effect on the next tool call. CLI and MCP must share the same configuration directory. `BIBDESK_RAG_CONFIG` overrides the saved selection, and terminal-only `BIBDESK_RAG_HOME`/`XDG_CONFIG_HOME` may not reach the GUI.
 
-The old `--config` spelling is accepted only by `bibdesk-rag-mcp` for compatibility. Setup does not rewrite a matching registration. Normal `bibdesk-rag --config` takes configuration-management actions; use `--temp` for a one-time file choice.
+Only to pin a particular configuration, set `args = ["--temp", "/absolute/path/to/config.toml"]`. In the GUI, add `--temp` and the absolute path as two separate arguments. Use this for simultaneous registrations of multiple libraries; `--temp PATH --setup` also uses this mode. To migrate an existing `--temp PATH` or `--config PATH` registration to follow the selection, remove both arguments. Ordinary setup treats pinned registrations as different, leaves them unchanged and asks for manual review.
+
+The old `--config` spelling is accepted only by `bibdesk-rag-mcp` for compatibility. Setup does not rewrite registrations that match the intended selection mode. Normal `bibdesk-rag --config` takes configuration-management actions; use `--temp` for a one-time file choice.
 
 ## Retrieval workflow and tools
 
@@ -337,7 +325,7 @@ The server declares every tool read-only and opens existing SQLite read-only. It
 
 1. Verify the executable with `"$(brew --prefix)/bin/bibdesk-rag-mcp" --version`.
 2. Inspect paths with `bibdesk-rag --config show` and test index readability with `bibdesk-rag --index status --format json`. If Codex pins another configuration, compare using `bibdesk-rag --temp PATH --index status --format json`. Without configuration/index, run setup for that same path, or the README's manual create/update steps.
-3. Inspect executable and `--temp` arguments with `codex mcp get bibdesk-rag`. Check for unexpanded shell variables in GUI/TOML or an old versioned Cellar path.
+3. Inspect the executable and arguments (normally empty) with `codex mcp get bibdesk-rag`. Check for unexpanded shell variables in GUI/TOML or an old versioned Cellar path.
 4. Restart MCP or Codex and try the README search in a new chat. If `bibdesk-rag --paper search "term from your library" --scope metadata --format json` succeeds with the same configuration while MCP fails, inspect Codex's startup error.
 
 For `Transport closed`, restart the connection and try a new chat. If it persists, check steps 1–3. That error alone does not imply index corruption or missing literature.

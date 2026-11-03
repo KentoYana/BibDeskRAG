@@ -20,7 +20,8 @@ def registration(mcp, config, option="--temp"):
     return {
         "name": "bibdesk-rag", "enabled": True, "disabled_reason": None,
         "transport": {
-            "type": "stdio", "command": str(mcp), "args": [option, str(config)],
+            "type": "stdio", "command": str(mcp),
+            "args": [option, str(config)] if config is not None else [],
             "env": None, "env_vars": [], "cwd": None,
         },
         "enabled_tools": None, "disabled_tools": None,
@@ -53,13 +54,26 @@ def paths(tmp_path):
     return codex, mcp, config
 
 
-@pytest.mark.parametrize("option", ["--temp", "--config"])
+@pytest.mark.parametrize("option", [None, "--temp", "--config"])
 def test_registration_match_without_add(paths, option):
     codex, mcp, config = paths
+    config = config if option is not None else None
     run = runner(completed(registration(mcp, config, option)))
     assert connection.register(codex, mcp, config, run=run)
     assert run.calls[0][0] == [str(codex), "mcp", "get", "bibdesk-rag", "--json"]
     assert len(run.calls) == 1
+
+
+@pytest.mark.parametrize("option", ["--temp", "--config"])
+@pytest.mark.parametrize("follow_selection", [True, False])
+def test_pinned_and_following_registrations_are_not_interchangeable(paths, option, follow_selection):
+    codex, mcp, config = paths
+    value = registration(mcp, config if follow_selection else None, option)
+    requested = None if follow_selection else config
+    run = runner(completed(value), completed(value))
+    assert connection.inspect_registration(codex, mcp, requested, run=run) == "conflict"
+    assert not connection.register(codex, mcp, requested, run=run)
+    assert all(call[0][2] == "get" for call in run.calls)
 
 
 @pytest.mark.parametrize("mutation", [
@@ -104,8 +118,12 @@ def test_unknown_registration_fails_closed(paths, responses, capsys):
     assert capsys.readouterr() == ("", "")
 
 
-def test_missing_requires_successful_list_and_add_preserves_literal_arguments(paths, tmp_path):
+@pytest.mark.parametrize("follow_selection", [True, False])
+def test_missing_requires_successful_list_and_add_preserves_literal_arguments(
+    paths, tmp_path, follow_selection,
+):
     codex, mcp, config = paths
+    config = None if follow_selection else config
     run = runner(
         completed(returncode=1), completed([{"name": "unrelated"}]),
         completed(text="Registered"), completed(registration(mcp, config)),
@@ -113,7 +131,8 @@ def test_missing_requires_successful_list_and_add_preserves_literal_arguments(pa
     assert connection.register(codex, mcp, config, run=run)
     assert [call[0][2] for call in run.calls] == ["get", "list", "add", "get"]
     assert run.calls[2][0] == [
-        str(codex), "mcp", "add", "bibdesk-rag", "--", str(mcp), "--temp", str(config),
+        str(codex), "mcp", "add", "bibdesk-rag", "--", str(mcp),
+        *(["--temp", str(config)] if config is not None else []),
     ]
     assert run.calls[2][1]["input"] is None
     assert not (tmp_path / "INJECTED").exists()
@@ -178,11 +197,13 @@ def handshake_reply():
     return [json.loads(line) for line in output.getvalue().splitlines()]
 
 
-def test_mcp_probe_sends_only_initialization_and_tools_listing(paths):
+@pytest.mark.parametrize("follow_selection", [True, False])
+def test_mcp_probe_sends_only_initialization_and_tools_listing(paths, follow_selection):
     _, mcp, config = paths
+    config = None if follow_selection else config
 
     def run(argv, **kwargs):
-        assert argv == [str(mcp), "--temp", str(config)]
+        assert argv == [str(mcp), *(["--temp", str(config)] if config is not None else [])]
         assert kwargs["shell"] is False
         messages = [json.loads(line) for line in kwargs["input"].splitlines()]
         assert [item["method"] for item in messages] == [

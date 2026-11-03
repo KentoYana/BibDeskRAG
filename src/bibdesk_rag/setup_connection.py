@@ -62,7 +62,7 @@ def _json_output(completed):
     return json.loads(completed.stdout)
 
 
-def _matches(value, mcp: Path, config_path: Path) -> bool:
+def _matches(value, mcp: Path, config_path: Path | None) -> bool:
     if not isinstance(value, dict) or value.get("name") != SERVER_NAME:
         return False
     transport = value.get("transport")
@@ -71,8 +71,12 @@ def _matches(value, mcp: Path, config_path: Path) -> bool:
     command = transport.get("command")
     if not isinstance(command, str) or not Path(command).is_absolute():
         return False
-    # Both spellings pin the same configuration. Keep existing --config entries
-    # without rewriting registrations. Custom environments/filters require review.
+    # Following the saved selection differs from pinning today's selected path.
+    # Both explicit spellings remain equivalent for a temporary setup only.
+    arguments = ([],) if config_path is None else (
+        ["--temp", str(_absolute(config_path))],
+        ["--config", str(_absolute(config_path))],
+    )
     return (
         value.get("enabled") is True
         and not value.get("disabled_reason")
@@ -80,10 +84,7 @@ def _matches(value, mcp: Path, config_path: Path) -> bool:
         and not value.get("disabled_tools")
         and transport.get("type") == "stdio"
         and _absolute(command) == _absolute(mcp)
-        and transport.get("args") in (
-            ["--temp", str(_absolute(config_path))],
-            ["--config", str(_absolute(config_path))],
-        )
+        and transport.get("args") in arguments
         and not transport.get("env")
         and not transport.get("env_vars")
         and not transport.get("cwd")
@@ -92,7 +93,7 @@ def _matches(value, mcp: Path, config_path: Path) -> bool:
 
 
 def inspect_registration(
-    codex: Path, mcp: Path, config_path: Path, *, run=None,
+    codex: Path, mcp: Path, config_path: Path | None = None, *, run=None,
 ) -> str:
     """Return missing/matching/conflict/unknown without modifying Codex settings."""
     run = subprocess.run if run is None else run
@@ -119,7 +120,7 @@ def inspect_registration(
         return "unknown"
 
 
-def register(codex: Path, mcp: Path, config_path: Path, *, run=None) -> bool:
+def register(codex: Path, mcp: Path, config_path: Path | None = None, *, run=None) -> bool:
     """Register after the caller's approval, refusing an existing different entry.
 
     Recheck immediately before add to avoid overwriting a registration changed
@@ -133,7 +134,7 @@ def register(codex: Path, mcp: Path, config_path: Path, *, run=None) -> bool:
     try:
         result = _call(
             [str(codex), "mcp", "add", SERVER_NAME, "--", str(_absolute(mcp)),
-             "--temp", str(_absolute(config_path))],
+             *(["--temp", str(_absolute(config_path))] if config_path is not None else [])],
             run=run,
         )
         return result.returncode == 0 and inspect_registration(
@@ -143,7 +144,7 @@ def register(codex: Path, mcp: Path, config_path: Path, *, run=None) -> bool:
         return False
 
 
-def probe_mcp(mcp: Path, config_path: Path, *, run=None) -> bool:
+def probe_mcp(mcp: Path, config_path: Path | None = None, *, run=None) -> bool:
     """Check local stdio initialization and tools/list, without retrieving papers.
 
     These messages are processed in order by our line-oriented server, just as
@@ -161,7 +162,8 @@ def probe_mcp(mcp: Path, config_path: Path, *, run=None) -> bool:
     ]
     try:
         completed = _call(
-            [str(_absolute(mcp)), "--temp", str(_absolute(config_path))],
+            [str(_absolute(mcp)),
+             *(["--temp", str(_absolute(config_path))] if config_path is not None else [])],
             run=run, input="".join(json.dumps(item) + "\n" for item in requests),
         )
         if completed.returncode or len(completed.stdout) > MAX_RESPONSE_CHARS:

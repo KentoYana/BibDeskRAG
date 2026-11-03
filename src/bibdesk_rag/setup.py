@@ -164,7 +164,7 @@ def manual_commands(terminal: Terminal, config_path: Path) -> None:
     terminal.say("  " + display(shlex.join(["bibdesk-rag", "--config", "use", str(config_path)])))
 
 
-def manual_connection(terminal: Terminal, mcp: Path | None, config_path: Path) -> None:
+def manual_connection(terminal: Terminal, mcp: Path | None, config_path: Path | None) -> None:
     terminal.say("Manual Codex connection: in Codex settings, add a local MCP server (STDIO).")
     terminal.say("  Name: bibdesk-rag")
     if mcp is None:
@@ -172,13 +172,15 @@ def manual_connection(terminal: Terminal, mcp: Path | None, config_path: Path) -
         terminal.say("  Use the installed executable's absolute path as Command.")
     else:
         terminal.say("  Command: " + display(mcp))
-    terminal.say("  Arguments (two separate values): " + json.dumps(
-        ["--temp", str(config_path)], ensure_ascii=False
-    ))
+    arguments = ["--temp", str(config_path)] if config_path is not None else []
+    if arguments:
+        terminal.say("  Arguments (two separate values): " + json.dumps(arguments, ensure_ascii=False))
+    else:
+        terminal.say("  Arguments: leave empty (follow the selected configuration).")
     if mcp is not None:
         terminal.say("With Codex CLI, after checking any existing bibdesk-rag registration:")
         terminal.say("  " + display(shlex.join([
-            "codex", "mcp", "add", "bibdesk-rag", "--", str(mcp), "--temp", str(config_path)
+            "codex", "mcp", "add", "bibdesk-rag", "--", str(mcp), *arguments,
         ])))
 
 
@@ -275,7 +277,11 @@ def build_index(terminal: Terminal, config: Config, state: SetupState) -> None:
 
 
 def connect_codex(terminal: Terminal, codex: Path | None, mcp: Path | None,
-                  config_path: Path, state: SetupState) -> None:
+                  config_path: Path | None, state: SetupState) -> None:
+    if config_path is None:
+        terminal.say("MCP will follow the selected configuration (no arguments).")
+    else:
+        terminal.say("MCP will pin this temporary configuration with --temp PATH.")
     if codex is None or mcp is None:
         terminal.say("Codex CLI not found; automatic registration skipped." if codex is None
                      else "MCP executable not found; automatic registration skipped.")
@@ -295,6 +301,9 @@ def connect_codex(terminal: Terminal, codex: Path | None, mcp: Path | None,
         elif registration == "conflict":
             terminal.say("A different bibdesk-rag MCP registration exists. "
                          "It was not replaced; review it manually in Codex.")
+            if config_path is None:
+                terminal.say("To follow the selected configuration, remove both the configuration "
+                             "option (--temp or --config) and its path from that registration.")
         else:
             terminal.say("Could not safely inspect existing Codex registrations. "
                          "No registration was changed.")
@@ -381,7 +390,8 @@ def run_setup(config_path: Path | None = None, *, remember: bool = True,
         build_index(terminal, config, state)
         state.stage = "[3/5] Connect to Codex"
         terminal.say("\n" + state.stage)
-        connect_codex(terminal, codex, mcp, path, state)
+        mcp_config = None if remember else path
+        connect_codex(terminal, codex, mcp, mcp_config, state)
         state.stage = "[4/5] Verify local connection"
         terminal.say("\n" + state.stage)
         checked_config = read_setup_config(path)
@@ -392,7 +402,7 @@ def run_setup(config_path: Path | None = None, *, remember: bool = True,
         if mcp is not None:
             terminal.say("MCP executable: " + display(mcp))
             if state.index_ready:
-                state.handshake = probe_mcp(mcp, path)
+                state.handshake = probe_mcp(mcp, mcp_config)
                 if state.handshake:
                     state.completed.append("MCP server handshake verified (initialize + tools/list)")
                 else:
