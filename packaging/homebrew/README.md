@@ -1,3 +1,7 @@
+[日本語](#japanese) | [English](#english)
+
+<a id="japanese"></a>
+
 # Homebrew 配布
 
 このリポジトリの `Formula/bibdesk-rag.rb` は生成用の未公開テンプレートです。
@@ -200,3 +204,134 @@ Intel の backend wheel は用意していますが、Intel 実機での検証�
 
 公式参照: [Python Formula](https://docs.brew.sh/Language-Specific-Formulae#python)、
 [Formula Cookbook](https://docs.brew.sh/Formula-Cookbook)。
+
+---
+
+<a id="english"></a>
+
+# Homebrew distribution
+
+`Formula/bibdesk-rag.rb` in this repository is an unpublished generation template. It is not installable while it contains `@@...@@`. Do not treat it as a release Formula until the actual public repository, release URLs and SHA-256 values are established. `tools/generate_formula.py` verifies archive hashes and generates a usable Formula.
+
+For user installation/Codex connection, see the [README](../../README.md#english). This document is for maintainers. Application: [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG); installable Formula: [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap); initial release: [v0.1.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.0). From v0.3.0, `bibdesk-rag --setup` guides library registration, indexing and optional Codex connection. Installation alone never changes Codex settings; setup registers MCP only after approval. Without Codex CLI, it displays manual connection details.
+
+## Prerequisites for publication
+
+- Public application repository, distribution tap and release version.
+- That version's sdist, wheel, fixed build-dependency bundle and `SHA256SUMS`.
+- Normal installation results from clean environments and Homebrew validation through a registered local tap.
+- User instructions checked against the actual publication target, including the README's `KentoYana/tap` name.
+
+Keep the generation template in this repository. Never publish fictitious or `file://` URLs in a release Formula. Obtain explicit authorization for GitHub pushes, tags, releases and tap publication.
+
+## Distribution environment
+
+The Formula uses Homebrew `python@3.14` and `Language::Python::Virtualenv`, creating a separate environment in `libexec`. `system_site_packages: false` isolates it from global pip packages; pyenv is unnecessary. It invokes no pip, external API or model downloads at runtime.
+
+The 29 runtime dependency sdists have fixed URLs, versions and SHA-256 values in `resources.json` and the Formula. lxml builds from source against Homebrew libxml2/libxslt. Python/native-library patch updates are managed by Homebrew. Changing Python minor versions also requires updating the backend bundle below.
+
+PEP 517 builds need different setuptools versions. Public PyPI wheels are locked in `build-resources.json` and packaged separately as `bibdesk-rag-build-wheels.tar.gz`, including macOS arm64/x86_64 inputs. Each file and the whole bundle are SHA-256 checked. The Formula builds with `PIP_NO_INDEX=1` and local `PIP_FIND_LINKS`, avoiding unpinned dependency downloads during builds. Only the standard helper's `--no-binary` restriction is lifted to allow backend wheels; application/runtime dependencies still build from explicit sdists. BibDeskParser's backend is named `uv_build`; pip invokes it without the uv package manager. Since socksio's old flit 2 uses `ast.Str`, removed in Python 3.14, the Formula temporarily changes only its build requirement to flit 3.12.0. Runtime code is unchanged.
+
+## Local pre-publication validation
+
+These steps write to a local tap and the Homebrew installation. They do not push, create repositories or publish to GitHub. First prepare the README's development environment. Use a fresh output directory for every run to avoid mixing old artifacts, and run subsequent commands in the same terminal.
+
+```sh
+mkdir -p dist
+release_dir="$(mktemp -d "$PWD/dist/preflight.XXXXXX")"
+release_version="$(.venv/bin/python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+.venv/bin/python -m build --outdir "$release_dir"
+.venv/bin/python tools/bundle_build_resources.py --output "$release_dir/bibdesk-rag-build-wheels.tar.gz"
+.venv/bin/python tools/check_release.py --dist-dir "$release_dir"
+```
+
+`check_release.py` works offline. It checks sdist/wheel versions and license files, unsafe archive paths, accidental personal libraries/indexes/local configuration, and backend-bundle agreement with the fixed lock. It rejects extra files such as older versions and generates `SHA256SUMS` for **only the three validated artifacts**, without modifying them. It cannot detect every secret embedded in source text; also review the publication diff.
+
+Create the local tap once; skip `brew tap-new` if it exists.
+
+```sh
+brew tap-new local/bibdesk-rag-test
+.venv/bin/python tools/generate_formula.py \
+  --version "$release_version" \
+  --homepage https://example.invalid/bibdesk-rag-local-test \
+  --local-sdist "$release_dir/bibdesk_rag-$release_version.tar.gz" \
+  --local-build-wheels "$release_dir/bibdesk-rag-build-wheels.tar.gz" \
+  --output "$(brew --repository local/bibdesk-rag-test)/Formula/bibdesk-rag.rb"
+brew trust --formula local/bibdesk-rag-test/bibdesk-rag
+brew style local/bibdesk-rag-test/bibdesk-rag
+brew install --build-from-source local/bibdesk-rag-test/bibdesk-rag
+brew audit --strict local/bibdesk-rag-test/bibdesk-rag
+brew test local/bibdesk-rag-test/bibdesk-rag
+bibdesk-rag --version
+bibdesk-rag --help
+.venv/bin/python tools/package_smoke.py --workdir /tmp/bibdesk-rag-brew-smoke
+```
+
+`example.invalid` is an explicit placeholder for this pre-publication test only. Never publish it or the generated local Formula's `file://` URLs. Run `brew audit --online` after actual public URLs exist. Style/audit results depend on Homebrew version; rerun shortly before publication.
+
+The Formula's `test do` generates a library, two-page PDF and supplementary CSV. It checks registration, indexing, full-text search, BibTeX output, diagnostics, incremental updates, unchanged source hashes, stdio MCP initialization and search. Starting with PDF metadata search, it verifies selected-paper evidence, citekey, DOI, original path, page, chunk ID and unchanged configuration/database hashes during MCP use. It uses no real library. Use a new empty smoke-test destination; an old CSV-only fixture is not a substitute for this PDF check. If already installed, use reinstall below instead of install.
+
+Check data preservation after reinstall:
+
+```sh
+brew reinstall --build-from-source local/bibdesk-rag-test/bibdesk-rag
+.venv/bin/python tools/package_smoke.py --verify-existing --workdir /tmp/bibdesk-rag-brew-smoke
+```
+
+To test a real `brew upgrade` before release, add `revision 1` **only to the generated local Formula**, run `brew upgrade --build-from-source local/bibdesk-rag-test/bibdesk-rag`, then repeat `--verify-existing`. No source-version change is needed. User configuration/SQLite default to `~/.config/bibdesk-rag/` and `~/.local/share/bibdesk-rag/`, outside the Cellar. `BIBDESK_RAG_HOME` and XDG overrides are supported. Uninstall has no data-deletion hook.
+
+## Release procedure
+
+External publication requires the owner's explicit authorization. CI never publishes automatically; maintainers perform only authorized publication steps.
+
+1. Update matching SemVer versions in `pyproject.toml` and `src/bibdesk_rag/__init__.py`; review changelog/tests.
+2. Run `.venv/bin/python -m pytest` and `.venv/bin/ruff check src tests tools`.
+3. Generate the three artifacts in a fresh directory and run `check_release.py`. Normally install sdist/wheel in separate empty venvs; run `pip check` and `tools/package_smoke.py` in each. The same backend lock/notices produce the same bundle SHA-256.
+4. Use the generated local Formula for style/audit, source installation, Formula tests and synthetic-data retention across reinstall/upgrade. Check MIT/dependency notices, README targets/publication status and machine/CI validation boundaries. Finalize reviewable artifacts.
+5. After authorization, create a matching Git tag/GitHub Release such as `v0.3.0`; attach sdist, wheel, backend bundle and `SHA256SUMS`. Publish the tested bytes without rebuilding at this stage.
+6. Generate the Formula using actual URLs/hashes. Set the example variables to confirmed values. The homepage is `https://github.com/KentoYana/BibDeskRAG`; release asset URLs follow `https://github.com/KentoYana/BibDeskRAG/releases/download/vVERSION/FILENAME`. Replace version/filename and confirm assets really exist before running:
+
+```sh
+.venv/bin/python tools/generate_formula.py \
+  --version "$release_version" --homepage "$project_homepage" \
+  --url "$sdist_url" --sha256 "$sdist_sha256" \
+  --build-wheels-url "$backend_bundle_url" --build-wheels-sha256 "$backend_bundle_sha256" \
+  --output /path/to/homebrew-tap/Formula/bibdesk-rag.rb
+```
+
+The generator downloads the actual sdist from its public URL and verifies SHA-256, name/version in `PKG-INFO` and `pyproject.toml`, and included licenses. It refuses an sdist for the wrong version.
+
+7. Run `brew style`, `brew audit --strict`, `brew audit --online`, `brew install --build-from-source` and `brew test`.
+8. After authorization, publish to `KentoYana/homebrew-tap`.
+9. Verify user `brew upgrade KentoYana/tap/bibdesk-rag` and preservation of pre-upgrade configuration/index.
+
+User installation command:
+
+```sh
+brew install KentoYana/tap/bibdesk-rag
+```
+
+## Updating dependencies
+
+Install/test the target versions in the development venv, then run:
+
+```sh
+python tools/lock_homebrew_resources.py
+brew update-python-resources KentoYana/tap/bibdesk-rag --print-only
+```
+
+The first command recursively resolves pyproject dependencies, downloads the installed versions' PyPI sdists, verifies SHA-256 and updates JSON/template. `--print-only` inspects the published Formula; maintain its backend-bundle resource manually.
+
+Backend updates are separate. Prepare a new empty `.build-wheels/` directory, inspect build requirements in target sdists' `pyproject.toml` / `setup.py`, and obtain wheels with pip. Both Python 3.14 arm64 and x86_64 are required. Retrieve the current set with the following; if compatibility-tag resolution changes, use the fixed URLs in `build-resources.json`.
+
+```sh
+python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz
+```
+
+For a newly selected wheel set, run `python tools/lock_build_resources.py .build-wheels` to verify PyPI SHA-256 and update the lock, then update license tables/bundled notices. Repeat a fully offline Formula build and `brew test`.
+
+## Continuous integration
+
+`test.yml` runs Python 3.11–3.14 tests on Linux/macOS. `package.yml` checks archives, generates `SHA256SUMS`, and on macOS performs normal wheel/sdist installation plus local Homebrew style/audit/source install/functional tests/data-retention checks. It retains artifacts without permission to publish GitHub releases or the tap. Intel backend wheels are included; record actual Intel-machine validation separately.
+
+Official references: [Python Formula](https://docs.brew.sh/Language-Specific-Formulae#python), [Formula Cookbook](https://docs.brew.sh/Formula-Cookbook).

@@ -1,3 +1,7 @@
+[日本語](#japanese) | [English](#english)
+
+<a id="english"></a>
+
 # Third-party notices
 
 BibDeskRAG application code is MIT-licensed. Dependencies retain their own licenses;
@@ -125,3 +129,87 @@ ReportLab 4.5.1 is BSD licensed; Pillow 13.0.0 is MIT-CMU.
 Their remaining Python requirements are listed in the runtime/build tables above.
 These tools generate synthetic test fixtures or validate packages and are not
 vendored into BibDeskRAG's source/wheel or its runtime environment.
+
+---
+
+<a id="japanese"></a>
+
+# 第三者ライセンスと依存一覧
+
+BibDeskRAG本体はMITライセンスです。依存はそれぞれのライセンスを保持し、本プロジェクトは再ライセンスしません。以下は検証した正確な実行時依存です。`packaging/homebrew/resources.json` に各パッケージの固定ソースURL、版、SHA-256、公開PyPIメタデータURLがあります。2026-11-01に全ソースをダウンロードしてlockを検証しました。メタデータが不足・曖昧なPySocks、socksio、tomli-w、lxml、tqdmはインストール済みLICENSE/NOTICEも確認しました。
+
+| パッケージ | 版 | ライセンス |
+| --- | --- | --- |
+| [anyio](https://pypi.org/project/anyio/4.15.1/) | 4.15.1 | MIT |
+| [arxiv](https://pypi.org/project/arxiv/4.0.2/) | 4.0.2 | MIT |
+| [bibdeskparser](https://pypi.org/project/bibdeskparser/0.8.1/) | 0.8.1 | MIT |
+| [bibtexparser](https://pypi.org/project/bibtexparser/2.0.0b9/) | 2.0.0b9 | MIT |
+| [certifi](https://pypi.org/project/certifi/2026.10.23/) | 2026.10.23 | MPL-2.0 |
+| [charset-normalizer](https://pypi.org/project/charset-normalizer/3.5.2/) | 3.5.2 | MIT |
+| [click](https://pypi.org/project/click/8.5.0/) | 8.5.0 | BSD-3-Clause |
+| [defusedxml](https://pypi.org/project/defusedxml/0.7.1/) | 0.7.1 | PSF-2.0 |
+| [et-xmlfile](https://pypi.org/project/et-xmlfile/2.0.0/) | 2.0.0 | MIT |
+| [h11](https://pypi.org/project/h11/0.16.0/) | 0.16.0 | MIT |
+| [habanero](https://pypi.org/project/habanero/2.9.2/) | 2.9.2 | MIT |
+| [httpcore](https://pypi.org/project/httpcore/1.0.9/) | 1.0.9 | BSD-3-Clause |
+| [httpcore2](https://pypi.org/project/httpcore2/2.16.0/) | 2.16.0 | BSD-3-Clause |
+| [httpx](https://pypi.org/project/httpx/0.28.1/) | 0.28.1 | BSD-3-Clause |
+| [httpx2](https://pypi.org/project/httpx2/2.16.0/) | 2.16.0 | BSD-3-Clause |
+| [idna](https://pypi.org/project/idna/3.20/) | 3.20 | BSD-3-Clause |
+| [lxml](https://pypi.org/project/lxml/6.1.3/) | 6.1.3 | BSD-3-Clause |
+| [openpyxl](https://pypi.org/project/openpyxl/3.1.5/) | 3.1.5 | MIT |
+| [packaging](https://pypi.org/project/packaging/26.3/) | 26.3 | Apache-2.0 OR BSD-2-Clause |
+| [pylatexenc](https://pypi.org/project/pylatexenc/2.11/) | 2.11 | MIT |
+| [pypdf](https://pypi.org/project/pypdf/6.21.4/) | 6.21.4 | BSD-3-Clause |
+| [pysocks](https://pypi.org/project/pysocks/1.7.1/) | 1.7.1 | BSD-3-Clause |
+| [requests](https://pypi.org/project/requests/2.34.2/) | 2.34.2 | Apache-2.0 |
+| [socksio](https://pypi.org/project/socksio/1.0.0/) | 1.0.0 | MIT |
+| [tomli-w](https://pypi.org/project/tomli-w/1.2.0/) | 1.2.0 | MIT |
+| [tqdm](https://pypi.org/project/tqdm/4.70.1/) | 4.70.1 | MPL-2.0 AND MIT |
+| [truststore](https://pypi.org/project/truststore/0.10.5/) | 0.10.5 | MIT |
+| [typing-extensions](https://pypi.org/project/typing-extensions/4.16.0/) | 4.16.0 | PSF-2.0 |
+| [urllib3](https://pypi.org/project/urllib3/2.8.0/) | 2.8.0 | MIT |
+
+MIT、BSD、Apache、PSFはnotice保持などの条件の下でMIT本体と併せた再配布を認めます。Certifiとtqdmの一部はMPL-2.0で、上流のライセンス・ソース情報を保持し、対象ファイルの変更をMPLで利用可能にする必要があります。本プロジェクトはその対象ファイルを変更していません。pip/Homebrew導入では各配布のメタデータ・ライセンスを保持します。統合バイナリの配布者はnoticeと依存のソース提供・通知義務を満たす必要があり、MITはBibDeskRAG自身のコードだけに適用されます。
+
+## ネイティブ・同梱コンポーネント
+
+lxmlの `LICENSES.txt` はElementTree・CPython由来コード、ISO Schematron資源、GPLの上流テストrunner（別途集約されたものでアプリコードではありません）も説明します。個別ライセンス宣言がない抽出用XSL資源も記載されています。上流notice全体を保持し、ソースツリー全体をBSDだけと説明しないでください。HomebrewはMITのlibxml2/libxsltに対しlxmlをソースビルドします。pipのバイナリwheelはzlib（Zlib）、iconv（LGPL-2.1）、libexslt（MIT）を含む場合があり、上流noticeを保持します。BibDeskRAG wheelはこれらを同梱しません。通常のソース・wheel配布を超えて統合バイナリや変更依存を配布する場合は上流の例外を確認してください。
+
+導入済みHomebrew libexsltはlibgcrypt・libgpg-errorにもリンクし、各ライブラリはLGPL-2.1です（導入済み `COPYING.LIB` で確認）。別の動的リンクHomebrew依存として上流notice・ソース義務を保持し、BibDeskRAG wheelにはコピーしません。`otool -L` でリンクを確認しました。Homebrew依存ツリーのCLIツールのライセンスは、リンク先ライブラリ自体のライセンスを表すものではありません。
+
+PyMuPDFは依存に使いません。CPython/SQLiteはインタープリターが提供し、CPythonはPSF、SQLiteはパブリックドメインです。
+
+## ビルド専用入力
+
+`packaging/homebrew/build-resources.json` はオフラインHomebrew bundle内の全wheelを固定し、必要に応じ両macOSアーキテクチャを含みます。bundleは別のRelease成果物で、バックエンドwheelはアプリ実行時依存として導入しません。BibDeskParserのupstream `uv_build` を含むpipの隔離PEP 517バックエンドです。`uv` パッケージマネージャーを導入・実行せず、開発・導入ともpipだけを使います。
+
+| ビルド用パッケージ | 版 | ライセンス |
+| --- | --- | --- |
+| cython | 3.2.9 | Apache-2.0 |
+| dunamai | 1.26.3 | MIT |
+| flit-core | 3.12.0 | BSD-3-Clause; 3.12に同梱するtomliはMIT |
+| hatch-fancy-pypi-readme | 25.1.0 | MIT |
+| hatch-vcs | 0.5.0 | MIT |
+| hatchling | 1.33.0 | MIT |
+| jinja2 | 3.1.6 | BSD-3-Clause |
+| markupsafe | 3.0.4 | BSD-3-Clause |
+| packaging | 26.3 | Apache-2.0 OR BSD-2-Clause |
+| pathspec | 1.1.1 | MPL-2.0 |
+| pluggy | 1.7.0 | MIT |
+| setuptools | 84.0.0, 84.2.1 | MIT |
+| setuptools-scm | 10.3.4 | MIT |
+| tomlkit | 0.15.2 | MIT |
+| trove-classifiers | 2026.9.21.13 | Apache-2.0 |
+| uv-build | 0.12.24 | MIT OR Apache-2.0 |
+| uv-dynamic-versioning | 0.14.1 | MIT |
+| vcs-versioning | 2.6.0 | MIT |
+| wheel | 0.48.0 | MIT |
+
+バックエンドwheelの元LICENSE/NOTICEを変更せず保持し、確認済みハッシュとソースプロジェクト情報をbundle manifestに保存します。実行時・ビルドlockを更新するたびにnoticeも更新してください。
+
+上記のビルド用ライセンスはwheel内LICENSEで確認しました。古い分類メタデータがBSD-3-Clause本文と不一致だったため、flitのタグ付きソースLICENSEも確認しました。pathspecはMPL-2.0で、ライセンス・ソース情報とともに未変更で再配布します。socksioはPython 3.14対応のため一時ビルド要件をflit 2から固定3.12.0へ変えますが、実行時ソースは未変更のMITパッケージです。
+
+## 開発・テストツール（アプリwheelに同梱しないもの）
+
+導入済み開発環境を別途確認しました。build 1.6.1、pytest 9.2.0、ruff 0.17.3、iniconfig 2.3.1、pluggy 1.7.0、pyproject-hooks 1.3.3はMIT、Pygments 2.21.0はBSD-2-Clause、ReportLab 4.5.1はBSD、Pillow 13.0.0はMIT-CMUです。残るPython要件は上記実行時・ビルド表にあります。これらは合成fixture生成・パッケージ検証用で、BibDeskRAGソース・wheel・実行環境に同梱しません。

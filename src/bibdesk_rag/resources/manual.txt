@@ -1,3 +1,6 @@
+English / 日本語: English first; Japanese follows under 「日本語マニュアル」.
+英語版の後に「日本語マニュアル」が続きます。
+
 BIBDESK RAG MANUAL
 
 BibDesk RAG searches a local BibDesk library and its linked attachments. It reads
@@ -176,3 +179,171 @@ MIGRATION
 Old CLI subcommands are rejected with migration guidance. The MCP executable
 retains a hidden --config PATH compatibility alias for existing registrations;
 new registrations use --temp PATH. MCP tool names and schemas are unchanged.
+
+===============================================================================
+日本語マニュアル / JAPANESE MANUAL
+===============================================================================
+
+BibDesk RAGはローカルBibDeskライブラリとリンク添付を検索します。書誌・添付を
+変更せずに読み、派生SQLite索引はPython・Homebrew外の利用者アプリデータに置きます。
+
+使い方 / USAGE
+  bibdesk-rag [案内オプション]
+  bibdesk-rag [--temp PATH] 操作 [オプション]
+
+引数なしでは短縮ヘルプを表示して終了します。全オプションは -h/--help です。
+主操作は1回につき1つ。無関係なオプションや競合操作は処理前にエラーにします。
+空白を含むパス・検索語は引用符で囲みます。
+
+案内（設定・索引は不要） / INFORMATION
+  -h, --help
+      全オプションを表示して終了します。
+  -v, --version
+      版番号とソフトウェア引用情報を表示して終了します。
+  -e, --example
+      よく使う操作例を表示して終了します。
+  -r, --readme
+      この同梱マニュアルを表示します。端末ではローカルページャーを使い、
+      それ以外は標準出力へ出します。ブラウザー・ネットワーク接続は不要です。
+  -o, --output {manual,config-template,citation}
+      資料を標準出力へ出します。ファイルへのリダイレクトは呼出し側で指定します。
+      citationはKento Yanagisawa著のBibDesk RAG自身のBibTeX @manualで、
+      ライブラリの文献ではありません。
+
+操作 / OPERATIONS
+  --setup
+      対話型セットアップ。標準入力・標準エラーが両方とも端末である必要があります。
+      ライブラリ登録、任意の索引作成・更新、任意のCodexローカルMCP登録を行います。
+      競合するCodex登録は置き換えず、ローカルMCP疎通とCodex実検索を分けて示します。
+
+  -c, --config ACTION [PATH]
+      show          選択中の設定・解決済みパス・全抽出値を表示（省略値の既定も含む）。
+      path          選択中の設定ファイルの絶対パスを表示。
+      use PATH      既存設定を検証して選択を保存。
+      create [PATH] 新規設定を作成して選択を保存。--bib が必要です。
+                    PATH省略時は BIBDESK_RAG_CONFIG、なければ設定用ディレクトリの
+                    config.toml を使います。保存済みカスタム選択は作成先に影響しません。
+                    既存設定は上書きしません。
+
+      show/path は書誌・索引を開かずファイルも変更しません。
+      use/create は既存索引・原本を保持します。
+
+  -i, --index ACTION
+      update        索引がなければ作成し、あれば差分更新。
+      rebuild       設定した全原本を再抽出し、派生データを再構築。
+      status        索引件数・抽出状態・更新情報を表示。
+      check         SQLite・外部キー・FTS整合性と添付エラーを検査。
+                    読み取り専用ですが、多くのメモリが必要な場合があります。
+
+  -p, --paper ACTION VALUE
+      search QUERY       書誌情報・索引本文を検索。
+      show KEY           citekeyの索引書誌レコードを取得。
+      attachments KEY    索引添付と抽出状態を一覧表示。
+      context QUERY      文字数を制限した抜粋と正確な引用を取得。
+
+設定 / CONFIGURATION
+  --temp PATH
+      今回だけ別の設定を使い、保存済み選択を変更しません。
+      --config use/create とは併用できません。--setup で作成した設定・索引や
+      承認したCodex登録は保持されますが、設定選択は保存しません。
+      再開には同じ --temp PATH --setup を使います。
+  --bib FILE
+      登録するBibDeskライブラリ。--config create 専用の必須引数です。
+  --data-dir DIR
+      --config create 専用の索引ディレクトリ。
+
+macOSを含む新規導入の既定保存先：
+  設定: ~/.config/bibdesk-rag/config.toml
+  索引: ~/.local/share/bibdesk-rag/index.sqlite3
+
+設定の優先順は --temp PATH、BIBDESK_RAG_CONFIG、active-config.json の保存済み選択、
+既定設定です。保存済み設定がなければ別ライブラリへ切り替えずエラーにします。
+--config use で選び直します。旧macOS Application Supportは自動検出しません。
+
+設定用ディレクトリは BIBDESK_RAG_HOME、XDG_CONFIG_HOME/bibdesk-rag、
+~/.config/bibdesk-rag の順です。新規索引は --data-dir、BIBDESK_RAG_HOME、
+XDG_DATA_HOME/bibdesk-rag の順です。どれもなければ、既定設定には
+~/.local/share/bibdesk-rag、カスタム設定にはその親ディレクトリを使います。
+既存設定の database は保持します。TOMLの相対パスはその設定ファイルが基準です。
+ライブラリごとに別のDBを使います。
+
+CLIの保存済み選択を変えても、設定パスを固定したCodex登録は書き換えません。
+MCPは検索・参照だけでSQLiteを読み取り専用で開き、索引保守はCLIで行います。
+
+出力 / OUTPUT
+  --format {text,json,bibtex}
+      textが既定で、パイプ・リダイレクトでも同じです。
+      jsonは設定・索引・文献の結果に使えます。
+      bibtexは --paper show 専用です。
+  --verbose
+      update/rebuild時の全パーサー警告・添付問題を表示。
+  --no-progress
+      update/rebuildの端末進捗バーを無効化。
+
+結果は標準出力、進捗・診断は標準エラーです。進捗は両出力が端末で、
+TERMがdumbでない場合に表示します。JSONでは進捗を無効にし、詳細診断も混ぜません。
+案内・setupには --format を使えず、無関係なオプションは拒否します。
+
+検索と証拠 / SEARCH AND EVIDENCE
+  --scope {all,metadata,fulltext}  検索範囲。search専用、既定all。
+  --top N                       結果数1..100。search既定10、context既定5。
+  --per-paper N                 文献ごとの抜粋1..10、既定2。
+  --citekey KEY                 本文取得を選択文献に限定。複数指定可。
+  --metadata-query QUERY        all検索・contextの書誌候補を指定。
+                                --citekey とは併用不可。
+  --doi DOI                     metadata検索のDOI完全一致。
+  --author NAME                 metadata検索の著者フィルター。
+  --year YEAR                   metadata検索の年フィルター。
+  --max-chars N                 contextの文字数256..100000、既定10000。
+
+既定all検索は最大100件の書誌候補を選んで索引本文を検索し、書誌候補がなければ
+索引本文全体へフォールバックします。DOI/citekey完全一致はBM25と独立しています。
+埋め込み意味検索・OCRは使わず、書誌一致だけを本文の証拠とは扱いません。
+
+引用はcitekey、記録がある場合のDOI、添付パス、chunk ID、PDFページ範囲または
+シート・行・ZIPメンバーを示します。PDFはファイル先頭を1ページとします。
+科学的な主張は原本と照合してください。結果0件は関連文献の不在を証明しません。
+contextは未検証・省略を報告します。
+
+索引更新 / INDEX UPDATES
+  --verify-hashes
+      サイズ・更新日時が同じ添付もハッシュ検査します。update/rebuild専用です。
+
+差分更新は未変更の抽出結果を再利用し、抽出設定の変更は再抽出します。
+書き込みはトランザクションで、致命的失敗では前回コミットした索引を保持します。
+欠損・読めない添付はエラーとして記録し、他ファイルを続行します。
+BibDeskの変更・原本移動後には索引を更新してください。
+
+対応本文はPDF、CSV/TSV、XLSX、安全なZIPメンバーです。数式は実行せず、
+アーカイブのパス逸脱・symlink・暗号化・過大サイズを拒否します。
+自動ネットワーク通信、ダウンロード、埋め込み、OCRは行いません。
+設定・索引・SQLite補助ファイルは原本と重ねてはいけません。
+
+操作例 / EXAMPLES
+  bibdesk-rag --setup
+  bibdesk-rag --config create --bib "/path/to/library.bib"
+  bibdesk-rag --config show --format json
+  bibdesk-rag --index update
+  bibdesk-rag --index update --verify-hashes
+  bibdesk-rag --index status
+  bibdesk-rag --paper search "RecQ helicase" --top 5
+  bibdesk-rag --paper show Example2025 --format bibtex
+  bibdesk-rag --temp "/path/to/other.toml" --index update
+  bibdesk-rag --output config-template > example.toml
+
+移行 / MIGRATION
+  setup             -> --setup
+  init              -> --config create
+  config show/path  -> --config show/path
+  config use PATH   -> --config use PATH
+  index             -> --index rebuild
+  update            -> --index update
+  status / doctor   -> --index status / --index check
+  search / context  -> --paper search / --paper context
+  get KEY           -> --paper show KEY
+  attachments KEY   -> --paper attachments KEY
+  --json            -> --format json
+
+旧CLI構文は移行先を案内して拒否します。MCP実行ファイルは既存登録用に非表示の
+--config PATH 互換引数を保持し、新規登録は --temp PATH を使います。
+MCPツール名・スキーマは変わりません。

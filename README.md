@@ -1,3 +1,7 @@
+[日本語](#japanese) | [English](#english)
+
+<a id="japanese"></a>
+
 # BibDesk RAG
 
 BibDeskで管理する文献を、Codexから検索・参照するためのローカルツールです。書誌情報で候補を絞り、PDFや補足資料の短い抜粋を、citekey・DOI・ファイルの場所・PDFページ番号とともに取得できます。
@@ -277,3 +281,288 @@ sdistとwheelを `dist/` に生成します。公開用Formulaには、実際に
 - [Codex接続の詳細](docs/codex.md) / [CLI・設定・抽出仕様](docs/usage.md)
 - [設計と拡張](docs/architecture.md)：ローカルembedding、ハイブリッド検索、OCR、図表解析は未実装です。
 - [MIT License](LICENSE) / [第三者ライセンスと依存一覧](THIRD_PARTY_NOTICES.md)
+
+---
+
+<a id="english"></a>
+
+# BibDesk RAG — English
+
+A local tool for searching and consulting literature managed in BibDesk from Codex. Narrow candidates using bibliography metadata, then retrieve short excerpts from PDFs and supplementary files with citekeys, DOIs, file locations and PDF page numbers.
+
+The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
+
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.3.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+
+These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
+
+## CLI entry points
+
+```sh
+bibdesk-rag                     # Brief help
+bibdesk-rag -h                  # Full help
+bibdesk-rag -v                  # Version and software citation
+bibdesk-rag -e                  # Common examples
+bibdesk-rag -r                  # Bundled manual
+bibdesk-rag --config show       # Inspect configuration
+bibdesk-rag --index update      # Create or incrementally update the index
+bibdesk-rag --paper search "RecQ helicase"
+```
+
+Choose configuration operations with `-c/--config`, index operations with `-i/--index`, and paper operations with `-p/--paper`. Use one main operation per invocation. Results default to text; use `--format json` for machine processing. No arguments shows brief guidance; `-h/--help` shows the full option reference.
+
+`-o/--output` prints `manual`, `config-template` or `citation` to standard output. For example, `bibdesk-rag --output config-template > example.toml` saves a configuration template. Information and resource output work without a configuration or index. See the [CLI guide](docs/usage.md#operations-and-guidance).
+
+## Install with Homebrew and connect to Codex
+
+You need a Mac, Homebrew, a local BibDesk library and attachments, and Codex with local MCP support. The Homebrew package includes its Python environment; users do not need to configure pyenv or pip. Register MCP through the application settings below. Codex CLI is optional, used only for command-line registration, and is not installed automatically as an application dependency.
+
+These instructions cover **Codex on the same Mac**. Ordinary Chat in ChatGPT is outside this distribution's supported setup. A separate local plugin is not required.
+
+### 1. Install and run interactive setup
+
+```sh
+brew install KentoYana/tap/bibdesk-rag
+bibdesk-rag --setup
+```
+
+Start interactive setup with `--setup`. Existing configuration and indexes remain usable. To run the individual operations yourself, use [Manual setup](#manual-setup-1) below.
+
+Follow the terminal prompts to enter your `.bib` path and check the displayed paper and attachment counts. Finder-dragged paths, spaces, Japanese characters, `~` and relative paths are accepted. After confirmation, setup creates the configuration and offers to build the initial index. The BibDesk application itself need not be installed if a valid library is available.
+
+If Codex CLI is found, setup registers MCP only after approval. It leaves matching registrations alone and does not change conflicting registrations. Without the CLI, indexing still works and setup displays absolute executable and configuration paths for manual registration. It never installs Codex CLI automatically.
+
+Without custom paths or environment variables, configuration and index use these locations, including on macOS. Homebrew upgrades and reinstalls do not delete them.
+
+| Data | Default location |
+| --- | --- |
+| BibDesk RAG configuration | `~/.config/bibdesk-rag/config.toml` |
+| Search index | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+If you already have a configuration elsewhere, select it before setup. Configuration and indexes are not automatically moved or overwritten.
+
+```sh
+bibdesk-rag --config use "/absolute/path/to/config.toml"
+bibdesk-rag --setup
+```
+
+On subsequent runs, inspect the existing configuration and choose to reuse the index, update it incrementally or explicitly rebuild it. Ctrl+C or EOF interrupts setup while retaining completed configuration, so the same command can resume it. If input and standard error are not terminals, setup exits without waiting for input. For automation, use the [CLI operations](docs/usage.md#registering-and-indexing-a-library).
+
+Finally, setup checks configuration/index readability and local MCP initialization/tool discovery. It distinguishes “MCP registered,” “local MCP server verified,” and “actual Codex search unverified.” Try the search below after completion. See [Setup behavior and resuming](docs/usage.md#interactive-setup).
+
+### 2. Search from Codex
+
+Send this request to Codex, replacing “research topic” with your topic or keywords:
+
+```text
+Use the bibdesk-rag MCP to find up to five papers in my library
+related to “research topic”.
+
+Select candidates using bibliography metadata first, then check their
+contents using the available full text.
+
+List the title, authors, year, citekey and DOI, and briefly explain how
+each paper relates to the topic. For explanations based on full text,
+include a short excerpt and PDF page number.
+
+Clearly state when full text could not be checked or the search tools
+are unavailable.
+```
+
+A successful connection is demonstrated when Codex calls MCP `search_papers` and `search_fulltext` and returns results with local source citations. Zero results do not necessarily mean connection failure. PDF pages count from 1 at the start of the file and may differ from printed article page numbers.
+
+## Manual setup
+
+Use these steps to perform individual operations. They use the same default locations as interactive setup.
+
+### 1. Register your library and build its index
+
+Run these commands in order, replacing `/absolute/path/to/references.bib` with your `.bib` file's absolute path. Quote paths containing spaces.
+
+```sh
+bibdesk-rag --config create --bib "/absolute/path/to/references.bib"
+bibdesk-rag --index update
+bibdesk-rag --index status --format json
+```
+
+`--config create` creates the configuration; `--index update` indexes metadata and the text of linked attachments. The first run can take time depending on file count and size. Check counts and extraction states with `--index status`. Metadata remains searchable even when some attachments cannot be extracted.
+
+In a terminal, `--index update` / `--index rebuild` display a single-line progress bar for papers and attachments, then a concise summary. PDF parser warnings are summarized as counts and a few examples. Use `--format json` for the complete aggregate report and all issues, `--verbose` for all warnings/issues, or `--no-progress` to hide only the bar. Redirected or piped output also defaults to text. See [Output options](docs/usage.md#progress-and-result-output).
+
+The commands create the required directories automatically:
+
+| Data | Location |
+| --- | --- |
+| BibDesk RAG configuration | `~/.config/bibdesk-rag/config.toml` |
+| Search index | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+Existing configuration is never overwritten. If already registered, use `--index update` instead of repeating `--config create`. To reuse a configuration elsewhere, run `bibdesk-rag --config use "/absolute/path/to/config.toml"` once. Subsequent commands use it without repeating the path, and existing files stay in place.
+
+Automatic discovery of the former macOS location `~/Library/Application Support/bibdesk-rag/` has been removed. Existing files are not moved or deleted. Select any existing configuration with `--config use PATH`. See [Configuration selection](docs/usage.md#inspecting-and-selecting-configuration).
+
+### 2. Register read-only MCP with Codex
+
+Choose either application settings or CLI registration.
+
+#### Register in the application settings (no Codex CLI needed)
+
+In the Mac application, go to **Settings → Plugins under “Integrations” on the left → Add at the upper right → Add MCP server**. This describes the Japanese UI observed on November 2, 2026.
+
+Enter/select each field below. Add **two separate arguments**, in the stated order.
+
+| Field | Value |
+| --- | --- |
+| Name | `bibdesk-rag` |
+| Transport | `STDIO` |
+| Command | The single path printed by step ① below |
+| Argument 1 | `--temp` |
+| Argument 2 | The single path printed by step ② below |
+
+① Run this in a terminal and copy **only the printed path** into Command:
+
+```sh
+printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
+```
+
+② Run this and copy **only the printed path** into Argument 2:
+
+```sh
+bibdesk-rag --config path
+```
+
+`--config path` shows the selected configuration path. Select a different configuration first with `--config use PATH` if needed. Do not paste shell commands, `$HOME`, `$(brew --prefix)` or surrounding quotes into GUI fields. Command must contain only the executable path; put `--temp` in its own argument. Environment-variable and working-directory fields can stay empty.
+
+After saving, check `bibdesk-rag` in the Plugins **MCP** tab, restart the connection and proceed to [Search from Codex](#2-search-from-codex). See the [detailed connection guide](docs/codex.md#without-codex-cli).
+
+#### Register using the CLI
+
+Check whether Codex CLI is available:
+
+```sh
+codex --version
+```
+
+If absent, install [Codex CLI with Homebrew](https://formulae.brew.sh/cask/codex). An existing working CLI does not need another installation.
+
+```sh
+brew install --cask codex
+codex --version
+```
+
+Then register:
+
+```sh
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
+  --temp "$(bibdesk-rag --config path)"
+codex mcp get bibdesk-rag
+```
+
+This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives only six retrieval tools.
+
+With either registration method, a displayed entry alone does not verify connectivity. Restart the MCP connection and try the search in a new chat. If needed, restart the Codex application or CLI session too. Codex launches the server; it does not need a persistent terminal process or `brew services` registration. See the [official MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp).
+
+## Everyday use
+
+Update the index after adding or changing papers or attachments in BibDesk. There is no automatic watching or updating.
+
+```sh
+bibdesk-rag --index update
+```
+
+Commands automatically use the configuration selected by ordinary `--setup`, `--config create` or `--config use`, including custom locations. Inspect it without opening the index:
+
+```sh
+bibdesk-rag --config show
+bibdesk-rag --config show --format json
+bibdesk-rag --config path
+```
+
+For a one-time override, use `bibdesk-rag --temp "/absolute/path/to/config.toml" --index update`. `--temp --setup` also leaves the saved selection unchanged. `--temp` cannot be combined with `--config use/create`. Use `--config use PATH` for a persistent selection. MCP registrations with explicit paths keep using those paths; `--config use` does not change Codex registrations. See [Configuration priority](docs/usage.md#inspecting-and-selecting-configuration).
+
+Use `--index update --verify-hashes` when size and modification time alone may miss changes. `--index rebuild` rebuilds the entire index. Both preserve the original BibDesk sources.
+
+To update the application:
+
+```sh
+brew update
+brew upgrade KentoYana/tap/bibdesk-rag
+```
+
+Restart Codex's MCP connection afterwards. There are no configuration/index deletion hooks on Homebrew upgrade, reinstall or uninstall.
+
+## Uninstall
+
+First remove the Codex MCP registration. With the CLI, run the following, then close Codex application/CLI sessions to stop running MCP servers. Without the CLI, see [Disconnecting](docs/codex.md#disconnecting-and-uninstalling).
+
+```sh
+codex mcp remove bibdesk-rag
+```
+
+Remove the application and its dedicated Python environment:
+
+```sh
+brew uninstall KentoYana/tap/bibdesk-rag
+```
+
+**Your original `.bib`, attachments, saved configuration and index remain.** If you also want to remove application data, inspect the actual configuration's `database` value. Use Finder's Go → Go to Folder to open each directory, inspect its contents and move only the intended files to Trash.
+
+| Folder | Files to remove |
+| --- | --- |
+| `~/.config/bibdesk-rag/` (default) | `config.toml`, `active-config.json` (saved selection) |
+| `~/.local/share/bibdesk-rag/` (default) | `index.sqlite3` |
+
+For index sidecars, old/custom locations and optional Codex CLI removal, follow the [detailed removal instructions](docs/codex.md#disconnecting-and-uninstalling).
+
+## Search coverage and data handling
+
+- Supported formats: PDF, CSV, TSV, XLSX and ZIP. Metadata and extracted text are searched with SQLite FTS5. There is no semantic search, embedding model or OCR.
+- Citations identify PDF pages, CSV/TSV record rows, XLSX sheets/rows or ZIP member names. Full-text results include chunk IDs.
+- Missing text, partial extraction and unsupported formats are distinguished. Image-only, encrypted or damaged PDFs, columns and tables may yield insufficient text. Verify scientific claims against original sources.
+- Indexing and search run locally, without external API submission or automatic model downloads. **Metadata/excerpts returned to Codex are passed to Codex's model processing**, subject to its terms and settings.
+- The index is plaintext SQLite. The application creates configuration/index files with mode 0600. Users manage backups and Mac access permissions.
+
+For filters, custom paths, multiple libraries and extraction limits, see the [CLI and configuration guide](docs/usage.md#english).
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| `brew install` cannot find the distribution | Run `brew update`, then use the full name `brew install KentoYana/tap/bibdesk-rag`. Check access to the [tap](https://github.com/KentoYana/homebrew-tap) and GitHub. |
+| `bibdesk-rag: command not found` | Check installation and PATH. Try `"$(brew --prefix)/bin/bibdesk-rag" --version`. |
+| `codex: command not found` | Check the existing CLI installation and PATH. Install with `brew install --cask codex` if needed, or [register in the application](docs/codex.md#without-codex-cli). |
+| Missing `config.toml` | Check `--config path`. Use `--config use PATH` to select an existing configuration, or `--setup` / `--config create` for a new one. Ensure CLI and Codex use the same configuration. |
+| `unable to open database file` | Check that `--index update` completed for the same configuration and that the index location is accessible. |
+| Registered in Codex but tools unavailable | Reconnect in a new session; check absolute executable/configuration paths. See [Connection troubleshooting](docs/codex.md#connection-troubleshooting). |
+| Metadata found but no full text | Check links and extraction states with `bibdesk-rag --paper attachments CITEKEY --format json`. Replace `--paper attachments CITEKEY` with `--index status` for overall index status. |
+
+Check database integrity with `bibdesk-rag --index check --format json`. Inspect the selected configuration with `--config show`; attachments, status and check use that same selection. Large databases require memory for checks. Include the version, command and error text in support requests, redacting private paths, metadata and excerpts as needed.
+
+## Development and source installation
+
+Python 3.11+ is supported; `.python-version` pins development to 3.12.13. Homebrew uses `python@3.14` and a separate virtualenv. Homebrew users do not need these development steps.
+
+From the source root, use local pyenv configuration, standard venv and pip:
+
+```sh
+pyenv install -s 3.12.13
+pyenv local 3.12.13
+python -m venv .venv
+.venv/bin/python -m pip install -e ".[dev]"
+.venv/bin/python -m pytest
+.venv/bin/ruff check src tests tools
+```
+
+Source commands are `.venv/bin/bibdesk-rag` and `.venv/bin/bibdesk-rag-mcp`. Register the latter with its absolute path in Codex. Do not change global pyenv settings. BibDeskParser's upstream build backend is named `uv_build`; the uv command/environment manager is not used.
+
+## Distribution, validation and design
+
+```sh
+.venv/bin/python -m build
+```
+
+This generates sdist and wheel in `dist/`. A published Formula needs actual fixed release URLs and verified SHA-256 hashes. This repository keeps a generation template; the installable Formula lives in the external tap. See [Homebrew distribution](packaging/homebrew/README.md#english) for local validation and publication procedures.
+
+- [Validation record](docs/validation.md#english) / [Homebrew validation](docs/homebrew-validation.md#english) / [MCP validation](docs/mcp-validation.md#english)
+- [Codex connection guide](docs/codex.md#english) / [CLI, configuration and extraction](docs/usage.md#english)
+- [Architecture and extensions](docs/architecture.md#english): local embeddings, hybrid search, OCR and figure/table analysis are not implemented.
+- [MIT License](LICENSE) / [Third-party licenses and dependencies](THIRD_PARTY_NOTICES.md#english)
