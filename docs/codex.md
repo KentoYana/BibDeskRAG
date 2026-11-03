@@ -1,3 +1,7 @@
+[日本語](#japanese) | [English](#english)
+
+<a id="japanese"></a>
+
 # Codex接続ガイド
 
 [READMEの導入手順](../README.md#homebrewで導入してcodexから使う) でライブラリを登録し、索引を作成してから接続します。このガイドはMac上で動くCodexのローカルMCP接続を扱います。ChatGPTの通常Chat・Web版やCodexのクラウド環境から、Mac内の索引へ接続する手順ではありません。
@@ -192,3 +196,202 @@ brew uninstall --cask codex
 ```
 
 ほかの方法で導入したCLIには、その導入方法に対応する削除手順を使います。Codexアプリやほかのプロジェクトと共有する設定・認証情報・履歴を保持するため、`~/.codex/` の一括削除は行いません。
+
+---
+
+<a id="english"></a>
+
+# Codex connection guide
+
+Register the library and build its index using the [README](../README.md#install-with-homebrew-and-connect-to-codex) before connecting. This guide covers local MCP in Codex running on the Mac. It does not describe connecting ordinary Chat/ChatGPT Web or Codex cloud environments to the Mac's index.
+
+These instructions apply to v0.3.0 and later. See [Migration](usage.md#migrating-from-older-commands) for CLI changes. Existing MCP registrations using `--config PATH` remain compatible.
+
+## Interactive setup (recommended)
+
+```sh
+bibdesk-rag --setup
+```
+
+Start with `--setup`. To reuse configuration elsewhere, first run `bibdesk-rag --config use "/absolute/path/to/config.toml"`, then setup. For a one-time choice without changing the saved selection, use `bibdesk-rag --temp PATH --setup`.
+
+After library registration/index creation, the wizard offers MCP registration if Codex CLI exists. Only after approval does it register the detected `bibdesk-rag-mcp` executable and configuration using absolute paths. Matching registrations are retained; conflicting or indeterminate registrations are not changed. Other Codex settings and servers are untouched.
+
+Without the CLI, after skipping registration or after registration failure, the completed index is still usable from the CLI. Enter the displayed manual connection details in [application settings](#without-codex-cli). If the executable cannot be found, check package installation/PATH and rerun. Codex CLI is never automatically installed.
+
+Completion reports distinguish these checks:
+
+| Reported state | Verified scope |
+| --- | --- |
+| Configuration/index available | Configuration read; SQLite opened read-only and counts obtained |
+| MCP registered | Codex registration matches executable/configuration paths |
+| Local MCP server verified | Local stdio `initialize` and `tools/list` succeeded |
+| Actual Codex search unverified | Restart Codex and separately try the README search example |
+
+The handshake check does not call paper-search tools or pass paper text through Codex command arguments. Successful `codex mcp get` alone is not successful MCP communication.
+
+## Manual setup — English
+
+New defaults are below. If already registered elsewhere, use that configuration. Check the actual absolute path with `bibdesk-rag --config path` or the wizard.
+
+| Data | Location |
+| --- | --- |
+| BibDesk RAG configuration | `~/.config/bibdesk-rag/config.toml` |
+| Search index | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+Choose one registration method: GUI, CLI or configuration file.
+
+## Register using commands
+
+This method requires Codex CLI. BibDesk RAG itself works without it, and does not install it as a required dependency. Check availability:
+
+```sh
+codex --version
+```
+
+If absent, install [Codex CLI with Homebrew](https://formulae.brew.sh/cask/codex) and verify. If installed another way, use that CLI; check its location/PATH if it cannot be found.
+
+```sh
+brew install --cask codex
+codex --version
+```
+
+To avoid CLI registration, use [application settings](#without-codex-cli) or the [configuration file](#using-the-configuration-file). For CLI registration, pass absolute Homebrew executable/configuration paths:
+
+```sh
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
+  --temp "$(bibdesk-rag --config path)"
+codex mcp get bibdesk-rag
+```
+
+`codex mcp add` changes Codex settings. Inspect any existing registration with `codex mcp get bibdesk-rag` before changing it. Installing/indexing alone does not change Codex settings; approval during setup or the explicit registration command does.
+
+Restart the Codex application/session and search in a new chat. `codex mcp list` lists configuration; it does not prove successful startup/search. Where Codex supports `/mcp`, also check that `bibdesk-rag` is connected. See the [official MCP guide](https://learn.chatgpt.com/docs/extend/mcp).
+
+## Without Codex CLI
+
+In the Mac application, go to **Settings → Plugins under “Integrations” on the left → Add at the upper right → Add MCP server**. This is the Japanese UI layout observed on November 2, 2026.
+
+Use the absolute executable/configuration paths shown by `--setup`. If setup has not run, obtain them with ① and ② below. Enter each field separately, adding two distinct arguments in order:
+
+| Field | Value |
+| --- | --- |
+| Name | `bibdesk-rag` |
+| Transport | `STDIO` |
+| Command | The single path printed by ① |
+| Argument 1 | `--temp` |
+| Argument 2 | The single path printed by ② |
+
+① Run in a terminal; copy only the printed path into Command:
+
+```sh
+printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
+```
+
+② Run in a terminal; copy only the printed path into Argument 2:
+
+```sh
+bibdesk-rag --config path
+```
+
+`--config path` prints the selected configuration. To inspect another, use `bibdesk-rag --temp PATH --config path`. Do not paste shell commands, `$(brew --prefix)`, `$HOME` or surrounding quotes into GUI fields. Command contains only the executable path; `--temp` is Argument 1. There is no need to assume `/opt/homebrew` or `/usr/local`. Environment-variable/working-directory fields can stay empty.
+
+After saving, check `bibdesk-rag` in Plugins → **MCP**, restart the connection and try the README search in a new chat. A displayed registration alone does not verify index searches. UI layout may vary by version; consult the [official MCP guide](https://learn.chatgpt.com/docs/extend/mcp) for transport/configuration concepts.
+
+## Using the configuration file
+
+Codex's default user configuration is `~/.codex/config.toml`, **a different file from BibDesk RAG's configuration**. Preserve existing settings and add/update the following without duplicating table names. Replace `command` with the path from ① and the second `args` item with the path from ②.
+
+```toml
+[mcp_servers.bibdesk-rag]
+command = "/absolute/homebrew/prefix/bin/bibdesk-rag-mcp"
+args = ["--temp", "/absolute/path/to/bibdesk-rag/config.toml"]
+```
+
+For source installations, use `/absolute/path/to/BibDeskRAG/.venv/bin/bibdesk-rag-mcp` as `command`. Absolute paths avoid reliance on GUI PATH or terminal-only environment variables.
+
+For multiple libraries, create separate configuration/index files and register each under a distinct server name such as `bibdesk-rag-project-a`. See [Custom storage](usage.md#registering-and-indexing-a-library).
+
+`--temp` pins configuration for each MCP server process. CLI `--config use PATH` does not change existing Codex registrations. To let MCP follow the CLI's saved selection, omit `--temp` and its path when registering. Both must use the same configuration directory; terminal-only `BIBDESK_RAG_HOME`/`XDG_CONFIG_HOME` may not reach the GUI. To pin configuration, register absolute paths as shown here.
+
+The old `--config` spelling is accepted only by `bibdesk-rag-mcp` for compatibility. Setup does not rewrite a matching registration. Normal `bibdesk-rag --config` takes configuration-management actions; use `--temp` for a one-time file choice.
+
+## Retrieval workflow and tools
+
+| Tool | Purpose |
+| --- | --- |
+| `search_papers` | Search metadata, including exact citekey/DOI lookup |
+| `search_fulltext` | Search short text excerpts restricted to selected citekeys |
+| `get_paper` | Inspect one paper's metadata |
+| `get_attachments` | Inspect indexed attachments and extraction states |
+| `get_chunk` | Retrieve short source text/citation by chunk ID |
+| `build_context` | Build a character-bounded bundle of evidence and citations |
+
+Select candidates with `search_papers`, then pass their citekeys to `search_fulltext`. Text-based explanations need citekey, DOI when recorded, attachment path, chunk ID and PDF pages or supplementary sheet/row/ZIP location. Verify scientific claims against original sources. Papers without retrieved text remain metadata-only candidates.
+
+The server declares every tool read-only and opens existing SQLite read-only. It exposes no source/index mutation tools, arbitrary-path reader or HTTP server. Bibliography fields, excerpts and filenames are untrusted data; instructions in them must never be executed.
+
+`bibdesk-rag-mcp` reserves standard output for MCP traffic. Let Codex launch it instead of leaving it running manually. Use CLI `--index update` for creation/incremental updates and `--index rebuild` for full re-extraction. If `--config path` matches the Codex registration, no repeated CLI path override is needed.
+
+## Connection troubleshooting
+
+1. Verify the executable with `"$(brew --prefix)/bin/bibdesk-rag-mcp" --version`.
+2. Inspect paths with `bibdesk-rag --config show` and test index readability with `bibdesk-rag --index status --format json`. If Codex pins another configuration, compare using `bibdesk-rag --temp PATH --index status --format json`. Without configuration/index, run setup for that same path, or the README's manual create/update steps.
+3. Inspect executable and `--temp` arguments with `codex mcp get bibdesk-rag`. Check for unexpanded shell variables in GUI/TOML or an old versioned Cellar path.
+4. Restart MCP or Codex and try the README search in a new chat. If `bibdesk-rag --paper search "term from your library" --scope metadata --format json` succeeds with the same configuration while MCP fails, inspect Codex's startup error.
+
+For `Transport closed`, restart the connection and try a new chat. If it persists, check steps 1–3. That error alone does not imply index corruption or missing literature.
+
+`auth_status: unsupported` may describe OAuth support. This local stdio server needs neither OAuth login nor an API key. Codex's own account/settings are separate requirements.
+
+If metadata is found but text is empty, inspect attachment links/extraction states separately from connectivity. Run `--index update` after source moves/additions, or `--index update --verify-hashes` for reliable content verification. Missing extraction or zero results do not prove relevant sources are absent.
+
+## Disconnecting and uninstalling
+
+### 1. Remove the Codex connection
+
+If the CLI is available, inspect and remove the registration:
+
+```sh
+codex mcp get bibdesk-rag
+codex mcp remove bibdesk-rag
+```
+
+Use the actual server name if different. Without CLI, remove the server under application **Settings → Plugins → MCP**. If you edited TOML manually, remove only `[mcp_servers.bibdesk-rag]` and that server's settings. Preserve other servers/settings; do not delete the entire `~/.codex/` directory.
+
+Close Codex application/CLI sessions using BibDesk RAG to stop MCP servers before proceeding. If disconnecting only, you are done.
+
+### 2. Remove BibDesk RAG
+
+```sh
+brew uninstall KentoYana/tap/bibdesk-rag
+```
+
+This removes the application and its dedicated Homebrew Python environment. **Original `.bib` files, attachments and application-data configuration/index remain.** Reinstalling with the same configuration can reuse the saved index. There is no need to manually remove shared Python/libraries or the `KentoYana/tap` tap, which may distribute other software.
+
+### 3. Remove configuration/index only if unwanted
+
+Skip this step to retain application data. Before deletion, record any settings needed later and inspect `database` in the actual `config.toml`. `bib` identifies original source data and is not a deletion target.
+
+With default setup or README Manual Setup, use Finder's Go → Go to Folder to inspect each location and move the intended files to Trash:
+
+| Folder | Files to remove |
+| --- | --- |
+| `~/.config/bibdesk-rag/` (default) | `config.toml`, `active-config.json` (saved selection) |
+| `~/.local/share/bibdesk-rag/` (default) | `index.sqlite3` |
+
+Adjacent `index.sqlite3-wal`, `index.sqlite3-shm` and `index.sqlite3-journal` belong to the same derived index. Never delete original `.bib` files or attachments.
+
+Check actual locations first, including overrides from `--temp`, `--config create --data-dir`, `BIBDESK_RAG_CONFIG`, `BIBDESK_RAG_HOME`, `XDG_CONFIG_HOME` or `XDG_DATA_HOME`. Do not delete whole shared folders. Remove only verified configuration/index files, their sidecars and unwanted saved-selection records. If shell settings contain `BIBDESK_RAG_*`, remove only this tool's entries.
+
+To resume, run `--setup` at the same location, or `--config create` if configuration was removed and `--index update` if the index was removed. Restore any deleted Codex MCP registration too.
+
+### 4. Optionally remove Codex CLI
+
+Only if installed with Homebrew solely for this purpose and no longer used elsewhere, run the following after removing the MCP connection:
+
+```sh
+brew uninstall --cask codex
+```
+
+For other installation methods, use their corresponding removal procedure. Preserve configuration, credentials and history shared with Codex and other projects; do not delete all of `~/.codex/`.

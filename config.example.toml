@@ -1,8 +1,12 @@
 # Default config: ~/.config/bibdesk-rag/config.toml
+# 既定の設定: ~/.config/bibdesk-rag/config.toml
 # After editing a custom copy: bibdesk-rag --config use /path/to/config.toml
+# コピーを編集した後に選択: bibdesk-rag --config use /path/to/config.toml
 # Relative paths are relative to this file; ~ expands to the current user home.
+# 相対パスはこのファイルが基準です。~ は現在の利用者のホームに展開します。
 bib = "/path/to/references.bib"
 # Use a different database path for each library.
+# ライブラリごとに異なるデータベースパスを使ってください。
 database = "~/.local/share/bibdesk-rag/index.sqlite3"
 
 [extraction]

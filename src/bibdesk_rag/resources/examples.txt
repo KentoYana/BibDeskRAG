@@ -1,44 +1,47 @@
-BibDesk RAG examples
+BibDesk RAG examples / 操作例
 
-Learn about the application:
+Learn about the application / アプリの案内を表示:
   bibdesk-rag -h
   bibdesk-rag -v
   bibdesk-rag -r
 
-Set up a library interactively:
+Set up a library interactively / 対話型でライブラリを設定:
   bibdesk-rag --setup
 
-Create a configuration without prompts, then index its library:
+Create a configuration without prompts, then index its library / 非対話で設定・索引を作成:
   bibdesk-rag --config create --bib "/path/to/library.bib"
   bibdesk-rag --index update
 
-Inspect and select configurations:
+Inspect and select configurations / 設定を確認・選択:
   bibdesk-rag --config show
   bibdesk-rag --config show --format json
   bibdesk-rag --config path
   bibdesk-rag --config use "/path/to/other/config.toml"
 
-Update or inspect the index:
+Update or inspect the index / 索引を更新・確認:
   bibdesk-rag --index update
   bibdesk-rag --index update --verify-hashes
   bibdesk-rag --index status --format json
   bibdesk-rag --index check
   bibdesk-rag --index rebuild
 
-Search papers and retrieve evidence:
+Search papers and retrieve evidence / 文献を検索して証拠を取得:
   bibdesk-rag --paper search "RecQ helicase"
   bibdesk-rag --paper search "Neurospora" --scope metadata --top 5
   bibdesk-rag --paper show Example2025 --format bibtex
   bibdesk-rag --paper attachments Example2025 --format json
   bibdesk-rag --paper context "RecQ helicase" --max-chars 5000
 
-Use another configuration for this invocation only:
+Use another configuration for this invocation only / 今回だけ別の設定を使用:
   bibdesk-rag --temp "/path/to/other/config.toml" --index update
 
-Output bundled resources (redirection is optional):
+Output bundled resources (redirection is optional) / 同梱資料を出力（リダイレクトは任意）:
   bibdesk-rag --output manual
   bibdesk-rag --output config-template > example.toml
   bibdesk-rag --output citation > bibdesk-rag.bib
 
 Replace example paths and citekeys with your own. Configuration creation never
 overwrites an existing file; bibliography files and attachments stay read-only.
+
+例のパス・citekeyは自分のものに置き換えてください。設定作成は既存ファイルを
+上書きせず、書誌ファイルと添付は読み取り専用のままです。

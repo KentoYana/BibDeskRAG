@@ -1,3 +1,7 @@
+[日本語](#japanese) | [English](#english)
+
+<a id="japanese"></a>
+
 # CLI・設定・抽出仕様
 
 初回導入とCodexへの登録は [README](../README.md) を参照してください。このページはv0.3.0以降の対象別オプション体系を説明します。v0.2.x以前から更新する場合は、[旧コマンドからの移行](#旧コマンドからの移行) を確認してください。
@@ -197,3 +201,205 @@ bibdesk-rag --index status
 - 索引は平文のローカルSQLiteです。アプリはファイルを0600で作成します。バックアップやOSのアクセス権は利用者側で管理します。
 - 生物学的表記の正規化は検索補助であり、異なる実験条件や変異体が同一であるとは推論しません。
 
+---
+
+<a id="english"></a>
+
+# CLI, configuration and extraction reference
+
+For initial installation and Codex registration, see the [README](../README.md#english). This page describes the operation-based options in v0.3.0 and later. When upgrading from v0.2.x or earlier, see [Migration](#migrating-from-older-commands).
+
+## Operations and guidance
+
+```sh
+bibdesk-rag
+bibdesk-rag -h
+bibdesk-rag -v
+bibdesk-rag -e
+bibdesk-rag -r
+```
+
+No arguments shows brief guidance; `-h/--help` shows every option. `-v/--version` prints the version and software citation, and `-e/--example` prints examples. `-r/--readme` displays the bundled manual in a terminal pager, or on standard output without a TTY/pager. These work without configuration, an index or network access.
+
+| Main operation | Arguments | Purpose |
+| --- | --- | --- |
+| `--setup` | None | Interactive initial setup |
+| `-c/--config` | `show`, `path`, `use PATH`, `create [PATH]` | Configuration management |
+| `-i/--index` | `update`, `rebuild`, `status`, `check` | Index management |
+| `-p/--paper` | `search QUERY`, `show KEY`, `attachments KEY`, `context QUERY` | Paper retrieval |
+
+Use one main operation per invocation. Unrelated options, conflicting operations and missing/extra arguments are rejected before processing. Quote queries and paths containing spaces.
+
+```sh
+bibdesk-rag --output manual
+bibdesk-rag --output config-template > example.toml
+bibdesk-rag --output citation > bibdesk-rag.bib
+```
+
+`-o/--output` prints bundled resources. `citation` is the software's BibTeX `@manual` entry attributed to Kento Yanagisawa. For a paper's BibTeX, use `--paper show KEY --format bibtex`. Output itself does not write files; shell redirection is the caller's choice.
+
+## Interactive setup
+
+```sh
+bibdesk-rag --setup
+```
+
+To keep using an existing configuration elsewhere, select it once:
+
+```sh
+bibdesk-rag --config use "/absolute/path/to/config.toml"
+bibdesk-rag --setup
+```
+
+Both standard input and standard error must be terminals. New defaults are `~/.config/bibdesk-rag/config.toml` for configuration and `~/.local/share/bibdesk-rag/index.sqlite3` for the index.
+
+1. Check the environment and paths; for a new configuration, enter the `.bib` path. `~`, relative paths, quotes and drag-and-drop shell escapes are supported. Input is never executed in a shell. Confirm paper/attachment counts before creating configuration.
+2. With existing configuration, choose to continue, inspect details or exit. Invalid configurations are not automatically repaired or forcibly overwritten.
+3. Setup offers an initial build if no index exists. Existing indexes default to reuse, with explicit incremental-update/rebuild choices. Progress, paper/attachment/chunk counts and extraction states are shown.
+4. If Codex CLI is available, MCP is registered only after approval. Matching registrations are not duplicated; conflicting ones are not replaced. Without the CLI, manual connection details are shown.
+5. Check configuration/SQLite readability, MCP initialization and tool discovery. Actual searches from Codex require a separate check.
+
+Ctrl+C exits with code 130; EOF exits with code 1. Setup reports completed/interrupted stages and retains configuration/index data. After ordinary setup saves the selection, resume with `--setup`. When using `--temp`, resume with the same `--temp PATH --setup`. Index writes are transactional.
+
+Without a TTY, setup does not read input; it prints manual operations to standard error and exits with code 1. For automation, use the following configuration/index operations.
+
+## Registering and indexing a library
+
+```sh
+bibdesk-rag --config create --bib "/absolute/path/to/references.bib"
+bibdesk-rag --index update
+bibdesk-rag --index status --format json
+bibdesk-rag --index check --format json
+```
+
+`--config create` creates a configuration and remembers it for future commands. It never overwrites existing configuration. `--index update` builds an absent index or updates an existing one incrementally.
+
+| Data | New-install default |
+| --- | --- |
+| Configuration | `~/.config/bibdesk-rag/config.toml` |
+| Search index | `~/.local/share/bibdesk-rag/index.sqlite3` |
+
+The `.bib` path is stored as an absolute path. Relative attachment paths resolve from the `.bib` parent directory. Keep configuration/index paths separate from original sources and the Homebrew installation. For a custom configuration:
+
+```sh
+bibdesk-rag --config create "/absolute/path/to/project-settings/config.toml" \
+  --bib "/absolute/path/to/project/references.bib" \
+  --data-dir "/absolute/path/to/project-data"
+bibdesk-rag --index update
+```
+
+An explicit destination `PATH` takes priority; otherwise use `BIBDESK_RAG_CONFIG`, then `config.toml` in the configuration directory. A saved custom selection does not change the default creation destination. `database` is stored as an absolute path. Use a separate configuration and database per library.
+
+## Inspecting and selecting configuration
+
+```sh
+bibdesk-rag --config show
+bibdesk-rag --config show --format json
+bibdesk-rag --config path
+bibdesk-rag --config use "/absolute/path/to/config.toml"
+```
+
+`show` displays the selected configuration, selection reason, resolved `bib`/`database` and all extraction options, including defaults for omitted settings. It opens neither the library nor the index and writes nothing. `path` prints only the absolute path, including the default creation destination before a configuration exists. `--format json` also returns the selection reason.
+
+`use PATH` validates existing configuration and saves its absolute path in `active-config.json`. It does not move or rewrite configuration, index or sources, or build an index. Ordinary `--setup` and `--config create` also save the selection. A missing saved configuration produces an error rather than silently switching libraries. Select again with `--config use PATH`.
+
+Selection priority: `--temp PATH`, `BIBDESK_RAG_CONFIG`, saved selection, then the configuration directory's `config.toml`. The former macOS location is not auto-detected. Configuration-directory priority: `BIBDESK_RAG_HOME`, `XDG_CONFIG_HOME/bibdesk-rag`, then `~/.config/bibdesk-rag`.
+
+```sh
+bibdesk-rag --temp "/absolute/path/to/other.toml" --config show
+bibdesk-rag --temp "/absolute/path/to/other.toml" --index update
+```
+
+`--temp` overrides configuration for one invocation without changing the saved selection. It cannot be combined with `--config use/create`, which save a selection. Configuration/index files created by `--temp PATH --setup`, and any approved Codex registration, remain; only selection is temporary.
+
+New index placement uses `--config create --data-dir`, then `BIBDESK_RAG_HOME`, then `XDG_DATA_HOME/bibdesk-rag`. Without these, default configurations use `~/.local/share/bibdesk-rag`; custom configurations use their parent directory. When placing multiple configurations together, give them different `--data-dir` locations. Existing `database` values are retained. Relative TOML paths resolve from the configuration file's parent.
+
+Extraction values are listed in [config.example.toml](../config.example.toml); edit TOML to change them. `BIBDESK_RAG_CONFIG` overrides saved selections. MCP registrations with explicit configuration paths remain pinned; CLI selections do not rewrite them.
+
+## Progress and result output
+
+Results default to `text`, including in files/pipes. Specify `--format json` for machine processing. `--format bibtex` is only valid for `--paper show`.
+
+For `--index update/rebuild`, progress goes to standard error and results to standard output. A bar appears when both streams are terminals and `TERM` is not `dumb`. It reaches 100% only after commit. Extraction attempts include unsupported/no-text files and do not equal successful extractions.
+
+| Option | Output |
+| --- | --- |
+| None | Text results; terminal indexing shows progress, a short summary and at most three issue examples |
+| `--format json` | Complete aggregate/issue report as JSON; no progress bar |
+| `--no-progress` | Disable the indexing progress bar |
+| `--verbose` | All indexing warnings/issues on standard error |
+
+`--verbose` and `--no-progress` apply to update/rebuild. `--format json --verbose` is supported; warnings do not contaminate JSON. Inspect states without re-extraction using `--index status` or `--paper attachments KEY`.
+
+## Searching and retrieving citations
+
+```sh
+bibdesk-rag --paper search "histone H3K4 UV damage" --top 10 --format json
+bibdesk-rag --paper search "RecQ helicase" --scope fulltext
+bibdesk-rag --paper search "Neurospora" --scope metadata
+bibdesk-rag --paper search "Example2025" --scope metadata
+bibdesk-rag --paper search "" --scope metadata --doi "https://doi.org/10.1234/example"
+bibdesk-rag --paper search "histone" --scope metadata --year 2025 --author Muller
+bibdesk-rag --paper show Example2025 --format bibtex
+bibdesk-rag --paper attachments Example2025 --format json
+bibdesk-rag --paper search "RecQ" --metadata-query "Neurospora" --top 10
+bibdesk-rag --paper search "UV" --scope fulltext --citekey Example2025 --citekey Other2024
+bibdesk-rag --paper context "UV-induced mutagenesis" --top 5 --max-chars 10000
+```
+
+Exact DOI/citekey matches take priority. Duplicate DOI entries are retained; FTS input is not executed as SQL or FTS syntax. There is no semantic search or synonym inference. Default `--scope all` selects up to 100 metadata candidates and searches their text; without metadata matches, it falls back to all indexed text. Metadata-only records can also be returned; inspect `source_type`.
+
+`--doi/--author/--year` apply only to metadata search. `--metadata-query` restricts text candidates for all-scope search/context and cannot be combined with `--citekey`. Full-text retrieval accepts repeated citekeys; exact metadata lookup accepts one. Inapplicable combinations fail.
+
+`--top` accepts 1..100 (search default 10, context default 5); `--per-paper` accepts 1..10 (default 2); context `--max-chars` accepts 256..100000 (default 10000). The character budget covers citation headers and text, excluding JSON structure. `unverified`, `truncated` and `budget_exhausted` describe gaps. Few or zero results do not prove relevant literature is absent.
+
+Citations include citekey, DOI, file path, chunk ID, and PDF page range or supplementary sheet/row/ZIP member. PDF pages count from 1 at the file's start; chunks never cross pages. CSV/TSV use record numbers with the header as row 1; XLSX uses worksheet row numbers. Verify scientific claims against original sources.
+
+## Incremental updates
+
+```sh
+bibdesk-rag --index update
+bibdesk-rag --index update --verify-hashes
+bibdesk-rag --index rebuild
+```
+
+Updates synchronize entries and attachment links, skipping attachment reads when size and nanosecond mtime match. Only possible changes are SHA-256 hashed; identical content reuses chunk IDs. `--verify-hashes` also checks stat-identical files. Extraction-setting changes and rebuilds force re-extraction. Citekey changes preserve internal IDs only when the DOI is unique in both old and new data.
+
+A normalized path shared by several papers is extracted once. Writes are transactional; fatal errors retain the previous index. Individual missing/unextractable files are recorded as errors, and stale text from disappeared sources is removed from search.
+
+## Migrating from older commands
+
+| Old syntax | New syntax |
+| --- | --- |
+| `setup` | `--setup` |
+| `init` | `--config create` |
+| `config show/path/use` | `--config show/path/use` |
+| `index` | `--index rebuild` |
+| `update` | `--index update` |
+| `status` / `doctor` | `--index status` / `--index check` |
+| `search` / `context` | `--paper search` / `--paper context` |
+| `get KEY` / `attachments KEY` | `--paper show KEY` / `--paper attachments KEY` |
+| `--config PATH` (one-time CLI override) | `--temp PATH` |
+| `--json` | `--format json` |
+
+Old syntax fails with migration guidance. The MCP server retains a hidden `--config PATH` compatibility argument for existing registrations; new registrations use `--temp PATH`. The six MCP tool names/schemas are unchanged.
+
+The old macOS configuration `~/Library/Application Support/bibdesk-rag/config.toml` is not auto-detected. Select it once to keep using it. No index move or rebuild is needed.
+
+```sh
+bibdesk-rag --config use "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+bibdesk-rag --index status
+```
+
+New defaults are `~/.config/bibdesk-rag/config.toml` and `~/.local/share/bibdesk-rag/index.sqlite3`. Existing configuration at the new default works directly. Since piped results now default to text too, add `--format json` to existing JSON-consuming scripts.
+
+## Extraction and search limitations
+
+- `--index check` checks SQLite, foreign keys, FTS consistency and attachment errors. It copies the database into memory for FTS validation; large databases need memory.
+- Missing/moved files: inspect BibDesk links first. Public `Entry.files` paths take priority; only missing paths trigger macOS bookmark/alias resolution without UI or mounting. Modern bookmark move tracking has synthetic-fixture coverage; authentic old alias formats remain unverified.
+- Image-only PDFs are recorded as `no_text`; no OCR is performed. Encrypted/damaged PDFs record their reason while processing continues.
+- ZIP member lists are recorded; supported members are parsed in memory. Traversal, symlinks, encryption and size/count/ratio excesses are rejected. Nested ZIP text is not parsed. XLSX also receives ZIP/XML safety checks.
+- `.xls`, images and other formats retain names/extensions without text extraction.
+- PDF reading order, columns and table reconstruction depend on pypdf. Extracted text does not replace original sources.
+- The index is plaintext local SQLite; files are created with mode 0600. Users manage backups and OS permissions.
+- Biological-identifier normalization assists matching; it does not imply different experimental conditions or mutants are equivalent.
