@@ -53,7 +53,7 @@ bibdesk-rag --setup
 1. 実行環境・保存先を確認し、新規の場合は `.bib` のパスを入力します。`~`、相対パス、引用符やドラッグ＆ドロップ時のシェルエスケープに対応します。入力をシェルで実行せず、文献数・添付数を確認してから設定を作ります。
 2. 既存設定では継続・詳細表示・終了を選びます。不正な設定を自動修復せず、強制上書きもしません。
 3. 索引がなければ初回作成を提案します。既存索引はそのまま使用するのが既定で、差分更新・全件再構築を明示的に選べます。進捗と文献数・添付数・チャンク数・抽出状態を表示します。
-4. Codex CLIがあれば、承認した場合だけMCPを登録します。同じ登録を重複追加せず、異なる登録を置き換えません。CLIがない場合は手動接続方法を表示します。
+4. Codex CLIがあれば、承認した場合だけMCPを引数なしで登録し、選択中の設定に追従させます。`--temp PATH --setup` の場合だけその設定を固定します。同じ登録を重複追加せず、異なる登録を置き換えません。CLIがない場合は手動接続方法を表示します。
 5. 設定とSQLiteの読み取り、MCPサーバーの初期化とツール一覧を確認します。Codexからの実検索は別途必要です。
 
 Ctrl+Cは終了コード130、EOFは終了コード1で中断します。中断した工程と完了した工程を表示し、設定・索引を保持します。通常のセットアップで選択を保存した後は `--setup` で再開できます。`--temp` を付けた場合は同じ `--temp PATH --setup` で再開します。索引書き込みはトランザクションを使います。
@@ -111,7 +111,7 @@ bibdesk-rag --temp "/absolute/path/to/other.toml" --index update
 
 新しい索引の保存先は、`--config create` の `--data-dir`、`BIBDESK_RAG_HOME`、`XDG_DATA_HOME/bibdesk-rag` の順です。それらがなければ既定設定には `~/.local/share/bibdesk-rag`、カスタム設定にはその親ディレクトリを使います。同じディレクトリに複数設定を置く場合は `--data-dir` も分けてください。既存設定の `database` は保持されます。設定ファイル内の相対パスは設定ファイルの親が基準です。
 
-[config.example.toml](../config.example.toml) に抽出値を記載しています。値を変える場合はTOMLを編集します。`BIBDESK_RAG_CONFIG` は保存した選択より優先されます。Codexに設定パス付きで登録したMCPもその設定に固定され、CLIの選択では登録を書き換えません。
+[config.example.toml](../config.example.toml) に抽出値を記載しています。値を変える場合はTOMLを編集します。`BIBDESK_RAG_CONFIG` は保存した選択より優先されます。通常の引数なしMCPは選択に追従します。設定パス付きで登録したMCPはその設定に固定され、CLIの選択では登録を書き換えません。
 
 ## 進捗と結果の表示
 
@@ -179,7 +179,7 @@ bibdesk-rag --index rebuild
 | `--config PATH`（CLIの一時指定） | `--temp PATH` |
 | `--json` | `--format json` |
 
-旧構文は移行先を案内するエラーになります。MCPサーバーには既存登録向けの非表示 `--config PATH` 互換引数があり、新規登録では `--temp PATH` を使います。MCPの6ツール名・スキーマは変わりません。
+旧構文は移行先を案内するエラーになります。MCPサーバーには既存登録向けの非表示 `--config PATH` 互換引数があり、通常の新規登録は引数なしで選択中の設定に追従し、設定を固定する場合だけ `--temp PATH` を使います。MCPの6ツール名・スキーマは変わりません。
 
 macOSの旧保存先 `~/Library/Application Support/bibdesk-rag/config.toml` は自動検出しません。その場所の設定を引き続き使う場合は、一度選択してください。索引の移動や再作成は不要です。
 
@@ -256,7 +256,7 @@ Both standard input and standard error must be terminals. New defaults are `~/.c
 1. Check the environment and paths; for a new configuration, enter the `.bib` path. `~`, relative paths, quotes and drag-and-drop shell escapes are supported. Input is never executed in a shell. Confirm paper/attachment counts before creating configuration.
 2. With existing configuration, choose to continue, inspect details or exit. Invalid configurations are not automatically repaired or forcibly overwritten.
 3. Setup offers an initial build if no index exists. Existing indexes default to reuse, with explicit incremental-update/rebuild choices. Progress, paper/attachment/chunk counts and extraction states are shown.
-4. If Codex CLI is available, MCP is registered only after approval. Matching registrations are not duplicated; conflicting ones are not replaced. Without the CLI, manual connection details are shown.
+4. If Codex CLI is available, MCP is registered only after approval, normally without arguments to follow the selected configuration. Only `--temp PATH --setup` pins that configuration. Matching registrations are not duplicated; conflicting ones are not replaced. Without the CLI, manual connection details are shown.
 5. Check configuration/SQLite readability, MCP initialization and tool discovery. Actual searches from Codex require a separate check.
 
 Ctrl+C exits with code 130; EOF exits with code 1. Setup reports completed/interrupted stages and retains configuration/index data. After ordinary setup saves the selection, resume with `--setup`. When using `--temp`, resume with the same `--temp PATH --setup`. Index writes are transactional.
@@ -314,7 +314,7 @@ bibdesk-rag --temp "/absolute/path/to/other.toml" --index update
 
 New index placement uses `--config create --data-dir`, then `BIBDESK_RAG_HOME`, then `XDG_DATA_HOME/bibdesk-rag`. Without these, default configurations use `~/.local/share/bibdesk-rag`; custom configurations use their parent directory. When placing multiple configurations together, give them different `--data-dir` locations. Existing `database` values are retained. Relative TOML paths resolve from the configuration file's parent.
 
-Extraction values are listed in [config.example.toml](../config.example.toml); edit TOML to change them. `BIBDESK_RAG_CONFIG` overrides saved selections. MCP registrations with explicit configuration paths remain pinned; CLI selections do not rewrite them.
+Extraction values are listed in [config.example.toml](../config.example.toml); edit TOML to change them. `BIBDESK_RAG_CONFIG` overrides saved selections. Normal MCP registrations without arguments follow the selection. Registrations with explicit configuration paths remain pinned; CLI selections do not rewrite them.
 
 ## Progress and result output
 
@@ -382,7 +382,7 @@ A normalized path shared by several papers is extracted once. Writes are transac
 | `--config PATH` (one-time CLI override) | `--temp PATH` |
 | `--json` | `--format json` |
 
-Old syntax fails with migration guidance. The MCP server retains a hidden `--config PATH` compatibility argument for existing registrations; new registrations use `--temp PATH`. The six MCP tool names/schemas are unchanged.
+Old syntax fails with migration guidance. The MCP server retains a hidden `--config PATH` compatibility argument for existing registrations; normal new registrations omit arguments to follow the selected configuration; use `--temp PATH` only to pin a configuration. The six MCP tool names/schemas are unchanged.
 
 The old macOS configuration `~/Library/Application Support/bibdesk-rag/config.toml` is not auto-detected. Select it once to keep using it. No index move or rebuild is needed.
 

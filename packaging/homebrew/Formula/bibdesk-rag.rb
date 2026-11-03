@@ -210,6 +210,8 @@ class BibdeskRag < Formula
 
       Codex CLI is optional: setup asks before registering the MCP server and shows
       manual app connection details if the CLI is unavailable or registration is skipped.
+      Normal registration uses no arguments and follows the selected configuration.
+      Only --temp PATH --setup pins a configuration in the registration.
       The MCP executable for manual connection is:
         #{opt_bin}/bibdesk-rag-mcp
       Restart Codex and ask it to use bibdesk-rag in a new chat.

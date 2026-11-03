@@ -94,6 +94,8 @@ then XDG_DATA_HOME/bibdesk-rag. Without those, default configurations use
 Existing configurations' database values are retained. Relative TOML paths are
 relative to that configuration file. Use a separate database for each library.
 
+Normal MCP registrations omit arguments and follow the CLI's selected configuration.
+Only --temp PATH --setup pins a temporary configuration during registration.
 Changing the CLI's saved selection does not rewrite existing Codex registrations
 which pin an explicit configuration path. MCP is retrieval-only and opens SQLite
 read-only; index maintenance is done through the CLI.
@@ -178,7 +180,8 @@ MIGRATION
 
 Old CLI subcommands are rejected with migration guidance. The MCP executable
 retains a hidden --config PATH compatibility alias for existing registrations;
-new registrations use --temp PATH. MCP tool names and schemas are unchanged.
+normal new registrations omit arguments and follow the selected configuration.
+Use --temp PATH only to pin a configuration. MCP tool names/schemas are unchanged.
 
 ===============================================================================
 日本語マニュアル / JAPANESE MANUAL
@@ -267,7 +270,8 @@ XDG_DATA_HOME/bibdesk-rag の順です。どれもなければ、既定設定に
 既存設定の database は保持します。TOMLの相対パスはその設定ファイルが基準です。
 ライブラリごとに別のDBを使います。
 
-CLIの保存済み選択を変えても、設定パスを固定したCodex登録は書き換えません。
+通常のMCP登録は引数なしでCLIの設定選択に追従します。--temp PATH --setup の場合だけ
+一時設定を固定して登録します。CLIの選択を変えても、設定パスを固定したCodex登録は書き換えません。
 MCPは検索・参照だけでSQLiteを読み取り専用で開き、索引保守はCLIで行います。
 
 出力 / OUTPUT
@@ -345,5 +349,6 @@ BibDeskの変更・原本移動後には索引を更新してください。
   --json            -> --format json
 
 旧CLI構文は移行先を案内して拒否します。MCP実行ファイルは既存登録用に非表示の
---config PATH 互換引数を保持し、新規登録は --temp PATH を使います。
+--config PATH 互換引数を保持します。通常の新規登録は引数なしで選択中の設定に追従し、
+設定を固定する場合だけ --temp PATH を使います。
 MCPツール名・スキーマは変わりません。

@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from bibdesk_rag.config import init_config, load_config
+from bibdesk_rag.config import activate_config, active_config_path, init_config, load_config
 from bibdesk_rag.database import connect
 from bibdesk_rag.indexer import index_library
 from bibdesk_rag.mcp_server import MAX_INPUT_CHARS, MCPServer, TOOLS, main, serve
@@ -91,6 +91,30 @@ def test_all_six_tools_preserve_sources_and_index(mcp_fixture):
     assert len(context["context"]) <= 1000
     assert context["results"][0]["row_start"] == 2
     assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in before} == before
+
+
+def test_unpinned_mcp_follows_selection_on_next_call_while_explicit_config_stays_pinned(
+    mcp_fixture, tmp_path,
+):
+    first, bib, supplement = mcp_fixture
+    other_bib = tmp_path / "other.bib"
+    other_bib.write_text("@article{Other2026,title={Other synthetic library},year={2026}}")
+    second = init_config(other_bib, tmp_path / "other/config.toml")
+    index_library(load_config(second))
+    paths = [first, second, load_config(first).database, load_config(second).database,
+             bib, supplement, other_bib]
+    before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+    following, pinned = MCPServer(), MCPServer(first)
+    initialize(following)
+    initialize(pinned)
+    for selected, expected in ((first, "Example2025"), (second, "Other2026")):
+        activate_config(selected)
+        selection_before = active_config_path().read_bytes()
+        papers = tool(following, "search_papers", query=expected)
+        assert [paper["citekey"] for paper in papers] == [expected]
+        assert tool(pinned, "get_paper", citekey="Example2025")["citekey"] == "Example2025"
+        assert active_config_path().read_bytes() == selection_before
+        assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths} == before
 
 
 @pytest.mark.parametrize(
@@ -223,8 +247,10 @@ def test_long_list_truncation_is_explicit(mcp_fixture):
     assert "groups" in result["truncated_fields"]
 
 
-@pytest.mark.parametrize("option", ["--temp", "--config"])
+@pytest.mark.parametrize("option", [None, "--temp", "--config"])
 def test_entrypoint_communicates_real_stdio(mcp_fixture, option):
+    if option is None:
+        activate_config(mcp_fixture[0])
     messages = [
         {
             "jsonrpc": "2.0",
@@ -245,7 +271,8 @@ def test_entrypoint_communicates_real_stdio(mcp_fixture, option):
         },
     ]
     result = subprocess.run(
-        [sys.executable, "-m", "bibdesk_rag.mcp_server", option, str(mcp_fixture[0])],
+        [sys.executable, "-m", "bibdesk_rag.mcp_server",
+         *([option, str(mcp_fixture[0])] if option is not None else [])],
         input="".join(json.dumps(message) + "\n" for message in messages),
         text=True,
         capture_output=True,

@@ -46,7 +46,7 @@ bibdesk-rag --setup
 
 ターミナルの案内に沿って `.bib` のパスを入力し、表示された文献数・添付数を確認します。Finderからドラッグしたパス、空白や日本語を含むパス、`~`、相対パスも使えます。確認後に設定を作成し、初回索引の作成を提案します。BibDeskアプリ自体が未インストールでも、有効なライブラリがあれば利用できます。
 
-Codex CLIが見つかれば、承認した場合だけMCPを登録します。同名の登録が一致する場合は再登録せず、異なる場合は変更しません。CLIがなくても索引は作成でき、アプリに手動登録するための実行ファイル・設定ファイルの絶対パスを表示します。Codex CLIを自動インストールすることはありません。
+Codex CLIが見つかれば、承認した場合だけMCPを引数なしで登録し、選択中の設定に追従させます。`--temp PATH --setup` の場合だけ設定を固定して登録します。同名の登録が一致する場合は再登録せず、異なる場合は変更しません。CLIがなくても索引は作成でき、アプリに手動登録するための実行ファイルの絶対パスと、通常は引数なしの手動接続方法を表示します。Codex CLIを自動インストールすることはありません。
 
 保存先の指定や環境変数がない場合、macOSでも設定と索引を次の場所に作ります。Homebrewのアップグレードや再インストールでこれらを削除しません。
 
@@ -123,29 +123,24 @@ bibdesk-rag --index status --format json
 
 Macアプリで **設定 → 左側の「連携」にある「プラグイン」→ 右上の「追加」→「MCP サーバーを追加」** と進みます。2026年11月2日に確認した日本語画面の配置です。
 
-次の表に沿って、1つずつ入力・選択します。引数は**2つに分けて**、1件目、2件目の順に追加してください。
+次の表に沿って、1つずつ入力・選択します。通常は引数を追加せず、CLIで選択中の設定に追従させます。
 
 | 入力欄 | 入力・選択する値 |
 | --- | --- |
 | 名前 / Name | `bibdesk-rag` |
 | 接続方式 / Transport | `STDIO` |
-| コマンド / Command | 下の①で表示された1行 |
-| 引数 / Arguments の1件目 | `--temp` |
-| 引数 / Arguments の2件目 | 下の②で表示された1行 |
+| コマンド / Command | 下のコマンドで表示された1行 |
+| 引数 / Arguments | 空欄（追加しない） |
 
-① ターミナルで次を実行し、**出力されたパスだけ**を「コマンド」欄へコピーします。
+ターミナルで次を実行し、**出力されたパスだけ**を「コマンド」欄へコピーします。
 
 ```sh
 printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
 ```
 
-② ターミナルで次を実行し、**出力されたパスだけ**を「引数」の2件目へコピーします。
+`bibdesk-rag --config path` で選択中の設定を確認できます。別の設定を使う場合は `bibdesk-rag --config use PATH` で選びます。引数なしのMCPもその選択に追従します。GUIにはコマンドそのものや `$HOME`、`$(brew --prefix)`、パスを囲む引用符を貼り付けません。環境変数や作業ディレクトリの欄も通常は空欄で構いません。
 
-```sh
-bibdesk-rag --config path
-```
-
-`--config path` は選択中の設定パスを表示します。別の設定なら、先に `--config use PATH` で選んでください。GUIにはコマンドそのものや `$HOME`、`$(brew --prefix)`、パスを囲む引用符を貼り付けません。「コマンド」欄には実行ファイルのパスだけを入れ、`--temp` を混ぜないでください。環境変数や作業ディレクトリの欄がある場合は空欄のままで構いません。
+既存登録に `--config PATH` や `--temp PATH` があれば、選択への追従には引数を2つとも削除します。特定の設定へ固定したい場合だけ、`--temp` と設定ファイルの絶対パスを2つの引数として指定します。[設定の固定と環境変数](docs/codex.md#設定ファイルを使う方法)
 
 保存後、「プラグイン」画面の **MCP** タブで `bibdesk-rag` の登録を確認します。接続を再起動し、[Codexで検索する](#2-codexで検索する) へ進みます。[詳しい接続ガイド](docs/codex.md#codex-cliがない場合)
 
@@ -167,8 +162,7 @@ codex --version
 CLIが使えることを確認できたら、次を実行します。
 
 ```sh
-codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --temp "$(bibdesk-rag --config path)"
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
@@ -192,7 +186,7 @@ bibdesk-rag --config show --format json
 bibdesk-rag --config path
 ```
 
-一度だけ別の設定を使う場合は `bibdesk-rag --temp "/absolute/path/to/config.toml" --index update` と指定します。`--temp --setup` でも保存済みの選択は変更しません。`--config use/create` とは併用できません。今後も使う設定には `--config use PATH` を使います。CodexのMCPを設定パス付きで登録している場合は、その登録先を使い続けます。`--config use` はCodexの登録を変更しません。[設定の選択と優先順位](docs/usage.md#設定の確認と選択)
+一度だけ別の設定を使う場合は `bibdesk-rag --temp "/absolute/path/to/config.toml" --index update` と指定します。`--temp --setup` でも保存済みの選択は変更しません。`--config use/create` とは併用できません。今後も使う設定には `--config use PATH` を使います。通常の引数なしMCP登録も選択に追従します。既存のMCPを設定パス付きで登録している場合は、その登録先を使い続けます。`--config use` はCodexの登録を変更しません。[設定の選択と優先順位](docs/usage.md#設定の確認と選択)
 
 ファイルのサイズと更新日時だけでは変更を判断できない場合は `--index update --verify-hashes` を使います。`--index rebuild` は索引全体を作り直す操作です。どちらもBibDeskの原本は変更しません。
 
@@ -247,7 +241,7 @@ brew uninstall KentoYana/tap/bibdesk-rag
 | `codex: command not found` | 既存CLIの導入先とPATHを確認します。未導入なら `brew install --cask codex` で導入するか、[アプリから登録](docs/codex.md#codex-cliがない場合)します。 |
 | `config.toml` が見つからない | `--config path` で選択先を確認します。既存設定を選び直すには `--config use PATH`、初回作成には `--setup` または `--config create` を使います。CLI・Codexが同じ設定を使うことも確認します。 |
 | `unable to open database file` | 同じ設定を指定して `--index update` が完了したか、索引の保存先にアクセスできるかを確認します。 |
-| Codexに登録済みだがツールを使えない | 新しいセッションで接続し、実行ファイルと設定ファイルの絶対パスを確認します。詳細は [接続の切り分け](docs/codex.md#接続の切り分け)。 |
+| Codexに登録済みだがツールを使えない | 新しいセッションで接続し、実行ファイルと選択中の設定を確認します。詳細は [接続の切り分け](docs/codex.md#接続の切り分け)。 |
 | 文献は見つかるが本文が返らない | `bibdesk-rag --paper attachments CITEKEY --format json` で添付リンク・抽出状態を確認します。索引全体の状態は `--paper attachments CITEKEY` を `--index status` に置き換えて確認できます。 |
 
 DBの整合性は `bibdesk-rag --index check --format json` で検査できます。`--config show` で選択先を確認でき、`--paper attachments`・`--index status`・`--index check` もその設定を使います。大きなDBでは検査用のメモリが必要です。問い合わせや不具合報告には、バージョン、実行コマンド、エラー文を添えてください。パス・書誌情報・本文などの私的な情報は必要に応じて伏せてください。
@@ -330,7 +324,7 @@ Start interactive setup with `--setup`. Existing configuration and indexes remai
 
 Follow the terminal prompts to enter your `.bib` path and check the displayed paper and attachment counts. Finder-dragged paths, spaces, Japanese characters, `~` and relative paths are accepted. After confirmation, setup creates the configuration and offers to build the initial index. The BibDesk application itself need not be installed if a valid library is available.
 
-If Codex CLI is found, setup registers MCP only after approval. It leaves matching registrations alone and does not change conflicting registrations. Without the CLI, indexing still works and setup displays absolute executable and configuration paths for manual registration. It never installs Codex CLI automatically.
+If Codex CLI is found, setup registers MCP only after approval, without arguments to follow the selected configuration. Only `--temp PATH --setup` pins a configuration in the registration. It leaves matching registrations alone and does not change conflicting registrations. Without the CLI, indexing still works and setup displays the absolute executable path and manual registration details, normally without arguments. It never installs Codex CLI automatically.
 
 Without custom paths or environment variables, configuration and index use these locations, including on macOS. Homebrew upgrades and reinstalls do not delete them.
 
@@ -408,29 +402,24 @@ Choose either application settings or CLI registration.
 
 In the Mac application, go to **Settings → Plugins under “Integrations” on the left → Add at the upper right → Add MCP server**. This describes the Japanese UI observed on November 2, 2026.
 
-Enter/select each field below. Add **two separate arguments**, in the stated order.
+Enter/select each field below. Normally leave arguments empty so MCP follows the configuration selected by the CLI.
 
 | Field | Value |
 | --- | --- |
 | Name | `bibdesk-rag` |
 | Transport | `STDIO` |
-| Command | The single path printed by step ① below |
-| Argument 1 | `--temp` |
-| Argument 2 | The single path printed by step ② below |
+| Command | The single path printed below |
+| Arguments | Leave empty |
 
-① Run this in a terminal and copy **only the printed path** into Command:
+Run this in a terminal and copy **only the printed path** into Command:
 
 ```sh
 printf '%s\n' "$(brew --prefix)/bin/bibdesk-rag-mcp"
 ```
 
-② Run this and copy **only the printed path** into Argument 2:
+`bibdesk-rag --config path` shows the selected configuration. Choose another with `bibdesk-rag --config use PATH`; MCP without arguments follows that selection too. Do not paste shell commands, `$HOME`, `$(brew --prefix)` or surrounding quotes into GUI fields. Environment-variable and working-directory fields can normally stay empty.
 
-```sh
-bibdesk-rag --config path
-```
-
-`--config path` shows the selected configuration path. Select a different configuration first with `--config use PATH` if needed. Do not paste shell commands, `$HOME`, `$(brew --prefix)` or surrounding quotes into GUI fields. Command must contain only the executable path; put `--temp` in its own argument. Environment-variable and working-directory fields can stay empty.
+For an existing registration with `--config PATH` or `--temp PATH`, remove both arguments to follow the selection. Only when pinning a particular configuration, supply `--temp` and its absolute path as two arguments. See [Pinned configurations and environment variables](docs/codex.md#using-the-configuration-file).
 
 After saving, check `bibdesk-rag` in the Plugins **MCP** tab, restart the connection and proceed to [Search from Codex](#2-search-from-codex). See the [detailed connection guide](docs/codex.md#without-codex-cli).
 
@@ -452,8 +441,7 @@ codex --version
 Then register:
 
 ```sh
-codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp" \
-  --temp "$(bibdesk-rag --config path)"
+codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
@@ -477,7 +465,7 @@ bibdesk-rag --config show --format json
 bibdesk-rag --config path
 ```
 
-For a one-time override, use `bibdesk-rag --temp "/absolute/path/to/config.toml" --index update`. `--temp --setup` also leaves the saved selection unchanged. `--temp` cannot be combined with `--config use/create`. Use `--config use PATH` for a persistent selection. MCP registrations with explicit paths keep using those paths; `--config use` does not change Codex registrations. See [Configuration priority](docs/usage.md#inspecting-and-selecting-configuration).
+For a one-time override, use `bibdesk-rag --temp "/absolute/path/to/config.toml" --index update`. `--temp --setup` also leaves the saved selection unchanged. `--temp` cannot be combined with `--config use/create`. Use `--config use PATH` for a persistent selection. Normal MCP registrations without arguments follow the selection too. Existing MCP registrations with explicit paths keep using those paths; `--config use` does not change Codex registrations. See [Configuration priority](docs/usage.md#inspecting-and-selecting-configuration).
 
 Use `--index update --verify-hashes` when size and modification time alone may miss changes. `--index rebuild` rebuilds the entire index. Both preserve the original BibDesk sources.
 
@@ -532,7 +520,7 @@ For filters, custom paths, multiple libraries and extraction limits, see the [CL
 | `codex: command not found` | Check the existing CLI installation and PATH. Install with `brew install --cask codex` if needed, or [register in the application](docs/codex.md#without-codex-cli). |
 | Missing `config.toml` | Check `--config path`. Use `--config use PATH` to select an existing configuration, or `--setup` / `--config create` for a new one. Ensure CLI and Codex use the same configuration. |
 | `unable to open database file` | Check that `--index update` completed for the same configuration and that the index location is accessible. |
-| Registered in Codex but tools unavailable | Reconnect in a new session; check absolute executable/configuration paths. See [Connection troubleshooting](docs/codex.md#connection-troubleshooting). |
+| Registered in Codex but tools unavailable | Reconnect in a new session; check the absolute executable path and selected configuration. See [Connection troubleshooting](docs/codex.md#connection-troubleshooting). |
 | Metadata found but no full text | Check links and extraction states with `bibdesk-rag --paper attachments CITEKEY --format json`. Replace `--paper attachments CITEKEY` with `--index status` for overall index status. |
 
 Check database integrity with `bibdesk-rag --index check --format json`. Inspect the selected configuration with `--config show`; attachments, status and check use that same selection. Large databases require memory for checks. Include the version, command and error text in support requests, redacting private paths, metadata and excerpts as needed.

@@ -4,6 +4,15 @@
 
 # Changelog
 
+## [0.3.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.1) — 2026-11-03
+
+- Register MCP without arguments during ordinary setup so it follows the selected
+  configuration, including later `--config use PATH` changes. Keep explicit
+  configuration arguments for `--temp PATH --setup` only.
+- Align manual registration instructions and bundled documentation in Japanese
+  and English. Treat existing pinned registrations as different from following
+  the selection; retain them and show manual migration guidance.
+
 ## [0.3.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) — 2026-11-03
 
 - Organize CLI operations under `--setup`, `-c/--config`, `-i/--index`, and
@@ -73,6 +82,11 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.3.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.1) — 2026-11-03（日本語）
+
+- 通常のセットアップではMCPを引数なしで登録し、後からの `--config use PATH` を含め選択中の設定に追従させます。`--temp PATH --setup` の場合だけ設定を固定する引数を保持します。
+- 日英の手動登録手順・同梱文書も統一。既存のパス固定登録は選択追従と区別し、変更せずに手動移行を案内します。
 
 ## [0.3.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) — 2026-11-03（日本語）
 
