@@ -20,7 +20,10 @@ from typing import TextIO
 
 from . import __version__
 from .bibdesk import read_library
-from .config import Config, default_config_path, default_data_dir, init_config, load_config
+from .config import (
+    Config, activate_config, default_config_path, default_data_dir, init_config, load_config,
+)
+from .config import check_output_locations as check_config_output_locations
 from .database import connect, status
 from .indexer import index_library
 from .progress import IndexDiagnostics, IndexProgressBar, single_line
@@ -101,7 +104,8 @@ def read_index_status(config: Config) -> dict:
     if not result["settings"].get("last_indexed"):
         raise IncompleteIndex("Index has no completed build; choose update to resume")
     if result["settings"].get("bib_path") != str(config.bib):
-        raise SetupProblem("Index library identity is missing; inspect it with doctor before retrying.")
+        raise SetupProblem("Index library identity is missing; inspect it with --index check "
+                           "before retrying.")
     return result
 
 
@@ -115,16 +119,12 @@ class IncompleteIndex(SetupProblem):
 
 def check_output_locations(config_path: Path, database: Path) -> None:
     """Keep setup output outside the running Python installation and brew prefix."""
-    installations = {Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve()}
-    for prefix in tuple(installations):
-        for parent in (prefix, *prefix.parents):
-            if parent.name == "Cellar":
-                installations.add(parent.parent)
-    if any(path.resolve().is_relative_to(prefix)
-           for path in (config_path, database) for prefix in installations):
+    try:
+        check_config_output_locations(config_path, database)
+    except ValueError as exc:
         raise SetupProblem("Configuration/index paths are inside a Python or Homebrew installation. "
-                           "Choose a separate application-data path with --config or the "
-                           "BIBDESK_RAG_HOME environment variable.")
+                           "Choose a separate application-data path with --temp or the "
+                           "BIBDESK_RAG_HOME environment variable.") from exc
 
 
 def read_setup_config(path: Path) -> Config:
@@ -151,11 +151,17 @@ def show_counts(terminal: Terminal, result: dict) -> None:
 
 
 def manual_commands(terminal: Terminal, config_path: Path) -> None:
-    base = ["bibdesk-rag", "--config", str(config_path)]
+    base = ["bibdesk-rag", "--temp", str(config_path)]
     terminal.say("Manual CLI steps (replace /path/to/Library.bib with your library):")
-    for arguments in (("init", "--bib", "/path/to/Library.bib"), ("index",), ("status",), ("doctor",)):
-        terminal.say("  " + display(shlex.join([*base, *arguments])))
-    terminal.say("For an existing configuration skip init; use update for incremental indexing.")
+    terminal.say("  " + display(shlex.join([
+        "bibdesk-rag", "--config", "create", str(config_path), "--bib", "/path/to/Library.bib",
+    ])))
+    for action in ("update", "status", "check"):
+        terminal.say("  " + display(shlex.join([*base, "--index", action])))
+    terminal.say("Creating a configuration also saves its selection. For an existing configuration "
+                 "skip create; --index update performs incremental indexing.")
+    terminal.say("To remember this configuration for future commands:")
+    terminal.say("  " + display(shlex.join(["bibdesk-rag", "--config", "use", str(config_path)])))
 
 
 def manual_connection(terminal: Terminal, mcp: Path | None, config_path: Path) -> None:
@@ -167,12 +173,12 @@ def manual_connection(terminal: Terminal, mcp: Path | None, config_path: Path) -
     else:
         terminal.say("  Command: " + display(mcp))
     terminal.say("  Arguments (two separate values): " + json.dumps(
-        ["--config", str(config_path)], ensure_ascii=False
+        ["--temp", str(config_path)], ensure_ascii=False
     ))
     if mcp is not None:
         terminal.say("With Codex CLI, after checking any existing bibdesk-rag registration:")
         terminal.say("  " + display(shlex.join([
-            "codex", "mcp", "add", "bibdesk-rag", "--", str(mcp), "--config", str(config_path)
+            "codex", "mcp", "add", "bibdesk-rag", "--", str(mcp), "--temp", str(config_path)
         ])))
 
 
@@ -230,14 +236,14 @@ def build_index(terminal: Terminal, config: Config, state: SetupState) -> None:
     if config.database.exists():
         choice = terminal.choose(
             "Existing index found.\n[1] Use existing index\n"
-            "[2] Incrementally update (update)\n[3] Rebuild all (index)"
+            "[2] Incrementally update (--index update)\n[3] Rebuild all (--index rebuild)"
         )
         if choice == "1":
             result = read_index_status(config)
             state.index_ready = True
             state.completed.append("Existing search index retained")
             show_counts(terminal, result)
-            terminal.say("Indexed text may be stale. Use update --verify-hashes if needed.")
+            terminal.say("Indexed text may be stale. Use --index update --verify-hashes if needed.")
             return
         # Even an explicit update must not repurpose a different library's index.
         if config.database.stat().st_size:
@@ -248,7 +254,7 @@ def build_index(terminal: Terminal, config: Config, state: SetupState) -> None:
         rebuild = choice == "3"
     else:
         if not terminal.yes("Build the initial search index?"):
-            terminal.say("Search index skipped; run setup again or index when ready.")
+            terminal.say("Search index skipped; run --setup again or --index update when ready.")
             return
         rebuild = True
     terminal.say("Rebuilding search index..." if rebuild else "Updating search index...")
@@ -311,16 +317,16 @@ def failure_reason(exc: Exception) -> str:
     if isinstance(exc, FileNotFoundError):
         return "A required file is missing; check the configured library and database paths."
     if isinstance(exc, sqlite3.Error):
-        return "Cannot read or update the SQLite index; inspect it with doctor using the same --config."
+        return "Cannot read or update the SQLite index; use --index check with the same --temp."
     if isinstance(exc, ValueError):
         # Config validation exceptions contain option names/paths but no source text.
         return "Invalid configuration, library, or index. Check bib/database paths, source/output " \
-               "collisions, TOML keys and extraction limits; run doctor with the same --config."
+               "collisions, TOML keys and extraction limits; run --index check with the same --temp."
     return f"Operation failed ({type(exc).__name__}); check file access and retry setup."
 
 
-def run_setup(config_path: Path | None = None, *, stdin: TextIO | None = None,
-              stderr: TextIO | None = None) -> int:
+def run_setup(config_path: Path | None = None, *, remember: bool = True,
+              stdin: TextIO | None = None, stderr: TextIO | None = None) -> int:
     terminal = Terminal(stdin if stdin is not None else sys.stdin,
                         stderr if stderr is not None else sys.stderr)
     state = SetupState()
@@ -354,6 +360,22 @@ def run_setup(config_path: Path | None = None, *, stdin: TextIO | None = None,
             terminal.say("No existing configuration found.")
             config = select_library(terminal, path, state)
         state.completed.append("Library registered")
+        if remember:
+            with private_diagnostics(terminal):
+                activate_config(path)
+            state.completed.append("Configuration selected for future commands")
+            terminal.say("Configuration selection saved. Next time, use bibdesk-rag --index update.")
+            if default_config_path() != path.resolve():
+                terminal.say("BIBDESK_RAG_CONFIG currently overrides this selection; unset it "
+                             "to use the saved configuration.")
+        else:
+            state.completed.append("Temporary configuration used for this setup only")
+            terminal.say("Temporary configuration selection; saved selection unchanged.")
+            terminal.say("Configuration and index work is retained. To select this configuration "
+                         "for future commands:")
+            terminal.say("  " + display(shlex.join([
+                "bibdesk-rag", "--config", "use", str(path),
+            ])))
         state.stage = "[2/5] Build search index"
         terminal.say("\n" + state.stage)
         build_index(terminal, config, state)
@@ -393,7 +415,8 @@ def run_setup(config_path: Path | None = None, *, stdin: TextIO | None = None,
             terminal.say('Next step: after connecting, restart Codex and ask:\n'
                          '"Use bibdesk-rag to find papers about RecQ."')
         else:
-            terminal.say("Next step: run setup again to build the search index.")
+            resume = ["bibdesk-rag", *(["--temp", str(path)] if not remember else []), "--setup"]
+            terminal.say("Next step: build the search index with " + display(shlex.join(resume)))
         return 0
     except (KeyboardInterrupt, EOFError) as exc:
         terminal.say(f"\nSetup interrupted at {state.stage} "
@@ -405,7 +428,11 @@ def run_setup(config_path: Path | None = None, *, stdin: TextIO | None = None,
                      "Review its paths and options manually before retrying.")
         code = 1
     terminal.say("Completed: " + ("; ".join(state.completed) or "none"))
-    terminal.say("Completed configuration/index work is retained; rerun setup to resume.")
+    terminal.say("Completed configuration/index work is retained; rerun --setup to resume.")
     if path is not None:
         terminal.say("Configuration: " + display(path))
+        if not remember:
+            terminal.say("Resume with: " + display(shlex.join([
+                "bibdesk-rag", "--temp", str(path), "--setup",
+            ])))
     return code

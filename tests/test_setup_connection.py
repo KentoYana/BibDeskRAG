@@ -16,11 +16,11 @@ def completed(value=None, returncode=0, *, text=None):
     return subprocess.CompletedProcess([], returncode, json.dumps(value) if text is None else text, "")
 
 
-def registration(mcp, config):
+def registration(mcp, config, option="--temp"):
     return {
         "name": "bibdesk-rag", "enabled": True, "disabled_reason": None,
         "transport": {
-            "type": "stdio", "command": str(mcp), "args": ["--config", str(config)],
+            "type": "stdio", "command": str(mcp), "args": [option, str(config)],
             "env": None, "env_vars": [], "cwd": None,
         },
         "enabled_tools": None, "disabled_tools": None,
@@ -53,9 +53,10 @@ def paths(tmp_path):
     return codex, mcp, config
 
 
-def test_registration_match_without_add(paths):
+@pytest.mark.parametrize("option", ["--temp", "--config"])
+def test_registration_match_without_add(paths, option):
     codex, mcp, config = paths
-    run = runner(completed(registration(mcp, config)))
+    run = runner(completed(registration(mcp, config, option)))
     assert connection.register(codex, mcp, config, run=run)
     assert run.calls[0][0] == [str(codex), "mcp", "get", "bibdesk-rag", "--json"]
     assert len(run.calls) == 1
@@ -69,6 +70,8 @@ def test_registration_match_without_add(paths):
     lambda item: item["transport"].update(command="relative-mcp"),
     lambda item: item["transport"].update(command="/another/mcp"),
     lambda item: item["transport"].update(args=[]),
+    lambda item: item["transport"].update(args=["--temp", "/another/config.toml"]),
+    lambda item: item["transport"].update(args=item["transport"]["args"] * 2),
     lambda item: item["transport"].update(env={"BIBDESK_RAG_HOME": "/another"}),
     lambda item: item["transport"].update(env_vars=["PYTHONPATH"]),
     lambda item: item["transport"].update(cwd="/another"),
@@ -110,7 +113,7 @@ def test_missing_requires_successful_list_and_add_preserves_literal_arguments(pa
     assert connection.register(codex, mcp, config, run=run)
     assert [call[0][2] for call in run.calls] == ["get", "list", "add", "get"]
     assert run.calls[2][0] == [
-        str(codex), "mcp", "add", "bibdesk-rag", "--", str(mcp), "--config", str(config),
+        str(codex), "mcp", "add", "bibdesk-rag", "--", str(mcp), "--temp", str(config),
     ]
     assert run.calls[2][1]["input"] is None
     assert not (tmp_path / "INJECTED").exists()
@@ -179,7 +182,7 @@ def test_mcp_probe_sends_only_initialization_and_tools_listing(paths):
     _, mcp, config = paths
 
     def run(argv, **kwargs):
-        assert argv == [str(mcp), "--config", str(config)]
+        assert argv == [str(mcp), "--temp", str(config)]
         assert kwargs["shell"] is False
         messages = [json.loads(line) for line in kwargs["input"].splitlines()]
         assert [item["method"] for item in messages] == [

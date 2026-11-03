@@ -1,125 +1,194 @@
 # CLI・設定・抽出仕様
 
-初回導入とCodexへの登録は [README](../README.md) を参照してください。以下の手動コマンド例はREADMEのManual Setupと同じ保存先を明示します。対話型セットアップの既定保存先とは異なります。独自の設定を使う場合は、各例の `bibdesk_rag_config` をその設定ファイルの絶対パスに置き換えてください。
+初回導入とCodexへの登録は [README](../README.md) を参照してください。このページはv0.3.0以降の対象別オプション体系を説明します。v0.2.x以前から更新する場合は、[旧コマンドからの移行](#旧コマンドからの移行) を確認してください。
+
+## 操作体系と案内
+
+```sh
+bibdesk-rag
+bibdesk-rag -h
+bibdesk-rag -v
+bibdesk-rag -e
+bibdesk-rag -r
+```
+
+引数なしでは主な操作と案内だけの短縮ヘルプ、`-h/--help` ではすべてのオプションを含む詳細ヘルプを表示します。`-v/--version` は版番号とソフトウェア引用情報、`-e/--example` は操作例を表示します。`-r/--readme` は同梱マニュアルを端末のページャーで表示し、非TTYまたはページャーがない場合は標準出力へ出します。設定・索引がなくても利用でき、ネットワークへ接続しません。
+
+| 主操作 | 引数 | 用途 |
+| --- | --- | --- |
+| `--setup` | なし | 対話型初期設定 |
+| `-c/--config` | `show`、`path`、`use PATH`、`create [PATH]` | 設定管理 |
+| `-i/--index` | `update`、`rebuild`、`status`、`check` | 索引管理 |
+| `-p/--paper` | `search QUERY`、`show KEY`、`attachments KEY`、`context QUERY` | 文献情報の取得 |
+
+主操作は1回につき1つです。操作に不要なオプション、操作の併用、引数の過不足は処理を開始する前にエラーにします。検索語やパスに空白を含む場合は引用符で囲みます。
+
+```sh
+bibdesk-rag --output manual
+bibdesk-rag --output config-template > example.toml
+bibdesk-rag --output citation > bibdesk-rag.bib
+```
+
+`-o/--output` は同梱資料の出力用です。`citation` は著者をKento Yanagisawa、文献タイプを `@manual` としたBibDeskRAG自体のBibTeX引用情報です。文献のBibTeXは `--paper show KEY --format bibtex` で取得します。ファイルの作成は利用者が指定するシェルのリダイレクトによるもので、出力操作自体はファイルを書きません。
 
 ## 対話型セットアップ
 
 ```sh
-bibdesk-rag setup
-bibdesk-rag --config "/absolute/path/to/config.toml" setup
+bibdesk-rag --setup
 ```
 
-`setup` はv0.2.0以降で利用できます。標準入力・標準エラー出力が両方とも端末の場合に動作します。`--config` や保存先の環境変数がないmacOSでは、設定・索引を `~/Library/Application Support/bibdesk-rag/` に作成します。実行時に表示する保存先を確認してください。
+別の場所にある既存設定を継続して使う場合は、一度選択します。
 
-1. 実行環境・バージョン・保存先・実行ファイルを確認し、新規の場合は `.bib` のパスを入力します。`~`、相対パス、引用符やドラッグ＆ドロップ時のシェルエスケープに対応します。入力をシェルで実行することはありません。文献数・添付数を確認してから `init` と同じ処理で設定を作ります。
-2. 既存設定があれば、継続・詳細表示・終了を選びます。不正な設定は自動修復せず、手作業で直すための案内を表示します。ライブラリ切り替え・強制上書きは行いません。
-3. 索引がなければ初回作成を提案します。既存索引はそのまま使用するのが既定で、差分更新・全件再構築を明示的に選べます。処理の進捗と、文献数・添付数・本文チャンク数・抽出状態を表示します。一部の添付に問題があっても、索引作成が完了すれば継続します。
-4. Codex CLIがあれば、同名登録を確認してから任意で登録します。同じ登録を重複追加せず、異なる登録を置き換えません。CLIがない場合、検出した絶対パスを使った手動接続方法を表示します。
-5. 設定とSQLiteの読み取り、MCPサーバーの初期化とツール一覧を確認します。Codexからの実検索は別途必要です。MCP登録・疎通の失敗は、作成済み索引の失敗とは区別します。
+```sh
+bibdesk-rag --config use "/absolute/path/to/config.toml"
+bibdesk-rag --setup
+```
 
-Ctrl+Cは終了コード130で、EOFもtracebackなしで中断します。中断した工程と完了した工程を表示し、既存設定や作成済み設定を削除しません。索引作成に失敗した場合も、同じ `--config` で `setup` を再実行できます。索引への書き込みは既存のトランザクション処理を使います。
+標準入力・標準エラー出力が両方とも端末の場合に動作します。新規の既定保存先は設定が `~/.config/bibdesk-rag/config.toml`、索引が `~/.local/share/bibdesk-rag/index.sqlite3` です。
 
-非TTYでは入力を読まず、既存CLIの手順を標準エラー出力に表示して終了コード1で終了します。`setup --help` は非TTYでも終了コード0で利用できます。スクリプトでは、以下の `init`・`index`・`update`・`status`・`doctor` を引き続き使ってください。
+1. 実行環境・保存先を確認し、新規の場合は `.bib` のパスを入力します。`~`、相対パス、引用符やドラッグ＆ドロップ時のシェルエスケープに対応します。入力をシェルで実行せず、文献数・添付数を確認してから設定を作ります。
+2. 既存設定では継続・詳細表示・終了を選びます。不正な設定を自動修復せず、強制上書きもしません。
+3. 索引がなければ初回作成を提案します。既存索引はそのまま使用するのが既定で、差分更新・全件再構築を明示的に選べます。進捗と文献数・添付数・チャンク数・抽出状態を表示します。
+4. Codex CLIがあれば、承認した場合だけMCPを登録します。同じ登録を重複追加せず、異なる登録を置き換えません。CLIがない場合は手動接続方法を表示します。
+5. 設定とSQLiteの読み取り、MCPサーバーの初期化とツール一覧を確認します。Codexからの実検索は別途必要です。
+
+Ctrl+Cは終了コード130、EOFは終了コード1で中断します。中断した工程と完了した工程を表示し、設定・索引を保持します。通常のセットアップで選択を保存した後は `--setup` で再開できます。`--temp` を付けた場合は同じ `--temp PATH --setup` で再開します。索引書き込みはトランザクションを使います。
+
+非TTYでは入力を読まず、手動操作を標準エラー出力に表示して終了コード1で終了します。自動処理には次の設定作成・索引操作を使ってください。
 
 ## ライブラリ登録と索引化
 
 ```sh
-bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
-bibdesk-rag --config "$bibdesk_rag_config" init \
-  --bib "/absolute/path/to/references.bib" \
-  --data-dir "$HOME/.local/share/bibdesk-rag"
-bibdesk-rag --config "$bibdesk_rag_config" index
-bibdesk-rag --config "$bibdesk_rag_config" status --json
-bibdesk-rag --config "$bibdesk_rag_config" doctor --json
+bibdesk-rag --config create --bib "/absolute/path/to/references.bib"
+bibdesk-rag --index update
+bibdesk-rag --index status --format json
+bibdesk-rag --index check --format json
 ```
 
-`/absolute/path/to/references.bib` を自分の `.bib` の絶対パスに置き換え、同じターミナルで実行します。`init` は初回登録用で、既存設定を上書きしません。登録済みなら同じ設定を指定して `update` を使ってください。
+`--config create` は設定を新規作成して次回から使う設定として保存します。既存設定は上書きしません。`--index update` は索引がなければ初回作成、あれば差分更新を行います。
 
-| 用途 | このガイドで指定する保存先 |
+| 用途 | 新規作成時の既定保存先 |
 | --- | --- |
-| BibDesk RAGの設定 | `~/.config/bibdesk-rag/config.toml` |
+| 設定 | `~/.config/bibdesk-rag/config.toml` |
 | 検索索引 | `~/.local/share/bibdesk-rag/index.sqlite3` |
 
-`.bib` は絶対パスで登録され、添付の相対パスは `.bib` の親ディレクトリが基準です。設定と索引は原本やHomebrewのインストール先から分離します。
+`.bib` は絶対パスで登録され、添付の相対パスは `.bib` の親ディレクトリが基準です。設定と索引は原本やHomebrewのインストール先から分離します。カスタム設定の作成例です。
 
-保存先のオプションや環境変数を指定しない場合、macOSでは設定と索引を `~/Library/Application Support/bibdesk-rag/` に置きます。上の手順では `--config` と `--data-dir` で保存先を明示するため、表の場所になります。既存の設定・索引は自動で移動しません。すでに別の場所で使っている場合は、その設定を引き続き指定できます。`init` が設定に保存する `database` は絶対パスなので、設定ファイルやシェル変数だけを変更しても索引の保存先は変わりません。
+```sh
+bibdesk-rag --config create "/absolute/path/to/project-settings/config.toml" \
+  --bib "/absolute/path/to/project/references.bib" \
+  --data-dir "/absolute/path/to/project-data"
+bibdesk-rag --index update
+```
 
-保存先は次の方法で指定できます。
+保存先の `PATH` が最優先で、省略時は `BIBDESK_RAG_CONFIG`、なければ設定用ディレクトリの `config.toml` を使います。保存済みのカスタム選択は、新規作成先の既定値には使いません。`database` は絶対パスで保存されます。複数ライブラリにはそれぞれ別の設定とDBを使用してください。
 
-- `BIBDESK_RAG_HOME=/path/to/app-data`：設定とDBをまとめて指定。
-- `BIBDESK_RAG_CONFIG=/path/to/config.toml` または全コマンド先頭の `--config PATH`：設定の場所を指定。
-- `XDG_CONFIG_HOME` / `XDG_DATA_HOME`：設定・データの標準位置を個別指定。
-- `init --data-dir PATH`：DBの保存先を指定。
+## 設定の確認と選択
 
-`--config` は `bibdesk-rag --config PATH search ...` の順に置きます。設定ファイル内の相対パスは設定ファイルの親が基準です。[config.example.toml](../config.example.toml) にチャンク長、重複長、ファイル・ZIP上限を記載しています。複数ライブラリには別の設定とDBを使用してください。
+```sh
+bibdesk-rag --config show
+bibdesk-rag --config show --format json
+bibdesk-rag --config path
+bibdesk-rag --config use "/absolute/path/to/config.toml"
+```
+
+`show` は選択中の設定ファイル、選択理由、解決済みの `bib`・`database`、省略時の既定値を含む全抽出設定を表示します。ライブラリや索引を開かず、ファイルを書きません。`path` は絶対パスだけを表示し、設定がまだない場合も既定の作成先を確認できます。`--format json` ではパスと選択理由を取得できます。
+
+`use PATH` は既存設定を検証し、絶対パスを `active-config.json` に保存します。設定・索引・原本は移動・書き換えせず、索引も作成しません。通常の `--setup` と `--config create` も選択を保存します。保存済み設定が見つからない場合はエラーにし、別ライブラリへ自動的に切り替えません。`--config use PATH` で選び直してください。
+
+設定ファイルの選択順は、`--temp PATH`、`BIBDESK_RAG_CONFIG`、保存済みの選択、設定用ディレクトリの `config.toml` です。従来のmacOS保存先は自動検出しません。設定用ディレクトリは `BIBDESK_RAG_HOME`、`XDG_CONFIG_HOME/bibdesk-rag`、`~/.config/bibdesk-rag` の順です。
+
+```sh
+bibdesk-rag --temp "/absolute/path/to/other.toml" --config show
+bibdesk-rag --temp "/absolute/path/to/other.toml" --index update
+```
+
+`--temp` は今回だけ別の設定を使い、保存済みの選択を変更しません。選択を保存する `--config use/create` とは併用できません。`--temp PATH --setup` で作った設定・索引や、承認したCodex登録は保持されます。一時的なのは設定の選択だけです。
+
+新しい索引の保存先は、`--config create` の `--data-dir`、`BIBDESK_RAG_HOME`、`XDG_DATA_HOME/bibdesk-rag` の順です。それらがなければ既定設定には `~/.local/share/bibdesk-rag`、カスタム設定にはその親ディレクトリを使います。同じディレクトリに複数設定を置く場合は `--data-dir` も分けてください。既存設定の `database` は保持されます。設定ファイル内の相対パスは設定ファイルの親が基準です。
+
+[config.example.toml](../config.example.toml) に抽出値を記載しています。値を変える場合はTOMLを編集します。`BIBDESK_RAG_CONFIG` は保存した選択より優先されます。Codexに設定パス付きで登録したMCPもその設定に固定され、CLIの選択では登録を書き換えません。
 
 ## 進捗と結果の表示
 
-以下はv0.1.1以降の機能です。
+結果の既定形式は `text` です。ファイル・パイプへ渡す場合も同じ形式です。機械処理には `--format json` を明示してください。`--format bibtex` は `--paper show` 専用です。
 
-`index` / `update` の通常のターミナル実行では、処理済みの文献数・添付数を標準エラー出力の1行で更新します。同じ添付が複数の文献にリンクされていても、添付数には1回だけ数えます。進捗率は処理済み文献数と添付数に基づく目安で、残り時間の見積もりではありません。索引の保存が完了してから100%を表示します。
-
-終了時の標準出力は、文献の追加・変更件数、添付の抽出試行・再利用件数、今回の処理で発生した要確認件数をまとめた短い要約です。抽出試行数は本文の抽出成功数ではなく、未対応形式や本文なしのファイルも含みます。要確認には部分抽出や未対応形式も含まれます。PDFなどの読み取りライブラリが出す警告は、抽出結果とは別に件数と最大3例にまとめます。読み取りの復旧警告があっても、本文を抽出できている場合があります。
+`--index update/rebuild` の進捗は標準エラー出力、結果は標準出力です。両方が端末につながり、`TERM=dumb` でない場合に進捗バーを表示します。保存が完了してから100%を表示します。抽出試行数は本文の抽出成功数ではなく、未対応形式や本文なしも含みます。
 
 | オプション | 表示 |
 | --- | --- |
-| 指定なし | ターミナルでは進捗バーと短い要約。要確認事項の例は最大3件 |
-| `--no-progress` | 進捗バーを無効化。短い要約は表示 |
-| `--json` | 集計結果と今回の要確認事項の全件をJSONで標準出力に出力。進捗バーなし |
-| `--verbose` | 読み取り中の警告・要確認事項を標準エラー出力にすべて表示。進捗バーなし |
+| 指定なし | テキスト結果。索引処理では端末に進捗と短い要約、要確認事項は最大3例 |
+| `--format json` | 全件の集計・要確認事項をJSON出力。進捗バーなし |
+| `--no-progress` | 索引処理の進捗バーを無効化 |
+| `--verbose` | 索引処理の警告・要確認事項を標準エラー出力へすべて表示 |
 
-標準出力をファイル・パイプに渡した場合は、互換性のためオプションなしでも従来のJSONを出力します。進捗バーは標準出力・標準エラー出力の両方がターミナルにつながっている場合だけ表示し、`TERM=dumb` では表示しません。`--json --verbose` の併用も可能で、その場合も標準出力のJSONに警告は混ざりません。
-
-抽出の要確認事項は索引にも保持されます。再抽出せずに状態を調べる場合は、同じ `--config` を指定した `status --json` や `attachments CITEKEY --json` を使ってください。
+`--verbose` と `--no-progress` は索引の更新・再構築用です。`--format json --verbose` の併用も可能で、警告はJSONに混ざりません。再抽出せずに状態を調べるには `--index status` や `--paper attachments KEY` を使います。
 
 ## 検索と出典の取得
 
 ```sh
-bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
-bibdesk-rag --config "$bibdesk_rag_config" search "histone H3K4 UV damage" --top 10 --json
-bibdesk-rag --config "$bibdesk_rag_config" search "RecQ helicase" --scope fulltext --json
-bibdesk-rag --config "$bibdesk_rag_config" search "Neurospora" --scope metadata --json
-bibdesk-rag --config "$bibdesk_rag_config" search "Example2025" --scope metadata
-bibdesk-rag --config "$bibdesk_rag_config" search "10.1234/example" --scope metadata
-bibdesk-rag --config "$bibdesk_rag_config" search "" --scope metadata --doi "https://doi.org/10.1234/example"
-bibdesk-rag --config "$bibdesk_rag_config" search "histone" --scope metadata --year 2025 --author Muller
-bibdesk-rag --config "$bibdesk_rag_config" get Example2025 --json
-bibdesk-rag --config "$bibdesk_rag_config" get Example2025 --format bibtex
-bibdesk-rag --config "$bibdesk_rag_config" attachments Example2025 --json
+bibdesk-rag --paper search "histone H3K4 UV damage" --top 10 --format json
+bibdesk-rag --paper search "RecQ helicase" --scope fulltext
+bibdesk-rag --paper search "Neurospora" --scope metadata
+bibdesk-rag --paper search "Example2025" --scope metadata
+bibdesk-rag --paper search "" --scope metadata --doi "https://doi.org/10.1234/example"
+bibdesk-rag --paper search "histone" --scope metadata --year 2025 --author Muller
+bibdesk-rag --paper show Example2025 --format bibtex
+bibdesk-rag --paper attachments Example2025 --format json
+bibdesk-rag --paper search "RecQ" --metadata-query "Neurospora" --top 10
+bibdesk-rag --paper search "UV" --scope fulltext --citekey Example2025 --citekey Other2024
+bibdesk-rag --paper context "UV-induced mutagenesis" --top 5 --max-chars 10000
 ```
 
-DOIとcitekeyは完全一致を優先し、同じDOIの複数エントリを保持します。FTSの問い合わせは単語のAND検索で、入力をFTS構文やSQLとして実行しません。部分一致・同義語推論・意味検索は初期版にはありません。ハイフンの表記ゆれ、`hH3-K4R` / `hH3K4R`、`mus-9`、`Δset-1` に共通の検索正規化を適用します。返す本文抜粋は元の抽出テキストを保ち、数値や記号を検索用文字列で置き換えません。
+DOI・citekeyは完全一致を優先します。同じDOIの複数エントリを保持し、FTS入力をSQLやFTS構文として実行しません。意味検索・同義語推論は行いません。既定の `--scope all` は書誌候補で最大100文献を選んで本文を検索し、書誌候補がない場合は本文全体へフォールバックします。本文未取得の書誌情報も返すため `source_type` を確認してください。
 
-既定の `--scope all` は書誌検索で最大100件の候補を選び、その文献の本文を検索します。書誌候補がなければ本文全体へフォールバックします。本文が見つからない候補は書誌情報として返すため、`source_type` を確認してください。本文全体を横断する場合は `--scope fulltext` を使います。
+`--doi/--author/--year` はmetadata検索専用です。`--metadata-query` は `--scope all` の検索とcontextで本文候補を絞り込み、`--citekey` とは併用できません。本文の `--citekey` は複数指定できます。metadataで完全一致を指定する場合は1件です。操作に適用できない組み合わせはエラーになります。
 
-```sh
-bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
-bibdesk-rag --config "$bibdesk_rag_config" search "RecQ" --metadata-query "Neurospora" --top 10
-bibdesk-rag --config "$bibdesk_rag_config" search "UV" --scope fulltext --citekey Example2025 --citekey Other2024
-bibdesk-rag --config "$bibdesk_rag_config" context "UV-induced mutagenesis" --top 5 --max-chars 10000
-bibdesk-rag --config "$bibdesk_rag_config" context "RecQ" --metadata-query "histone" --json
-```
+`--top` は1..100（searchは既定10、contextは5）、`--per-paper` は1..10（既定2）、contextの `--max-chars` は256..100000（既定10000）です。文字数は引用ヘッダと本文を含むcontext全体に適用し、JSONの構造情報は含めません。`unverified`、`truncated`、`budget_exhausted` に不足を示します。少数・0件の結果だけでは関連資料の不在を示せません。
 
-1文献あたり既定2件（`--per-paper 1..10`）、取得件数は `--top 1..100`。contextの `--max-chars 256..100000` は引用ヘッダと本文を含む **context文字列全体** の上限です。JSONの構造情報はこの上限の外です。`unverified`、`truncated`、`budget_exhausted` に不足や省略を明示します。取得件数が少ないことは、他の証拠が存在しないことを意味しません。
-
-PDFはページを跨がず約1500文字、重複200文字で分割し、1始まりのページ番号を保持します。CSV/TSVはヘッダを1行目とするレコード番号（引用符内改行は1レコード）、XLSXは実際のシート行番号です。XLSXの数式は文字列として保持し、再計算しません。補足PDFは `supplement` / `supp` 等のファイル名を手掛かりにリンクの `role` で識別します。これはファイル内容からの確定分類ではありません。
+出典はcitekey、DOI、ファイルパス、chunk ID、PDFページ範囲または補足資料のシート・行・ZIPメンバーです。PDFはファイル先頭を1ページとし、1チャンクはページを跨ぎません。CSV/TSVはヘッダを1行目とするレコード番号、XLSXはシート上の行番号です。科学的な主張は原本と照合してください。
 
 ## 差分更新
 
 ```sh
-bibdesk_rag_config="$HOME/.config/bibdesk-rag/config.toml"
-bibdesk-rag --config "$bibdesk_rag_config" update
-bibdesk-rag --config "$bibdesk_rag_config" update --verify-hashes
-bibdesk-rag --config "$bibdesk_rag_config" index
+bibdesk-rag --index update
+bibdesk-rag --index update --verify-hashes
+bibdesk-rag --index rebuild
 ```
 
-`update` はエントリの追加・変更・削除と添付リンクを同期し、サイズとナノ秒mtimeが同じ添付の再読込を省略します。変更候補だけSHA-256を計算し、内容が同じなら既存chunk IDを再利用します。`--verify-hashes` は同一サイズ・mtimeでも全ファイルをハッシュ検査します。設定変更または `index` は再抽出します。文献キー変更は旧・新両方で一意なDOIの場合だけ内部IDを維持します。
+差分更新はエントリ・添付リンクを同期し、サイズとナノ秒mtimeが同じ添付の再読込を省略します。変更候補だけSHA-256を計算し、内容が同じなら既存chunk IDを再利用します。`--verify-hashes` はサイズ・mtimeが同じファイルも検査します。抽出設定の変更や `rebuild` は再抽出します。文献キー変更は旧・新両方で一意なDOIの場合だけ内部IDを維持します。
 
-同じ正規化済みファイルパスを複数文献が参照しても、抽出結果は1つです。別パスに置かれた同内容のコピーは別添付として扱います。書込はトランザクションで行い、致命的エラーでは前の索引を維持します。個々の欠損・抽出不能ファイルはエラー状態として記録し、他の文献を処理します。消えた資料の古い本文は検索対象から除去します。
+同じ正規化済みパスを複数文献が参照しても抽出は1回です。書き込みはトランザクションで行い、致命的エラーでは以前の索引を保持します。個別の欠損・抽出不能ファイルはエラーとして記録し、消えた資料の古い本文は検索対象から除去します。
+
+## 旧コマンドからの移行
+
+| 以前の構文 | 新しい構文 |
+| --- | --- |
+| `setup` | `--setup` |
+| `init` | `--config create` |
+| `config show/path/use` | `--config show/path/use` |
+| `index` | `--index rebuild` |
+| `update` | `--index update` |
+| `status` / `doctor` | `--index status` / `--index check` |
+| `search` / `context` | `--paper search` / `--paper context` |
+| `get KEY` / `attachments KEY` | `--paper show KEY` / `--paper attachments KEY` |
+| `--config PATH`（CLIの一時指定） | `--temp PATH` |
+| `--json` | `--format json` |
+
+旧構文は移行先を案内するエラーになります。MCPサーバーには既存登録向けの非表示 `--config PATH` 互換引数があり、新規登録では `--temp PATH` を使います。MCPの6ツール名・スキーマは変わりません。
+
+macOSの旧保存先 `~/Library/Application Support/bibdesk-rag/config.toml` は自動検出しません。その場所の設定を引き続き使う場合は、一度選択してください。索引の移動や再作成は不要です。
+
+```sh
+bibdesk-rag --config use "$HOME/Library/Application Support/bibdesk-rag/config.toml"
+bibdesk-rag --index status
+```
+
+新しい既定の設定は `~/.config/bibdesk-rag/config.toml`、索引は `~/.local/share/bibdesk-rag/index.sqlite3` です。新しい既定の場所にある設定は、そのまま使用できます。結果はパイプ出力でも既定でテキストになるため、JSONを読む既存スクリプトには `--format json` を追加してください。
 
 ## 抽出と検索の制約
 
-- `doctor`：SQLite/外部キー/FTS整合性と添付エラーを確認。FTS検査のためDBをメモリにコピーします。大規模DBではメモリが必要です。
+- `--index check`：SQLite/外部キー/FTS整合性と添付エラーを確認。FTS検査のためDBをメモリにコピーします。大規模DBではメモリが必要です。
 - 欠損・移動ファイル：まずBibDesk上でリンクを確認してください。公開 `Entry.files` を優先し、既存パスがない場合のみmacOS bookmark/aliasをUI・マウントなしで解決します。現代のbookmark移動追跡は合成データで検証済み。古い実機alias形式は未検証です。
 - 画像のみPDF：`no_text` として記録。OCRはありません。暗号化PDF・壊れたPDFは理由を記録し、処理を継続します。
 - ZIP：内部一覧を記録し、対応形式のみメモリ内で解析。パス逸脱、symlink、暗号化、サイズ・件数・圧縮率超過を拒否。入れ子ZIPは本文未解析です。XLSXもZIP/XMLの安全性を検査します。

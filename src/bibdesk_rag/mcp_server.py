@@ -352,7 +352,11 @@ def serve(server: MCPServer, reader: TextIO, writer: TextIO) -> None:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Read-only BibDesk RAG MCP server (stdio only)")
-    parser.add_argument("--config", type=Path)
+    configuration = parser.add_mutually_exclusive_group()
+    configuration.add_argument("--temp", dest="config", type=Path,
+                               help="Use this configuration for this server process")
+    # Existing Codex registrations remain valid; new instructions use --temp.
+    configuration.add_argument("--config", dest="config", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--version", action="version", version=f"bibdesk-rag-mcp {__version__}")
     args = parser.parse_args(argv)
     try:

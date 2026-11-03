@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bibdesk-rag"
-version = "0.2.0"
+version = "0.3.0"
 description = "Read-only local literature retrieval for BibDesk libraries"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
-authors = [{name = "BibDesk RAG contributors"}]
+authors = [{name = "Kento Yanagisawa"}]
 dependencies = [
   "bibdeskparser==0.8.1",
   "bibtexparser==2.0.0b9",
@@ -35,6 +35,9 @@ bibdesk-rag-mcp = "bibdesk_rag.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+bibdesk_rag = ["resources/*.txt", "resources/*.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

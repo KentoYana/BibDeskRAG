@@ -71,8 +71,8 @@ def _matches(value, mcp: Path, config_path: Path) -> bool:
     command = transport.get("command")
     if not isinstance(command, str) or not Path(command).is_absolute():
         return False
-    # Require the same explicit invocation. Custom environments and filters might
-    # alter startup or hide retrieval tools, so leave them for manual review.
+    # Both spellings pin the same configuration. Keep existing --config entries
+    # without rewriting registrations. Custom environments/filters require review.
     return (
         value.get("enabled") is True
         and not value.get("disabled_reason")
@@ -80,7 +80,10 @@ def _matches(value, mcp: Path, config_path: Path) -> bool:
         and not value.get("disabled_tools")
         and transport.get("type") == "stdio"
         and _absolute(command) == _absolute(mcp)
-        and transport.get("args") == ["--config", str(_absolute(config_path))]
+        and transport.get("args") in (
+            ["--temp", str(_absolute(config_path))],
+            ["--config", str(_absolute(config_path))],
+        )
         and not transport.get("env")
         and not transport.get("env_vars")
         and not transport.get("cwd")
@@ -130,7 +133,7 @@ def register(codex: Path, mcp: Path, config_path: Path, *, run=None) -> bool:
     try:
         result = _call(
             [str(codex), "mcp", "add", SERVER_NAME, "--", str(_absolute(mcp)),
-             "--config", str(_absolute(config_path))],
+             "--temp", str(_absolute(config_path))],
             run=run,
         )
         return result.returncode == 0 and inspect_registration(
@@ -158,7 +161,7 @@ def probe_mcp(mcp: Path, config_path: Path, *, run=None) -> bool:
     ]
     try:
         completed = _call(
-            [str(_absolute(mcp)), "--config", str(_absolute(config_path))],
+            [str(_absolute(mcp)), "--temp", str(_absolute(config_path))],
             run=run, input="".join(json.dumps(item) + "\n" for item in requests),
         )
         if completed.returncode or len(completed.stdout) > MAX_RESPONSE_CHARS:

@@ -227,15 +227,15 @@ def test_cli_install_commands_json_and_config(library, tmp_path):
 
     assert f"bibdesk-rag {__version__}" in run("--version")
     assert "Read-only" in run("--help")
-    assert json.loads(run("index", "--json"))["papers_added"] == 2
-    assert json.loads(run("update", "--json"))["files_extracted"] == 0
-    assert json.loads(run("search", "RecQ", "--scope", "fulltext", "--json"))[0]["chunk_id"]
-    assert json.loads(run("get", "Example2025", "--json"))["citekey"] == "Example2025"
-    assert "@article{Example2025" in run("get", "Example2025", "--format", "bibtex")
-    assert json.loads(run("attachments", "Example2025", "--json"))
-    assert json.loads(run("context", "RecQ", "--json"))["returned"]
-    assert json.loads(run("status", "--json"))["counts"]["papers"] == 2
-    assert json.loads(run("doctor", "--json"))["ok"]
+    assert json.loads(run("--index", "rebuild", "--format", "json"))["papers_added"] == 2
+    assert json.loads(run("--index", "update", "--format", "json"))["files_extracted"] == 0
+    assert json.loads(run("--paper", "search", "RecQ", "--scope", "fulltext", "--format", "json"))[0]["chunk_id"]
+    assert json.loads(run("--paper", "show", "Example2025", "--format", "json"))["citekey"] == "Example2025"
+    assert "@article{Example2025" in run("--paper", "show", "Example2025", "--format", "bibtex")
+    assert json.loads(run("--paper", "attachments", "Example2025", "--format", "json"))
+    assert json.loads(run("--paper", "context", "RecQ", "--format", "json"))["returned"]
+    assert json.loads(run("--index", "status", "--format", "json"))["counts"]["papers"] == 2
+    assert json.loads(run("--index", "check", "--format", "json"))["ok"]
     assert load_config(config_path).bib == library.bib
     with pytest.raises(FileExistsError):
         init_config(library.bib, config_path)

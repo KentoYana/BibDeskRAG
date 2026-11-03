@@ -9,9 +9,9 @@
 この文書は配布担当者向けです。本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、
 インストール用Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap)、
 初回リリースは [v0.1.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.1.0) です。
-v0.2.0以降では、インストール後に `bibdesk-rag setup` を実行すると、
+v0.3.0以降では、インストール後に `bibdesk-rag --setup` を実行すると、
 ライブラリ登録・索引作成・任意のCodex接続を案内します。Homebrewへの
-インストールだけでCodexの設定を変更することはなく、`setup` でも利用者が
+インストールだけでCodexの設定を変更することはなく、`--setup` でも利用者が
 承認した場合だけMCPを登録します。Codex CLIがなくても手動接続情報を表示します。
 
 ## 公開前にそろえるもの
@@ -113,8 +113,10 @@ brew reinstall --build-from-source local/bibdesk-rag-test/bibdesk-rag
 実際の `brew upgrade` を公開前に試すには、生成した **ローカル Formula のみ** に
 `revision 1` を追加し、`brew upgrade --build-from-source local/bibdesk-rag-test/bibdesk-rag`
 を実行したあと、同じ `--verify-existing` 検証を実行します。ソース版番号の変更は不要です。
-利用者の設定・SQLite は `BIBDESK_RAG_HOME` またはユーザーの Application Support/XDG
-領域にあり、Cellar 外に保持します。アンインストールにもデータ削除フックはありません。
+利用者の設定・SQLite は既定で `~/.config/bibdesk-rag/` と
+`~/.local/share/bibdesk-rag/` にあり、Cellar 外に保持します。
+`BIBDESK_RAG_HOME`・XDGの指定にも対応します。
+アンインストールにもデータ削除フックはありません。
 
 ## リリース手順
 
@@ -130,7 +132,7 @@ brew reinstall --build-from-source local/bibdesk-rag-test/bibdesk-rag
 4. 生成したローカル Formula で style/audit、ソースからのインストール、Formula test、
    再インストール・upgrade 時の合成ユーザーデータ保持を確認します。MIT と依存 notice、
    README の公開先・公開状況、実機と CI の検証範囲を確認し、レビュー用の成果物を確定します。
-5. 許可後に `v0.2.0` のような Git タグと GitHub Release を作成し、sdist、wheel、
+5. 許可後に `v0.3.0` のような Git タグと GitHub Release を作成し、sdist、wheel、
    backend bundle、`SHA256SUMS` を添付します。タグ名と版番号を一致させてください。
    この段階で再ビルドせず、検証済みの同じバイト列を公開します。
 6. 実際の URL と SHA-256 を指定して Formula を生成します。例中の変数には確定した値を入れます。
