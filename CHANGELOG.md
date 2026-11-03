@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) — 2026-11-03
+
+- Organize CLI operations under `--setup`, `-c/--config`, `-i/--index`, and
+  `-p/--paper`. Reject legacy subcommands with migration guidance, conflicting
+  operations, and options unrelated to the requested operation.
+- Add SpotScanner-style `-h/--help`, `-v/--version`, `-e/--example`,
+  `-r/--readme`, and `-o/--output` guidance and bundled manual/configuration
+  template/software citation resources. Information works without user state.
+- Show brief help when invoked without arguments; retain the complete reference
+  under `-h/--help`. Attribute the BibTeX citation to Kento Yanagisawa using
+  the `@manual` entry type.
+- Use `--format text|json|bibtex` for results, with text as the default even
+  through pipes and BibTeX limited to paper records. Replace `--json` with
+  `--format json`; keep diagnostics and progress on standard error.
+- Add read-only `--config show/path`, and remember selections made by
+  `--config use/create` or ordinary `--setup`. `--temp PATH` selects a
+  configuration for one invocation and cannot be combined with use/create.
+- Keep existing MCP registrations compatible with the hidden server-only
+  `--config PATH` spelling; new registrations use `--temp PATH`. Retrieval tool
+  names and schemas are unchanged.
+- Use `~/.config/bibdesk-rag/config.toml` and
+  `~/.local/share/bibdesk-rag/index.sqlite3` as new-install defaults on macOS too;
+  retire automatic discovery of the previous macOS Application Support location.
+  Existing files stay in place; custom configurations can be selected explicitly.
+
 ## [0.2.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.2.0) — 2026-11-02
 
 - Add `bibdesk-rag setup`: an interactive, resumable onboarding wizard using the

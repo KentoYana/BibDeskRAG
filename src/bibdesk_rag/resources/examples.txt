@@ -1,0 +1,44 @@
+BibDesk RAG examples
+
+Learn about the application:
+  bibdesk-rag -h
+  bibdesk-rag -v
+  bibdesk-rag -r
+
+Set up a library interactively:
+  bibdesk-rag --setup
+
+Create a configuration without prompts, then index its library:
+  bibdesk-rag --config create --bib "/path/to/library.bib"
+  bibdesk-rag --index update
+
+Inspect and select configurations:
+  bibdesk-rag --config show
+  bibdesk-rag --config show --format json
+  bibdesk-rag --config path
+  bibdesk-rag --config use "/path/to/other/config.toml"
+
+Update or inspect the index:
+  bibdesk-rag --index update
+  bibdesk-rag --index update --verify-hashes
+  bibdesk-rag --index status --format json
+  bibdesk-rag --index check
+  bibdesk-rag --index rebuild
+
+Search papers and retrieve evidence:
+  bibdesk-rag --paper search "RecQ helicase"
+  bibdesk-rag --paper search "Neurospora" --scope metadata --top 5
+  bibdesk-rag --paper show Example2025 --format bibtex
+  bibdesk-rag --paper attachments Example2025 --format json
+  bibdesk-rag --paper context "RecQ helicase" --max-chars 5000
+
+Use another configuration for this invocation only:
+  bibdesk-rag --temp "/path/to/other/config.toml" --index update
+
+Output bundled resources (redirection is optional):
+  bibdesk-rag --output manual
+  bibdesk-rag --output config-template > example.toml
+  bibdesk-rag --output citation > bibdesk-rag.bib
+
+Replace example paths and citekeys with your own. Configuration creation never
+overwrites an existing file; bibliography files and attachments stay read-only.

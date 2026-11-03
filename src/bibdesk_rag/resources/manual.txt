@@ -1,0 +1,178 @@
+BIBDESK RAG MANUAL
+
+BibDesk RAG searches a local BibDesk library and its linked attachments. It reads
+the bibliography and attachments without changing them, and keeps the derived
+SQLite index in user-owned application data outside Python and Homebrew.
+
+USAGE
+  bibdesk-rag [INFORMATION OPTION]
+  bibdesk-rag [--temp PATH] OPERATION [OPTIONS]
+
+With no arguments, show a brief help overview and exit. Use -h/--help for the
+complete option reference. Choose one operation per invocation.
+Unrelated options and conflicting operations are errors, before any operation
+runs. Quote paths or queries containing spaces.
+
+INFORMATION (no configuration or index required)
+  -h, --help
+      Show the complete option reference and exit.
+  -v, --version
+      Show the version and software citation and exit.
+  -e, --example
+      Show common usage examples and exit.
+  -r, --readme
+      View this bundled manual. Use a local pager on a terminal; otherwise print
+      to standard output. No browser or network access is needed.
+  -o, --output {manual,config-template,citation}
+      Print the selected resource to standard output. File redirection is up to
+      the caller. citation is BibDesk RAG's BibTeX @manual entry, authored by
+      Kento Yanagisawa, not a library paper.
+
+OPERATIONS
+  --setup
+      Start interactive setup. Both standard input and standard error must be
+      terminals. Register a library, optionally build/update its index and
+      optionally register its local MCP server with Codex. Existing conflicting
+      Codex registrations are not replaced. Setup reports local MCP handshake
+      separately from actual searches through Codex.
+
+  -c, --config ACTION [PATH]
+      show          Show the selected configuration, resolved paths and every
+                    extraction option, including omitted values' defaults.
+      path          Show the selected configuration file's absolute path.
+      use PATH      Validate and remember an existing configuration.
+      create [PATH] Create a new configuration and remember it. Requires --bib.
+                    If PATH is omitted, use BIBDESK_RAG_CONFIG if set, otherwise
+                    the configuration directory's config.toml. A saved custom
+                    selection does not change this creation destination.
+                    Never overwrite an existing configuration.
+
+      show/path do not open the bibliography or index and do not change files.
+      use/create preserve existing indexes and source files.
+
+  -i, --index ACTION
+      update        Create an index if absent, otherwise update incrementally.
+      rebuild       Re-extract all configured sources and rebuild derived data.
+      status        Show indexed counts, extraction states and update metadata.
+      check         Check SQLite, foreign-key and FTS consistency and attachment
+                    errors. This is read-only and may require substantial memory.
+
+  -p, --paper ACTION VALUE
+      search QUERY       Search bibliography metadata and/or indexed text.
+      show KEY           Retrieve the indexed bibliography record for a citekey.
+      attachments KEY    List the paper's indexed attachments and extraction state.
+      context QUERY      Retrieve a bounded bundle of excerpts and exact citations.
+
+CONFIGURATION
+  --temp PATH
+      Use this configuration for one invocation without changing the saved
+      selection. Cannot be combined with --config use or --config create.
+      With --setup, generated configuration/index files and any approved Codex
+      registration are retained, but the saved configuration selection is not
+      changed. Repeat the same --temp PATH --setup command to resume.
+  --bib FILE
+      BibDesk library to register; required for --config create only.
+  --data-dir DIR
+      Index directory for --config create only.
+
+New-install defaults on macOS and other platforms:
+  Configuration: ~/.config/bibdesk-rag/config.toml
+  Index:         ~/.local/share/bibdesk-rag/index.sqlite3
+
+Selection priority is --temp PATH, BIBDESK_RAG_CONFIG, the saved selection in
+active-config.json, then the default configuration. Missing saved selections
+fail instead of silently selecting another library. Repair with --config use.
+The former macOS Application Support directory is not auto-detected.
+
+The configuration directory is BIBDESK_RAG_HOME, else XDG_CONFIG_HOME/bibdesk-rag,
+else ~/.config/bibdesk-rag. New index placement uses --data-dir, BIBDESK_RAG_HOME,
+then XDG_DATA_HOME/bibdesk-rag. Without those, default configurations use
+~/.local/share/bibdesk-rag; custom configurations use their parent directory.
+Existing configurations' database values are retained. Relative TOML paths are
+relative to that configuration file. Use a separate database for each library.
+
+Changing the CLI's saved selection does not rewrite existing Codex registrations
+which pin an explicit configuration path. MCP is retrieval-only and opens SQLite
+read-only; index maintenance is done through the CLI.
+
+OUTPUT
+  --format {text,json,bibtex}
+      text is the default, including when output is piped or redirected.
+      json is available for configuration, index and paper results.
+      bibtex is only valid with --paper show.
+  --verbose
+      Print full parser warnings and attachment issues during update/rebuild.
+  --no-progress
+      Hide the update/rebuild terminal progress bar.
+
+Results go to standard output; progress and diagnostics go to standard error.
+Progress requires both output streams to be terminals and TERM not to be dumb.
+JSON output disables progress. Verbose diagnostics do not contaminate JSON.
+Information/setup operations do not accept --format; unrelated options fail.
+
+SEARCH AND EVIDENCE
+  --scope {all,metadata,fulltext}  Search scope; default all (search only).
+  --top N                       Result count, 1..100; search default 10,
+                                context default 5.
+  --per-paper N                 Excerpts per paper, 1..10; default 2.
+  --citekey KEY                 Restrict selected-paper text retrieval; repeatable.
+  --metadata-query QUERY        Select candidates before all-scope search/context;
+                                cannot be combined with --citekey.
+  --doi DOI                     Exact DOI filter for metadata search.
+  --author NAME                 Author filter for metadata search.
+  --year YEAR                   Year filter for metadata search.
+  --max-chars N                 Context text budget, 256..100000; default 10000.
+
+Default all-scope search selects up to 100 metadata candidates and searches their
+indexed text. If no metadata candidates match, it falls back to indexed text.
+DOI/citekey exact lookup is independent of BM25. No semantic embedding model or
+OCR is used. Metadata matches do not by themselves establish full-text evidence.
+
+Citations identify citekey, DOI when present, attachment path, chunk ID and PDF
+page range, sheet/row or ZIP member location. PDF pages start at 1 from the file's
+first page. Verify scientific claims against original sources. No results do not
+prove that relevant literature is absent. Context reports uncertainty/truncation.
+
+INDEX UPDATES
+  --verify-hashes
+      Hash attachments even when size and modification time are unchanged.
+      Valid with update/rebuild only.
+
+Incremental updates reuse unchanged extraction results. Changed extraction
+settings trigger re-extraction. Writes are transactional; a fatal failure retains
+the previous committed index. Missing/unreadable attachments are recorded as
+errors while other files continue. Update after BibDesk changes or source moves.
+
+Supported text inputs: PDF, CSV/TSV, XLSX and safe ZIP members. Spreadsheet formulas
+are never executed. Archive traversal, symlinks, encryption and excessive sizes
+are rejected. No automatic network requests, downloads, embeddings or OCR occur.
+Configuration, index and SQLite sidecars must not overlap source files.
+
+EXAMPLES
+  bibdesk-rag --setup
+  bibdesk-rag --config create --bib "/path/to/library.bib"
+  bibdesk-rag --config show --format json
+  bibdesk-rag --index update
+  bibdesk-rag --index update --verify-hashes
+  bibdesk-rag --index status
+  bibdesk-rag --paper search "RecQ helicase" --top 5
+  bibdesk-rag --paper show Example2025 --format bibtex
+  bibdesk-rag --temp "/path/to/other.toml" --index update
+  bibdesk-rag --output config-template > example.toml
+
+MIGRATION
+  setup             -> --setup
+  init              -> --config create
+  config show/path  -> --config show/path
+  config use PATH   -> --config use PATH
+  index             -> --index rebuild
+  update            -> --index update
+  status / doctor   -> --index status / --index check
+  search / context  -> --paper search / --paper context
+  get KEY           -> --paper show KEY
+  attachments KEY   -> --paper attachments KEY
+  --json            -> --format json
+
+Old CLI subcommands are rejected with migration guidance. The MCP executable
+retains a hidden --config PATH compatibility alias for existing registrations;
+new registrations use --temp PATH. MCP tool names and schemas are unchanged.

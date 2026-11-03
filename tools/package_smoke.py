@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import plistlib
 import subprocess
+import tomllib
 
 
 def synthetic_pdf() -> bytes:
@@ -79,18 +80,37 @@ def main() -> None:
     def check_unattended_setup(config_path: Path) -> None:
         before = hashes_for(path for path in workdir.rglob("*") if path.is_file())
         completed = subprocess.run(
-            [args.command, "--config", str(config_path), "setup"], env=env,
+            [args.command, "--temp", str(config_path), "--setup"], env=env,
             input="This input must never be read.\n", text=True, capture_output=True,
             timeout=10,
         )
         assert completed.returncode == 1, completed
-        assert "init" in completed.stderr and "index" in completed.stderr, completed.stderr
+        assert "--config create" in completed.stderr, completed.stderr
+        assert "--index update" in completed.stderr, completed.stderr
         assert "Traceback" not in completed.stderr, completed.stderr
         after = hashes_for(path for path in workdir.rglob("*") if path.is_file())
         assert before == after, "Non-TTY setup changed synthetic files"
 
-    assert "setup" in cli("--help")
-    assert "setup" in cli("setup", "--help")
+    before_information = hashes_for(path for path in workdir.rglob("*") if path.is_file())
+    help_text = cli("--help")
+    assert all(flag in help_text for flag in ("--setup", "--config", "--index", "--paper"))
+    brief_help = cli()
+    assert len(brief_help) < len(help_text)
+    assert all(flag in brief_help for flag in ("--setup", "--config", "--index", "--paper", "-h"))
+    assert "--verify-hashes" not in brief_help and "--verify-hashes" in help_text
+    assert "--setup" in cli("--setup", "--help")
+    assert "bibdesk" in cli("--version").lower()
+    assert "--index update" in cli("--example")
+    manual = cli("--output", "manual")
+    assert "--paper" in manual and cli("--readme").strip() == manual.strip()
+    template = tomllib.loads(cli("--output", "config-template"))
+    assert {"bib", "database", "extraction"} <= template.keys(), template
+    citation = cli("--output", "citation")
+    assert citation.lstrip().startswith("@manual{") and "KentoYana/BibDeskRAG" in citation, citation
+    assert "author = {Kento Yanagisawa}" in citation, citation
+    assert before_information == hashes_for(
+        path for path in workdir.rglob("*") if path.is_file()
+    ), "Information options changed synthetic files"
     check_unattended_setup(workdir / "unattended/config.toml")
     assert not (workdir / "unattended").exists(), "Non-TTY setup created a directory"
 
@@ -111,24 +131,48 @@ def main() -> None:
                        "  title={Unrelated synthetic reference}, year={2026},\n"
                        f"  Bdsk-File-1={{{linked_pdf}}}\n" + "}\n")
         hashes = source_hashes()
-        cli("init", "--bib", str(bib))
-        cli("index")
+        selected = workdir / "custom settings/config.toml"
+        cli("--config", "create", str(selected), "--bib", str(bib))
+        assert cli("--config", "path").strip() == str(selected)
+        built = json.loads(cli("--index", "update", "--format", "json"))
+        assert built["papers_added"] == 2 and built["files_extracted"] == 2, built
+        rebuilt = json.loads(cli("--index", "rebuild", "--format", "json"))
+        assert rebuilt["files_extracted"] == 2, rebuilt
     else:
         hashes = source_hashes()
-    assert "bibdesk" in cli("--version").lower()
-    assert "search" in cli("--help")
-    found = json.loads(cli("search", "RecQ", "--scope", "fulltext", "--json"))
+    before_inspection = hashes_for(path for path in workdir.rglob("*") if path.is_file())
+    selected = Path(cli("--config", "path").strip())
+    configuration = json.loads(cli("--config", "show", "--format", "json"))
+    assert configuration["config"] == str(selected), configuration
+    assert configuration["database"] == str(workdir / "data/index.sqlite3"), configuration
+    assert "[extraction]" in cli("--config", "show")
+    index_status = json.loads(cli("--index", "status", "--format", "json"))
+    assert index_status["counts"]["papers"] == 2, index_status
+    found = json.loads(cli("--paper", "search", "RecQ", "--scope", "fulltext",
+                           "--format", "json"))
     assert "Test2026" in json.dumps(found), found
     assert "supplement.csv" in json.dumps(found), found
     pdf_hits = [hit for hit in found if hit["source_type"] == "pdf"]
     assert pdf_hits and all(hit["page_start"] == hit["page_end"] == 2
                             for hit in pdf_hits), found
-    assert "RecQ" in cli("get", "Test2026", "--format", "bibtex")
-    diagnosis = json.loads(cli("doctor", "--json"))
+    assert "RecQ" in cli("--paper", "show", "Test2026", "--format", "bibtex")
+    paper = json.loads(cli("--paper", "show", "Test2026", "--format", "json"))
+    assert paper["citekey"] == "Test2026", paper
+    attachments = json.loads(cli("--paper", "attachments", "Test2026", "--format", "json"))
+    assert "supplement.csv" in json.dumps(attachments), attachments
+    context = json.loads(cli("--paper", "context", "RecQ", "--format", "json"))
+    assert "RecQ" in context["context"] and context["results"], context
+    diagnosis = json.loads(cli("--index", "check", "--format", "json"))
     assert diagnosis["ok"], diagnosis
-    cli("update")
+    assert before_inspection == hashes_for(
+        path for path in workdir.rglob("*") if path.is_file()
+    ), "Inspection changed synthetic configuration, sources, selection or index"
+    update = json.loads(cli("--index", "update", "--format", "json"))
+    assert update["files_extracted"] == 0 and update["files_reused"] == 2, update
     assert hashes == source_hashes()
-    persisted = (workdir / "data/config.toml", workdir / "data/index.sqlite3")
+    persisted = tuple(path for path in (
+        selected, workdir / "data/index.sqlite3", workdir / "data/active-config.json",
+    ) if path.exists())
     check_unattended_setup(persisted[0])
     before_mcp = hashes_for(persisted)
 
@@ -184,7 +228,8 @@ def main() -> None:
                for citation in chunk["citations"]), chunk
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
-    print("Installed CLI, setup help/non-TTY safety, PDF page citations, CSV, "
+    print("Installed option CLI, bundled documentation/resources, saved selection, "
+          "setup help/non-TTY safety, PDF page citations, CSV, "
           "source immutability, persisted index and read-only MCP passed")
 
 

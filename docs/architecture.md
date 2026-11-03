@@ -22,7 +22,7 @@ The read adapter uses BibDeskParser's public interfaces for bibliography, groups
 
 ## Incremental semantics
 
-The bibliography is re-read on update (usually small relative to attachments). Metadata fingerprints avoid unnecessary writes. Identical size/mtime skips opening attachments; changed stat triggers SHA-256; identical content reuses chunks. `--verify-hashes` overrides the stat shortcut, and `index` or extraction-option changes force re-extraction. Index errors for individual sources clear stale chunks and remain visible; unexpected transaction errors roll back the snapshot. Source changes detected during parse/extraction abort the update.
+The bibliography is re-read on update (usually small relative to attachments). Metadata fingerprints avoid unnecessary writes. Identical size/mtime skips opening attachments; changed stat triggers SHA-256; identical content reuses chunks. `--verify-hashes` overrides the stat shortcut, and `--index rebuild` or extraction-option changes force re-extraction. Index errors for individual sources clear stale chunks and remain visible; unexpected transaction errors roll back the snapshot. Source changes detected during parse/extraction abort the update.
 
 An unambiguous old/new DOI allows a citation-key rename to preserve the paper ID. Duplicate DOI entries are never merged. Distinct path copies of identical content remain distinct attachments; the required common-path many-to-many sharing is deduplicated.
 

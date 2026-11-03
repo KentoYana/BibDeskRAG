@@ -12,6 +12,7 @@ import asyncio
 import hashlib
 from importlib.metadata import version
 import json
+import os
 from pathlib import Path
 import subprocess
 from tempfile import TemporaryDirectory
@@ -26,6 +27,12 @@ def sha(path):
 async def validate(app_python: Path):
     with TemporaryDirectory(prefix="bibdesk-rag-sdk-") as directory:
         root = Path(directory).resolve()
+        env = os.environ.copy()
+        env["HOME"] = str(root / "home")
+        for name in ("BIBDESK_RAG_CONFIG", "BIBDESK_RAG_HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME"):
+            env.pop(name, None)
+        for name in ("PYTHONPATH", "PYTHONHOME", "PYENV_VERSION"):
+            env.pop(name, None)
         bib, supplement, config = (
             root / "references.bib",
             root / "supplement.csv",
@@ -37,14 +44,20 @@ async def validate(app_python: Path):
             "doi={10.1234/sdk},Bdsk-File-1={supplement.csv}}",
             encoding="utf-8",
         )
-        command = [str(app_python), "-m", "bibdesk_rag.cli", "--config", str(config)]
-        for arguments in (["init", "--bib", str(bib)], ["index"]):
-            subprocess.run([*command, *arguments], check=True, capture_output=True, text=True)
+        command = [str(app_python), "-m", "bibdesk_rag.cli"]
+        for arguments in (
+            ["--config", "create", str(config), "--bib", str(bib)],
+            ["--temp", str(config), "--index", "update"],
+        ):
+            subprocess.run([*command, *arguments], env=env, check=True,
+                           capture_output=True, text=True)
         index = root / "index.sqlite3"
-        before = {path: sha(path) for path in (bib, supplement, index)}
+        selection = root / "home/.config/bibdesk-rag/active-config.json"
+        before = {path: sha(path) for path in (bib, supplement, config, index, selection)}
         server = StdioServerParameters(
             command=str(app_python),
-            args=["-m", "bibdesk_rag.mcp_server", "--config", str(config)],
+            args=["-m", "bibdesk_rag.mcp_server", "--temp", str(config)],
+            env=env,
         )
         checks = []
         async with Client(server, read_timeout_seconds=10) as client:
@@ -97,6 +110,7 @@ async def validate(app_python: Path):
             }
         assert {path: sha(path) for path in before} == before
         report["source_and_index_hashes_unchanged"] = True
+        report["configuration_and_selection_hashes_unchanged"] = True
         report["transport"] = "stdio subprocess; official SDK default auto negotiation"
         return report
 

@@ -13,7 +13,9 @@ import pytest
 
 from bibdesk_rag import cli
 from bibdesk_rag import setup
-from bibdesk_rag.config import init_config, load_config
+from bibdesk_rag.config import (
+    activate_config, active_config_path, default_config_path, init_config, load_config,
+)
 from bibdesk_rag.database import connect, doctor, initialize, status
 from bibdesk_rag.indexer import index_library
 
@@ -121,6 +123,7 @@ def test_new_setup_indexes_unicode_paths_without_touching_sources(
     code, output = invoke(config, value, "y", "y")
     assert code == 0, output
     assert load_config(config).bib == bib.resolve()
+    assert default_config_path() == config.resolve()
     result = index_status(config)
     assert result["counts"] == {"papers": 1, "attachments": 1, "chunks": 2}
     assert result["extraction_status"] == {"ok": 1}
@@ -162,6 +165,7 @@ def test_existing_configuration_and_index_are_reused_by_default(sources, monkeyp
     code, output = invoke(config, "", "")
     assert code == 0, output
     assert fingerprints(config, database, *sources[1:]) == before
+    assert default_config_path() == config.resolve()
 
 
 def test_show_existing_configuration_then_exit_preserves_files(sources):
@@ -172,6 +176,7 @@ def test_show_existing_configuration_then_exit_preserves_files(sources):
     assert code == 0, output
     assert str(sources[1]) in output and str(database) in output
     assert fingerprints(config, database, *sources[1:]) == before
+    assert not active_config_path().exists()
 
 
 @pytest.mark.parametrize("choice,rebuild", [("2", False), ("3", True)])
@@ -222,6 +227,9 @@ def test_interrupt_new_setup_preserves_sources_and_completed_configuration(
     if config.exists():
         assert load_config(config).bib == bib
         assert not load_config(config).database.exists()
+        assert default_config_path() == config.resolve()
+    else:
+        assert not active_config_path().exists()
     assert "Traceback" not in output
     assert "completed" in output.lower()
 
@@ -246,24 +254,60 @@ def test_non_tty_never_reads_or_creates_files(sources, stdin_tty, stderr_tty):
     assert stdin.reads == 0
     assert not config.exists()
     output = stderr.getvalue()
-    assert "init" in output and "index" in output
+    assert "--config create" in output and "--index update" in output
     assert str(config) in output
 
 
-def test_cli_help_works_without_terminal_and_setup_receives_global_config(
+def test_cli_help_works_without_terminal_and_setup_receives_temporary_config(
     sources, monkeypatch, capsys
 ):
     config, _, _ = sources
     with pytest.raises(SystemExit) as stopped:
-        cli.main(["setup", "--help"])
+        cli.main(["--setup", "--help"])
     assert stopped.value.code == 0
     assert "setup" in capsys.readouterr().out
     stdin, stderr = Terminal(tty=False), Terminal(tty=False)
     monkeypatch.setattr(sys, "stdin", stdin)
     monkeypatch.setattr(sys, "stderr", stderr)
-    assert cli.main(["--config", str(config), "setup"]) == 1
+    assert cli.main(["--temp", str(config), "--setup"]) == 1
     assert stdin.reads == 0
     assert str(config) in stderr.getvalue()
+
+
+@pytest.mark.parametrize("index_action,expected", [("y", 0), (KeyboardInterrupt(), 130)])
+def test_temporary_setup_preserves_saved_selection_even_after_cancellation(
+    sources, monkeypatch, tmp_path, index_action, expected
+):
+    temporary, bib, pdf = sources
+    saved = tmp_path / "saved settings/config.toml"
+    init_config(bib, saved, tmp_path / "saved data")
+    index_library(load_config(saved))
+    activate_config(saved)
+    before = fingerprints(saved, load_config(saved).database, active_config_path(), bib, pdf)
+    stdin, stderr = Terminal([str(bib), "y", index_action]), Terminal()
+    monkeypatch.setattr(sys, "stdin", stdin)
+    monkeypatch.setattr(sys, "stderr", stderr)
+    assert cli.main(["--temp", str(temporary), "--setup"]) == expected, stderr.getvalue()
+    assert temporary.exists()
+    assert default_config_path() == saved
+    assert fingerprints(*before) == before
+    if expected == 0:
+        assert index_status(temporary)["counts"]["papers"] == 1
+        assert "Configuration selection saved" not in stderr.getvalue()
+    else:
+        assert not load_config(temporary).database.exists()
+
+
+def test_cli_setup_without_temp_remembers_environment_selected_config(sources, monkeypatch):
+    config, bib, _ = sources
+    monkeypatch.setenv("BIBDESK_RAG_CONFIG", str(config))
+    stdin, stderr = Terminal([str(bib), "y", "y"]), Terminal()
+    monkeypatch.setattr(sys, "stdin", stdin)
+    monkeypatch.setattr(sys, "stderr", stderr)
+    assert cli.main(["--setup"]) == 0, stderr.getvalue()
+    monkeypatch.delenv("BIBDESK_RAG_CONFIG")
+    assert default_config_path() == config
+    assert index_status(config)["counts"]["papers"] == 1
 
 
 def test_failed_initial_index_keeps_configuration_and_can_resume(sources, monkeypatch):
@@ -280,7 +324,7 @@ def test_failed_initial_index_keeps_configuration_and_can_resume(sources, monkey
     assert config.exists()
     saved = config.read_bytes()
     assert fingerprints(bib, pdf) == before
-    code, output = invoke(config, "1", "y")
+    code, output = invoke(None, "1", "y")
     assert code == 0, output
     assert config.read_bytes() == saved
     assert index_status(config)["counts"]["papers"] == 1

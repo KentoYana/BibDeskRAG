@@ -9,7 +9,7 @@ import pytest
 from bibdesk_rag.config import init_config, load_config
 from bibdesk_rag.database import connect
 from bibdesk_rag.indexer import index_library
-from bibdesk_rag.mcp_server import MAX_INPUT_CHARS, MCPServer, TOOLS, serve
+from bibdesk_rag.mcp_server import MAX_INPUT_CHARS, MCPServer, TOOLS, main, serve
 
 
 def initialize(server, version="2025-06-18"):
@@ -223,7 +223,8 @@ def test_long_list_truncation_is_explicit(mcp_fixture):
     assert "groups" in result["truncated_fields"]
 
 
-def test_entrypoint_communicates_real_stdio(mcp_fixture):
+@pytest.mark.parametrize("option", ["--temp", "--config"])
+def test_entrypoint_communicates_real_stdio(mcp_fixture, option):
     messages = [
         {
             "jsonrpc": "2.0",
@@ -244,7 +245,7 @@ def test_entrypoint_communicates_real_stdio(mcp_fixture):
         },
     ]
     result = subprocess.run(
-        [sys.executable, "-m", "bibdesk_rag.mcp_server", "--config", str(mcp_fixture[0])],
+        [sys.executable, "-m", "bibdesk_rag.mcp_server", option, str(mcp_fixture[0])],
         input="".join(json.dumps(message) + "\n" for message in messages),
         text=True,
         capture_output=True,
@@ -255,6 +256,25 @@ def test_entrypoint_communicates_real_stdio(mcp_fixture):
     assert len(responses) == 2
     assert responses[1]["result"]["isError"] is False
     assert "helicase" in responses[1]["result"]["content"][0]["text"]
+
+
+def test_mcp_help_exposes_temp_without_legacy_option(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--help"])
+    assert exit_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--temp" in help_text and "--config" not in help_text
+
+
+def test_mcp_rejects_both_selection_spellings(tmp_path, capsys):
+    selected = tmp_path / "config.toml"
+    selected.write_text("synthetic sentinel; parser must not load configuration")
+    before = selected.read_bytes()
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--temp", str(selected), "--config", str(selected)])
+    assert exit_info.value.code == 2
+    assert "not allowed" in capsys.readouterr().err
+    assert selected.read_bytes() == before
 
 
 def test_tool_names_are_exact():

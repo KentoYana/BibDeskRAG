@@ -49,11 +49,11 @@ def invoke(monkeypatch, config, *args, stdout_tty=True, stderr_tty=True, term="x
         patch.setattr(sys, "stdout", stdout)
         patch.setattr(sys, "stderr", stderr)
         patch.setenv("TERM", term)
-        code = cli.main(["--config", str(config), *args])
+        code = cli.main(["--temp", str(config), "--index", *args])
     return code, stdout.getvalue(), stderr.getvalue()
 
 
-@pytest.mark.parametrize("command", ["index", "update"])
+@pytest.mark.parametrize("command", ["rebuild", "update"])
 def test_terminal_index_and_update_show_progress_and_compact_summary(
     progress_library, monkeypatch, command
 ):
@@ -71,20 +71,30 @@ def test_terminal_index_and_update_show_progress_and_compact_summary(
 
 @pytest.mark.parametrize(
     "arguments,stdout_tty",
-    [((), False), (("--json",), True), (("--json", "--verbose"), True)],
+    [(("--format", "json"), False), (("--format", "json"), True),
+     (("--format", "json", "--verbose"), True)],
 )
-def test_redirected_or_json_output_remains_machine_readable(
+def test_explicit_json_output_remains_machine_readable(
     progress_library, monkeypatch, arguments, stdout_tty
 ):
     config, _, _ = progress_library
     code, stdout, stderr = invoke(
-        monkeypatch, config, "index", *arguments, stdout_tty=stdout_tty
+        monkeypatch, config, "rebuild", *arguments, stdout_tty=stdout_tty
     )
     assert code == 0
     report = json.loads(stdout)
     assert report["papers_added"] == 1
     assert report["files_extracted"] == 1
     assert report["errors"] == []
+    assert "\r" not in stderr
+
+
+def test_redirected_default_output_stays_text_without_progress(progress_library, monkeypatch):
+    config, _, _ = progress_library
+    code, stdout, stderr = invoke(monkeypatch, config, "update", stdout_tty=False)
+    assert code == 0
+    assert stdout.startswith("Update complete:")
+    assert "Attachment issues: 0" in stdout
     assert "\r" not in stderr
 
 
@@ -97,10 +107,10 @@ def test_progress_can_be_disabled_without_losing_human_summary(
 ):
     config, _, _ = progress_library
     code, stdout, stderr = invoke(
-        monkeypatch, config, "index", *arguments, stderr_tty=stderr_tty, term=term
+        monkeypatch, config, "rebuild", *arguments, stderr_tty=stderr_tty, term=term
     )
     assert code == 0
-    assert stdout.startswith("Index complete:")
+    assert stdout.startswith("Rebuild complete:")
     assert "\r" not in stderr
 
 
@@ -118,7 +128,7 @@ def test_real_pdf_recovery_warnings_are_summarized_and_json_stays_clean(
     config, _, pdf = progress_library
     corrupt_startxref(pdf)
     before = hashlib.sha256(pdf.read_bytes()).hexdigest()
-    code, stdout, stderr = invoke(monkeypatch, config, "index", "--json")
+    code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--format", "json")
     assert code == 0
     report = json.loads(stdout)
     assert report["files_extracted"] == 1
@@ -136,9 +146,9 @@ def test_verbose_keeps_dependency_warnings_and_disables_bar(
     config, _, pdf = progress_library
     corrupt_startxref(pdf)
     with caplog.at_level(logging.WARNING, logger="pypdf"):
-        code, stdout, stderr = invoke(monkeypatch, config, "index", "--verbose")
+        code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--verbose")
     assert code == 0
-    assert stdout.startswith("Index complete:")
+    assert stdout.startswith("Rebuild complete:")
     assert "incorrect startxref pointer" in caplog.text
     assert "Parser diagnostics:" not in stderr
     assert "\r" not in stderr
@@ -160,9 +170,9 @@ def test_many_diagnostics_are_bounded_and_logging_warning_state_is_restored(
         return original_index(*args, **kwargs)
 
     monkeypatch.setattr(cli, "index_library", noisy_index)
-    code, stdout, stderr = invoke(monkeypatch, config, "index", "--no-progress")
+    code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--no-progress")
     assert code == 0
-    assert stdout.startswith("Index complete:")
+    assert stdout.startswith("Rebuild complete:")
     assert "Parser diagnostics: 1001" in stderr
     assert "--verbose" in stderr
     assert len(stderr) < 2000
@@ -186,16 +196,16 @@ def test_attachment_issue_previews_are_bounded_but_json_keeps_all_details(
         return result
 
     monkeypatch.setattr(cli, "index_library", index_with_issues)
-    code, stdout, stderr = invoke(monkeypatch, config, "index", "--no-progress")
+    code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--no-progress")
     assert code == 0
     assert "Attachment issues: 100" in stdout
     assert len(stderr) < 2500
     assert "\x1b[31m" not in stderr
-    code, stdout, stderr = invoke(monkeypatch, config, "index", "--json")
+    code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--format", "json")
     assert code == 0
     assert json.loads(stdout)["errors"] == issues
     assert "\r" not in stderr
-    code, _, stderr = invoke(monkeypatch, config, "index", "--verbose")
+    code, _, stderr = invoke(monkeypatch, config, "rebuild", "--verbose")
     assert code == 0
     assert "file-99" in stderr
     assert "\r" not in stderr
@@ -216,7 +226,7 @@ def test_failure_or_interrupt_finishes_progress_line_without_false_completion(
         raise exception
 
     monkeypatch.setattr(cli, "index_library", fail)
-    code, stdout, stderr = invoke(monkeypatch, config, "index")
+    code, stdout, stderr = invoke(monkeypatch, config, "rebuild")
     assert code == expected_code
     assert "complete" not in stdout.lower()
     assert "\r" in stderr
