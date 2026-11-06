@@ -40,6 +40,9 @@ class Terminal(StringIO):
 
 @pytest.fixture(autouse=True)
 def isolated_setup(monkeypatch, tmp_path):
+    # Existing tests isolate the original onboarding stages. Full semantic-choice
+    # transcripts (including declining) live in test_setup_semantic.py.
+    monkeypatch.setattr(setup, "configure_semantic", lambda terminal, config, path, state: config)
     for name in (
         "BIBDESK_RAG_CONFIG", "BIBDESK_RAG_HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME"
     ):

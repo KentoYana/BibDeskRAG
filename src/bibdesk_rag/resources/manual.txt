@@ -130,8 +130,7 @@ SEARCH AND EVIDENCE
 
 Default all-scope search selects up to 100 metadata candidates and searches their
 indexed text. If no metadata candidates match, it falls back to indexed text.
-DOI/citekey exact lookup is independent of BM25. No semantic embedding model or
-OCR is used. Metadata matches do not by themselves establish full-text evidence.
+DOI/citekey exact lookup is independent of BM25. Keyword mode uses no embeddings. OCR is not performed. Metadata matches do not by themselves establish full-text evidence.
 
 Citations identify citekey, DOI when present, attachment path, chunk ID and PDF
 page range, sheet/row or ZIP member location. PDF pages start at 1 from the file's
@@ -150,7 +149,7 @@ errors while other files continue. Update after BibDesk changes or source moves.
 
 Supported text inputs: PDF, CSV/TSV, XLSX and safe ZIP members. Spreadsheet formulas
 are never executed. Archive traversal, symlinks, encryption and excessive sizes
-are rejected. No automatic network requests, downloads, embeddings or OCR occur.
+are rejected. No automatic network requests, downloads or OCR occur. Semantic inference is opt-in.
 Configuration, index and SQLite sidecars must not overlap source files.
 
 EXAMPLES
@@ -302,7 +301,7 @@ TERMがdumbでない場合に表示します。JSONでは進捗を無効にし�
 
 既定all検索は最大100件の書誌候補を選んで索引本文を検索し、書誌候補がなければ
 索引本文全体へフォールバックします。DOI/citekey完全一致はBM25と独立しています。
-埋め込み意味検索・OCRは使わず、書誌一致だけを本文の証拠とは扱いません。
+既定のキーワード検索は埋め込みを使いません。OCRは行わず、書誌一致だけを本文の証拠とは扱いません。
 
 引用はcitekey、記録がある場合のDOI、添付パス、chunk ID、PDFページ範囲または
 シート・行・ZIPメンバーを示します。PDFはファイル先頭を1ページとします。
@@ -320,7 +319,7 @@ BibDeskの変更・原本移動後には索引を更新してください。
 
 対応本文はPDF、CSV/TSV、XLSX、安全なZIPメンバーです。数式は実行せず、
 アーカイブのパス逸脱・symlink・暗号化・過大サイズを拒否します。
-自動ネットワーク通信、ダウンロード、埋め込み、OCRは行いません。
+自動ネットワーク通信・ダウンロード・OCRは行いません。意味検索は任意です。
 設定・索引・SQLite補助ファイルは原本と重ねてはいけません。
 
 操作例 / EXAMPLES
@@ -352,3 +351,43 @@ BibDeskの変更・原本移動後には索引を更新してください。
 --config PATH 互換引数を保持します。通常の新規登録は引数なしで選択中の設定に追従し、
 設定を固定する場合だけ --temp PATH を使います。
 MCPツール名・スキーマは変わりません。
+
+SEMANTIC SEARCH / 意味検索（任意）
+  --setup: choose semantic search; a new config defaults to no.
+  A missing model is downloaded only after an explicit second choice.
+  Selecting no never loads inference dependencies or downloads a model.
+  Existing configs retain the current choice as the default.
+  Setup changes only the selected semantic.enabled option, preserving other TOML/comments.
+
+  Development: use .python-version Python 3.12.13 and the existing .venv.
+    .venv/bin/python -m pip install -e '.[dev,semantic]'
+  Pip: install the semantic extra in your existing standard venv if needed.
+  Homebrew Apple Silicon: locked inference wheels are included in the Formula environment.
+  No additional venv or runtime pip installation is needed. Model weights are separate.
+
+  --index update      Update bibliography/text and enabled title/abstract vectors
+  --index rebuild     Rebuild derived text and enabled vectors
+  --index status      Show metadata/text/vector coverage, stale count, model and timestamps
+  --index check       Read-only SQLite/FTS/vector integrity checks; no model required
+  --semantic download Explicit noninteractive model download (requires enabled=true)
+  --paper search QUERY --mode semantic [--top N]
+  --paper search QUERY --mode keyword    Existing default behavior
+
+  Semantic limit defaults to semantic.default_limit (5); range 1..100.
+  Query limit: 2,000 characters and the configured model token limit.
+  Keyword scopes/filters do not apply to semantic mode.
+  MCP: semantic_search_papers(query, limit=5); existing tools remain compatible.
+  The same index.sqlite3 stores metadata, fulltext and float32 vectors.
+  Existing schema 1 migrates transactionally to schema 2 on update/rebuild.
+  Older binaries that only support schema 1 cannot open the upgraded index.
+  Model preflight happens before writes; fatal failures roll back both index updates.
+  Disabled semantic search retains old vectors and reports stale content as a warning.
+
+  Embeddings are numerical representations, not LLM text generation.
+  Only title/abstract are embedded; PDF text, authors and journals are excluded.
+  Similarity is not a probability. Verify scientific claims against originals.
+  Long abstracts are split by actual token counts; each paper appears once.
+  Missing abstracts are flagged title_only; empty entries are skipped/counted.
+  Model/signature changes require --index update. All normal retrieval is offline.
+  Setup/model acquisition never uploads bibliography text.
+  設定・モデル取得・統合索引・MCPの詳細: docs/semantic-search.md

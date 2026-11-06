@@ -347,7 +347,7 @@ bibdesk-rag --paper search "UV" --scope fulltext --citekey Example2025 --citekey
 bibdesk-rag --paper context "UV-induced mutagenesis" --top 5 --max-chars 10000
 ```
 
-Exact DOI/citekey matches take priority. Duplicate DOI entries are retained; FTS input is not executed as SQL or FTS syntax. There is no semantic search or synonym inference. Default `--scope all` selects up to 100 metadata candidates and searches their text; without metadata matches, it falls back to all indexed text. Metadata-only records can also be returned; inspect `source_type`.
+Exact DOI/citekey matches take priority. Duplicate DOI entries are retained; FTS input is not executed as SQL or FTS syntax. This keyword mode does not perform semantic inference; optional semantic mode is documented separately. Default `--scope all` selects up to 100 metadata candidates and searches their text; without metadata matches, it falls back to all indexed text. Metadata-only records can also be returned; inspect `source_type`.
 
 `--doi/--author/--year` apply only to metadata search. `--metadata-query` restricts text candidates for all-scope search/context and cannot be combined with `--citekey`. Full-text retrieval accepts repeated citekeys; exact metadata lookup accepts one. Inapplicable combinations fail.
 
@@ -382,7 +382,7 @@ A normalized path shared by several papers is extracted once. Writes are transac
 | `--config PATH` (one-time CLI override) | `--temp PATH` |
 | `--json` | `--format json` |
 
-Old syntax fails with migration guidance. The MCP server retains a hidden `--config PATH` compatibility argument for existing registrations; normal new registrations omit arguments to follow the selected configuration; use `--temp PATH` only to pin a configuration. The six MCP tool names/schemas are unchanged.
+Old syntax fails with migration guidance. The MCP server retains a hidden `--config PATH` compatibility argument for existing registrations; normal new registrations omit arguments to follow the selected configuration; use `--temp PATH` only to pin a configuration. The six existing MCP tool names/schemas are unchanged; semantic_search_papers is additive.
 
 The old macOS configuration `~/Library/Application Support/bibdesk-rag/config.toml` is not auto-detected. Select it once to keep using it. No index move or rebuild is needed.
 
@@ -403,3 +403,7 @@ New defaults are `~/.config/bibdesk-rag/config.toml` and `~/.local/share/bibdesk
 - PDF reading order, columns and table reconstruction depend on pypdf. Extracted text does not replace original sources.
 - The index is plaintext local SQLite; files are created with mode 0600. Users manage backups and OS permissions.
 - Biological-identifier normalization assists matching; it does not imply different experimental conditions or mutants are equivalent.
+
+## Optional semantic search / 任意の意味検索
+
+Use `--setup` for the semantic/model choice, `--semantic download` for explicit noninteractive acquisition, unified `--index update|rebuild|status|check`, and `--paper search QUERY --mode semantic --top N`. Keyword is still the default; `--mode keyword` makes it explicit. See the [Japanese/English semantic search guide](semantic-search.md) for optional dependencies, single-file SQLite, Homebrew, configuration, offline operation and MCP examples. Embeddings compare title/abstract only and do not generate text.

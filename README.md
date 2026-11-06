@@ -8,7 +8,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.3.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.4.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
@@ -166,7 +166,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-この操作でCodexのMCP設定に `bibdesk-rag` を追加します。同名の登録がある場合は、先に `codex mcp get bibdesk-rag` で内容を確認してください。Homebrewの版番号を含まない実行パスを使うため、通常のアップグレード後も登録を使えます。索引を作る操作はCLIで行い、Codexへ公開するのは検索・参照の6ツールだけです。
+この操作でCodexのMCP設定に `bibdesk-rag` を追加します。同名の登録がある場合は、先に `codex mcp get bibdesk-rag` で内容を確認してください。Homebrewの版番号を含まない実行パスを使うため、通常のアップグレード後も登録を使えます。索引を作る操作はCLIで行い、Codexへ公開するのは検索・参照の7ツールだけです。
 
 GUI・CLIのどちらで登録した場合も、登録内容の表示だけでは接続成功の確認にはなりません。MCP接続を再起動し、新しいチャットで次の検索を試してください。接続できない場合はCodexのアプリまたはCLIセッションも再起動します。MCPサーバーはCodexが起動するため、ターミナルで常時起動したり `brew services` に登録したりする必要はありません。[OpenAI公式MCP設定手順](https://learn.chatgpt.com/docs/extend/mcp)
 
@@ -222,9 +222,24 @@ brew uninstall KentoYana/tap/bibdesk-rag
 
 索引の補助ファイル、以前の保存先や独自の保存先、Codex CLIも削除する場合については、[詳しい削除手順](docs/codex.md#接続解除とアンインストール) に従ってください。
 
+## Title・Abstractの意味検索（任意）
+
+日本語・英語の自然文から関連する文献候補を検索できます。Embeddingは数値による比較で、LLMによる文章生成ではありません。既定のキーワード検索は変わりません。PDF本文・添付・著者などは埋め込みません。
+
+`--setup` で利用するかを選び、モデル未取得の場合だけ明示的にダウンロードします。Apple SiliconのHomebrew版は推論依存を同じ環境に含みます。ソース開発では既存の `.venv` に `.[semantic]` を導入します。
+
+```sh
+bibdesk-rag --setup
+bibdesk-rag --index update
+bibdesk-rag --paper search "相同組換え修復" --mode semantic --top 5
+bibdesk-rag --index status --format json
+```
+
+索引は従来のSQLiteに統合し、`--index update/rebuild/status/check` で両検索方式を管理します。モデル取得だけが明示的にネットワークを使い、その後はCPUでオフライン実行します。MCPには `semantic_search_papers(query, limit=5)` を追加しました。対話型setup・統合SQLite・Homebrew・モデル変更・制約は [意味検索ガイド](docs/semantic-search.md) を参照してください。
+
 ## 検索できるものとデータの扱い
 
-- 対応形式はPDF・CSV・TSV・XLSX・ZIPです。書誌情報と抽出できた本文をSQLite FTS5で検索します。意味検索・埋め込みモデル・OCRは使いません。
+- 対応形式はPDF・CSV・TSV・XLSX・ZIPです。書誌情報と抽出できた本文をSQLite FTS5で検索します。オプションの意味検索はTitle・Abstractだけを対象とします。OCRは行いません。
 - PDFはページ番号、CSV/TSVはレコード行、XLSXはシートと行、ZIPは内部ファイル名を出典として返します。本文の検索結果にはchunk IDがあります。
 - 本文なし・部分抽出・未対応形式を区別します。画像だけのPDF、暗号化や破損のある資料、段組・表などは本文を十分取得できない場合があります。研究上の主張は原本で確認してください。
 - BibDesk RAGの索引作成・検索はローカルで完結し、外部API送信やモデルの自動ダウンロードはしません。**Codexへ返した書誌情報・抜粋は、Codex側のモデル処理に渡ります。** その扱いはCodexの契約・設定に従います。
@@ -273,7 +288,7 @@ sdistとwheelを `dist/` に生成します。公開用Formulaには、実際に
 
 - [検証記録](docs/validation.md) / [Homebrew検証](docs/homebrew-validation.md) / [MCP検証](docs/mcp-validation.md)
 - [Codex接続の詳細](docs/codex.md) / [CLI・設定・抽出仕様](docs/usage.md)
-- [設計と拡張](docs/architecture.md)：ローカルembedding、ハイブリッド検索、OCR、図表解析は未実装です。
+- [設計と拡張](docs/architecture.md)：Title・Abstractのローカル意味検索を追加しました。ハイブリッド検索、OCR、図表解析は未実装です。
 - [MIT License](LICENSE) / [第三者ライセンスと依存一覧](THIRD_PARTY_NOTICES.md)
 
 ---
@@ -286,7 +301,7 @@ A local tool for searching and consulting literature managed in BibDesk from Cod
 
 The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
 
-The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.3.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.4.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
 
 These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
 
@@ -445,7 +460,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives only six retrieval tools.
+This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives seven read-only retrieval tools.
 
 With either registration method, a displayed entry alone does not verify connectivity. Restart the MCP connection and try the search in a new chat. If needed, restart the Codex application or CLI session too. Codex launches the server; it does not need a persistent terminal process or `brew services` registration. See the [official MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp).
 
@@ -501,9 +516,24 @@ brew uninstall KentoYana/tap/bibdesk-rag
 
 For index sidecars, old/custom locations and optional Codex CLI removal, follow the [detailed removal instructions](docs/codex.md#disconnecting-and-uninstalling).
 
+## Optional title/abstract semantic search
+
+Find English papers using Japanese or English natural-language queries with a local multilingual model. Embeddings are numerical representations, not LLM text generation. Only title/abstract are embedded; keyword search remains the default.
+
+Run `bibdesk-rag --setup` to choose semantic search and explicitly acquire its model. For source development, install the semantic extra into the existing `.venv`:
+
+```sh
+bibdesk-rag --setup
+bibdesk-rag --index update
+bibdesk-rag --paper search "DNA repair mechanisms" --mode semantic --top 5
+bibdesk-rag --index status --format json
+```
+
+Bibliography/text and vectors share the same SQLite and `--index` actions. Only explicit model download needs network. Indexing and search run offline on CPU. MCP adds `semantic_search_papers(query, limit=5)`. See the [semantic search guide](docs/semantic-search.md) for setup, unified SQLite/index actions, Homebrew, model changes and validation.
+
 ## Search coverage and data handling
 
-- Supported formats: PDF, CSV, TSV, XLSX and ZIP. Metadata and extracted text are searched with SQLite FTS5. There is no semantic search, embedding model or OCR.
+- Supported formats: PDF, CSV, TSV, XLSX and ZIP. Metadata and extracted text are searched with SQLite FTS5. Optional semantic search embeds title/abstract only. OCR is not performed.
 - Citations identify PDF pages, CSV/TSV record rows, XLSX sheets/rows or ZIP member names. Full-text results include chunk IDs.
 - Missing text, partial extraction and unsupported formats are distinguished. Image-only, encrypted or damaged PDFs, columns and tables may yield insufficient text. Verify scientific claims against original sources.
 - Indexing and search run locally, without external API submission or automatic model downloads. **Metadata/excerpts returned to Codex are passed to Codex's model processing**, subject to its terms and settings.
@@ -552,5 +582,5 @@ This generates sdist and wheel in `dist/`. A published Formula needs actual fixe
 
 - [Validation record](docs/validation.md#english) / [Homebrew validation](docs/homebrew-validation.md#english) / [MCP validation](docs/mcp-validation.md#english)
 - [Codex connection guide](docs/codex.md#english) / [CLI, configuration and extraction](docs/usage.md#english)
-- [Architecture and extensions](docs/architecture.md#english): local embeddings, hybrid search, OCR and figure/table analysis are not implemented.
+- [Architecture and extensions](docs/architecture.md#english): local title/abstract embeddings are optional; hybrid search, OCR and figure/table analysis are not implemented.
 - [MIT License](LICENSE) / [Third-party licenses and dependencies](THIRD_PARTY_NOTICES.md#english)

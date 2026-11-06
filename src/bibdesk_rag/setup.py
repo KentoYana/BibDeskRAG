@@ -1,12 +1,12 @@
 """Interactive onboarding, using the same read-only sources and index operations as CLI.
 
 All prompts and human diagnostics go to stderr. No source text is printed, and
-no command is interpreted by a shell. Existing configuration is never rewritten.
+no command is interpreted by a shell. Only an explicitly chosen semantic.enabled option is changed in existing configuration.
 """
 
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from dataclasses import asdict, dataclass, field
 import io
 import json
@@ -22,6 +22,7 @@ from . import __version__
 from .bibdesk import read_library
 from .config import (
     Config, activate_config, default_config_path, default_data_dir, init_config, load_config,
+    set_semantic_enabled,
 )
 from .config import check_output_locations as check_config_output_locations
 from .database import connect, status
@@ -49,10 +50,12 @@ class Terminal:
             raise EOFError
         return line.rstrip("\r\n")
 
-    def yes(self, prompt: str) -> bool:
+    def yes(self, prompt: str, *, default: bool = True) -> bool:
         while True:
-            answer = self.ask(prompt + " [Y/n] ").strip().lower()
-            if answer in ("", "y", "yes"):
+            answer = self.ask(prompt + (" [Y/n] " if default else " [y/N] ")).strip().lower()
+            if not answer:
+                return default
+            if answer in ("y", "yes"):
                 return True
             if answer in ("n", "no"):
                 return False
@@ -92,9 +95,20 @@ def private_diagnostics(terminal: Terminal):
 
 
 def read_index_status(config: Config) -> dict:
-    db = connect(config.database, readonly=True)
     try:
-        result = status(db)
+        db = connect(config.database, readonly=True)
+    except ValueError:
+        # A first all-or-nothing build can leave only an empty SQLite header.
+        # Recognize it read-only; do not adopt any database with user tables.
+        with closing(sqlite3.connect(config.database.resolve().as_uri() + "?mode=ro", uri=True)) as empty:
+            if (empty.execute("PRAGMA application_id").fetchone()[0] == 0
+                    and empty.execute("PRAGMA user_version").fetchone()[0] == 0
+                    and not empty.execute("SELECT 1 FROM sqlite_master WHERE name NOT LIKE "
+                                          "'sqlite_%' LIMIT 1").fetchone()):
+                raise IncompleteIndex("Index has no completed build; choose update to resume")
+        raise
+    try:
+        result = status(db, config)
     finally:
         db.close()
     if result["settings"].get("bib_path") not in (None, str(config.bib)):
@@ -148,6 +162,9 @@ def show_counts(terminal: Terminal, result: dict) -> None:
     terminal.say(f"Text chunks: {counts['chunks']:,}")
     terminal.say(f"Extraction succeeded: {extracted:,}")
     terminal.say(f"Extraction incomplete/failed/unsupported: {counts['attachments'] - extracted:,}")
+    semantic = result["semantic"]
+    terminal.say(f"Semantic: {semantic['indexed']:,}/{semantic['eligible']:,} papers; "
+                 f"{semantic['vectors']:,} vectors; enabled={semantic['enabled']}")
 
 
 def manual_commands(terminal: Terminal, config_path: Path) -> None:
@@ -191,6 +208,54 @@ class SetupState:
     index_ready: bool = False
     registered: bool = False
     handshake: bool = False
+    embedding_backend: object = None
+
+
+def configure_semantic(terminal: Terminal, config: Config, path: Path,
+                       state: SetupState) -> Config:
+    terminal.say("Semantic search compares title/abstract meaning locally on CPU.")
+    terminal.say("It does not embed PDF text or generate summaries. A model is needed only "
+                 "if you choose this feature; selecting no loads/downloads nothing.")
+    if not terminal.yes("Use semantic search?", default=config.semantic.enabled):
+        selected = set_semantic_enabled(path, False)
+        state.completed.append("Semantic search disabled; stored vectors retained")
+        return selected
+    from .embeddings import SentenceTransformerBackend, download_model, model_is_cached
+    from .semantic import protect
+
+    with private_diagnostics(terminal):
+        protect(config, path)
+    terminal.say("Model: " + display(config.semantic.model) + " @ "
+                 + display(config.semantic.revision))
+    try:
+        cached = model_is_cached(config.semantic)
+    except (ImportError, ValueError) as exc:
+        raise SetupProblem("Semantic dependencies are missing. Install the semantic extra "
+                           "in this Python environment during installation, then retry setup. "
+                           "Homebrew requires a Formula that includes semantic dependencies; "
+                           "do not pip-install into Cellar/libexec.") from exc
+    if not cached:
+        terminal.say("The model is not cached. Only model files will be downloaded; "
+                     "no bibliography text is uploaded.")
+        if not terminal.yes("Download this model from Hugging Face now?", default=False):
+            terminal.say("Model download skipped; semantic search is disabled for now.")
+            return set_semantic_enabled(path, False)
+        try:
+            download_model(config.semantic)
+        except Exception as exc:
+            raise SetupProblem("Model download failed; configuration/index were retained. "
+                               "Check network/cache access and retry --setup.") from exc
+    else:
+        terminal.say("Cached model found; no download needed.")
+    try:
+        state.embedding_backend = SentenceTransformerBackend(config.semantic)
+    except (ImportError, ValueError, RuntimeError, OSError) as exc:
+        raise SetupProblem("The local model could not be loaded. Configuration/index retained; "
+                           "check semantic dependencies, model dimensions and token limit.") from exc
+    config = set_semantic_enabled(path, True)
+    state.completed.append("Semantic search enabled; local model verified")
+    terminal.say("All subsequent indexing/search uses the local cache.")
+    return config
 
 
 def select_library(terminal: Terminal, config_path: Path, state: SetupState) -> Config:
@@ -234,7 +299,7 @@ def use_existing(terminal: Terminal, config: Config) -> bool:
         terminal.say("Extraction limits: " + json.dumps(asdict(config.extraction), sort_keys=True))
 
 
-def build_index(terminal: Terminal, config: Config, state: SetupState) -> None:
+def build_index(terminal: Terminal, config: Config, state: SetupState, config_path=None) -> None:
     if config.database.exists():
         choice = terminal.choose(
             "Existing index found.\n[1] Use existing index\n"
@@ -263,7 +328,8 @@ def build_index(terminal: Terminal, config: Config, state: SetupState) -> None:
     with private_diagnostics(terminal), IndexProgressBar(
         enabled=os.environ.get("TERM") != "dumb", stream=terminal.stderr
     ) as progress:
-        result = index_library(config, rebuild=rebuild, progress=progress.update)
+        result = index_library(config, rebuild=rebuild, progress=progress.update,
+                               config_path=config_path, backend=state.embedding_backend)
     # Mark the commit before any subsequent diagnostic can fail or be interrupted.
     state.completed.append("Search index built" if rebuild else "Search index updated")
     terminal.say(f"Index operation complete: {result['papers_added']:,} papers added, "
@@ -356,7 +422,7 @@ def run_setup(config_path: Path | None = None, *, remember: bool = True,
         codex = discover_executable("codex")
         terminal.say("MCP executable: " + (display(mcp) if mcp else "not found"))
         terminal.say("Codex CLI: " + (display(codex) if codex else "not found"))
-        state.stage = "[1/5] Select your BibDesk library"
+        state.stage = "[1/6] Select your BibDesk library"
         terminal.say("\n" + state.stage)
         if path.exists() or path.is_symlink():
             config = read_setup_config(path)
@@ -385,20 +451,31 @@ def run_setup(config_path: Path | None = None, *, remember: bool = True,
             terminal.say("  " + display(shlex.join([
                 "bibdesk-rag", "--config", "use", str(path),
             ])))
-        state.stage = "[2/5] Build search index"
+        state.stage = "[2/6] Choose semantic search"
         terminal.say("\n" + state.stage)
-        build_index(terminal, config, state)
-        state.stage = "[3/5] Connect to Codex"
+        config = configure_semantic(terminal, config, path, state)
+        state.stage = "[3/6] Build search index"
+        terminal.say("\n" + state.stage)
+        build_index(terminal, config, state, path)
+        state.stage = "[4/6] Connect to Codex"
         terminal.say("\n" + state.stage)
         mcp_config = None if remember else path
         connect_codex(terminal, codex, mcp, mcp_config, state)
-        state.stage = "[4/5] Verify local connection"
+        state.stage = "[5/6] Verify local connection"
         terminal.say("\n" + state.stage)
         checked_config = read_setup_config(path)
         terminal.say("Configuration readable.")
         if state.index_ready:
-            read_index_status(checked_config)
+            checked_status = read_index_status(checked_config)
             terminal.say("Search index opened read-only; status retrieved.")
+            semantic_status = checked_status["semantic"]
+            if checked_config.semantic.enabled and (
+                semantic_status["missing"] or semantic_status["stale"]
+                or state.embedding_backend is None
+                or semantic_status["model"] != state.embedding_backend.info.as_dict()
+            ):
+                terminal.say("Semantic vectors are not ready; the existing keyword/text index "
+                             "was retained as chosen. Run --index update before semantic search.")
         if mcp is not None:
             terminal.say("MCP executable: " + display(mcp))
             if state.index_ready:
@@ -410,7 +487,7 @@ def run_setup(config_path: Path | None = None, *, remember: bool = True,
                                  "Configuration and search index are retained.")
         else:
             terminal.say("MCP server handshake not verified: executable not found.")
-        state.stage = "[5/5] Finish"
+        state.stage = "[6/6] Finish"
         terminal.say("\n" + state.stage)
         terminal.say("BibDesk RAG Setup Complete" if state.index_ready
                      else "BibDesk RAG Setup Finished (index creation skipped)")

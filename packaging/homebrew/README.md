@@ -35,6 +35,25 @@ Formula は Homebrew の `python@3.14` と `Language::Python::Virtualenv` を使
 ユーザーのグローバル pip パッケージを参照せず、pyenv も必要としません。
 実行時に pip、外部API、モデルダウンロードを呼びません。
 
+Apple Silicon版では、NumPy/SentenceTransformers/PyTorchと追加の推論依存を
+既存のFormula環境へ導入します。`build-resources.json` の `semantic_runtime` 行を
+同じ `bibdesk-rag-build-wheels.tar.gz` に同梱し、`PIP_NO_INDEX=1` でインストールします。
+別venvや実行時pipは使いません。モデル本体は含まず、`--setup` の選択時だけ取得します。
+推論wheelはPython 3.14・macOS 14以上のarm64用です。Intel版は従来の基本検索を維持します。
+`tools/lock_semantic_resources.py` はテスト済み `.venv` から追加依存を辿り、
+明示的にwheelを取得してPyPIのSHA-256と照合します。モデルは取得しません。
+変更前後のライセンスとネイティブ依存を確認し、Formula導入・import・実推論を検証してください。
+
+```sh
+.venv/bin/python -m pip install -e '.[dev,semantic]'
+.venv/bin/python tools/lock_semantic_resources.py
+.venv/bin/python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz
+```
+
+基本の依存resourceやbackendを更新した場合は、semantic lockも再生成してください。
+設定と統合SQLite・モデルキャッシュはFormulaの更新・再導入でも削除しません。
+手順は [意味検索ガイド](../../docs/semantic-search.md) を参照してください。
+
 29 の実行時 Python 依存の sdist は `resources.json` と Formula 内に URL・
 バージョン・SHA-256 を固定しています。lxml は Homebrew の libxml2/libxslt を使って
 ソースからビルドします。Python 本体やネイティブライブラリの patch 更新は
@@ -45,8 +64,7 @@ PEP 517 ビルドには異なる setuptools の版が必要です。公開 PyPI 
 macOS arm64 / x86_64 用を含み、各ファイルと bundle 全体の SHA-256 を検証します。
 Formula は `PIP_NO_INDEX=1` とローカル `PIP_FIND_LINKS` でビルドし、ビルド中に
 未固定の依存を取得しません。標準ヘルパーの `--no-binary` のみを解除するのは
-この backend wheel を使用するためです。アプリ本体・実行時依存は明示した sdist
-からビルドします。BibDeskParser の upstream backend 名は `uv_build` ですが、
+固定backendとarm64推論wheelを使用するためです。アプリ本体・基本の実行時依存は明示したsdistからビルドします。BibDeskParser の upstream backend 名は `uv_build` ですが、
 uv パッケージマネージャーは使用せず、pip から backend を呼びます。
 socksio の古い flit 2 は Python 3.14 で廃止された ast.Str を使用するため、
 Formula は一時的なビルド要件のみ flit 3.12.0 に修正します。実行時コードは変更しません。
@@ -320,7 +338,8 @@ python tools/lock_homebrew_resources.py
 brew update-python-resources KentoYana/tap/bibdesk-rag --print-only
 ```
 
-The first command recursively resolves pyproject dependencies, downloads the installed versions' PyPI sdists, verifies SHA-256 and updates JSON/template. `--print-only` inspects the published Formula; maintain its backend-bundle resource manually.
+After backend changes, run `tools/lock_semantic_resources.py` to restore the semantic wheel lock.
+The first command recursively resolves base pyproject dependencies, downloads the installed versions' PyPI sdists, verifies SHA-256 and updates JSON/template. `--print-only` inspects the published Formula; maintain its backend-bundle resource manually.
 
 Backend updates are separate. Prepare a new empty `.build-wheels/` directory, inspect build requirements in target sdists' `pyproject.toml` / `setup.py`, and obtain wheels with pip. Both Python 3.14 arm64 and x86_64 are required. Retrieve the current set with the following; if compatibility-tag resolution changes, use the fixed URLs in `build-resources.json`.
 
@@ -335,3 +354,14 @@ For a newly selected wheel set, run `python tools/lock_build_resources.py .build
 `test.yml` runs Python 3.11–3.14 tests on Linux/macOS. `package.yml` checks archives, generates `SHA256SUMS`, and on macOS performs normal wheel/sdist installation plus local Homebrew style/audit/source install/functional tests/data-retention checks. It retains artifacts without permission to publish GitHub releases or the tap. Intel backend wheels are included; record actual Intel-machine validation separately.
 
 Official references: [Python Formula](https://docs.brew.sh/Language-Specific-Formulae#python), [Formula Cookbook](https://docs.brew.sh/Formula-Cookbook).
+
+## Semantic inference wheels (Apple Silicon)
+
+The existing offline bundle now also contains 31 PyPI-verified runtime wheels, marked
+`semantic_runtime` in `build-resources.json`. Some overlap build backends. The Formula
+installs them into its one managed venv on arm64, without dependencies/network resolution,
+then checks dependency consistency. Base runtime sdists remain locked separately. This
+keeps pip extras optional while Homebrew Apple Silicon supports the setup choice without
+a companion venv. The model cache is acquired only by an explicit setup/download action.
+The binary runtime lock targets Python 3.14/macOS 14+ arm64; Intel retains base retrieval.
+Run the semantic lock tool after changing either backend or base/runtime dependency locks.

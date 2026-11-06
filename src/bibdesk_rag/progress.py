@@ -41,6 +41,8 @@ class IndexProgressBar:
         self._phase = event.phase
         if event.phase == "reading":
             line = "Reading bibliography..."
+        elif event.phase == "embedding":
+            line = "Embedding title/abstract on local CPU..."
         elif event.phase == "committing":
             line = "Saving index..."
         else:

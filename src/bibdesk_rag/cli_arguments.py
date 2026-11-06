@@ -45,6 +45,9 @@ def parser() -> argparse.ArgumentParser:
                               "rebuild  Re-extract all derived index data\n"
                               "status   Display counts and last update information\n"
                               "check    Check index integrity without changing it"))
+    choice.add_argument("--semantic", action=Once,
+                        choices=("download",),
+                        help="Explicit model download; manage all index data with --index")
     choice.add_argument("-p", "--paper", nargs="+", action=Once, metavar=("ACTION", "VALUE"),
                         help=("search QUERY     Search bibliography metadata and indexed text\n"
                               "show KEY         Retrieve a paper by citekey\n"
@@ -62,6 +65,8 @@ def parser() -> argparse.ArgumentParser:
     output.add_argument("--verbose", action="store_true", help="Show all indexing diagnostics")
     output.add_argument("--no-progress", action="store_true", help="Hide the indexing progress bar")
     search = p.add_argument_group("Search and context")
+    search.add_argument("--mode", choices=("keyword", "semantic"),
+                        help="Paper search mode (default: keyword; semantic uses title/abstract)")
     search.add_argument("--scope", choices=("all", "metadata", "fulltext"),
                         help="Search scope (default: all)")
     search.add_argument("--top", type=int, metavar="N", help="Result limit (1..100)")
@@ -105,7 +110,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
         p.error("unrecognized arguments: " + " ".join(unknown) + "\n" + hint)
     supplied = vars(args).copy()
     primary = next((key for key in (
-        "version", "example", "readme", "output", "setup", "configuration", "index", "paper"
+        "version", "example", "readme", "output", "setup", "configuration", "index", "semantic", "paper"
     ) if key in supplied), None)
     if primary is None:
         p.error("Choose --setup, --config ACTION, --index ACTION, or --paper ACTION VALUE")
@@ -151,7 +156,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
             if "metadata_query" in supplied and "citekeys" in supplied:
                 p.error("Choose --metadata-query or --citekey to select papers, not both")
         if args.paper_action == "search":
-            allowed |= {"scope", "doi", "year", "author"}
+            allowed |= {"scope", "doi", "year", "author", "mode"}
+            if supplied.get("mode") == "semantic":
+                filters = {"scope", "doi", "year", "author", "per_paper", "citekeys", "metadata_query"}
+                if filters & supplied.keys():
+                    p.error("Semantic search accepts --top; keyword scopes and filters do not apply")
             if supplied.get("scope", "all") == "metadata":
                 if {"per_paper", "metadata_query"} & supplied.keys():
                     p.error("--per-paper and --metadata-query require fulltext or all scope")
@@ -181,7 +190,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
         "per_paper": 2, "citekeys": None, "metadata_query": None,
         "doi": None, "year": None, "author": None, "max_chars": 10000,
         "verify_hashes": False, "verbose": False, "no_progress": False,
+        "mode": "keyword",
     }
+    args.semantic_limit = supplied.get("top")
     for key, value in defaults.items():
         if not hasattr(args, key):
             setattr(args, key, value)

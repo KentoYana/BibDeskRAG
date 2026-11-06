@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bibdesk-rag"
-version = "0.3.1"
+version = "0.4.0"
 description = "Read-only local literature retrieval for BibDesk libraries"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -27,7 +27,8 @@ Issues = "https://github.com/KentoYana/BibDeskRAG/issues"
 Changelog = "https://github.com/KentoYana/BibDeskRAG/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<10", "build>=1.2,<2", "ruff>=0.14,<1", "reportlab>=4,<5"]
+semantic = ["numpy>=1.26,<3", "sentence-transformers>=5.1,<6"]
+dev = ["pytest>=8,<10", "build>=1.2,<2", "ruff>=0.14,<1", "reportlab>=4,<5", "numpy>=1.26,<3"]
 
 [project.scripts]
 bibdesk-rag = "bibdesk_rag.cli:main"

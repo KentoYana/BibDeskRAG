@@ -60,6 +60,8 @@ def index_library(
     rebuild: bool = False,
     verify_hashes: bool = False,
     progress: Callable[[IndexProgress], None] | None = None,
+    config_path: Path | None = None,
+    backend=None,
 ) -> dict:
     papers_done = papers_total = files_done = files_total = 0
 
@@ -72,7 +74,13 @@ def index_library(
     papers = read_library(config.bib)
     if digest(config.bib) != bib_hash:
         raise RuntimeError("BibDesk library changed during parsing; retry update")
-    config.protect_sources([Path(ref.path) for paper in papers for ref in paper.files])
+    config.protect_sources([Path(ref.path) for paper in papers for ref in paper.files], config_path)
+    if config.semantic.enabled:
+        from .semantic import SentenceTransformerBackend, protect
+
+        protect(config, config_path, papers)
+        # Preflight is offline, before opening SQLite for writes or migrating it.
+        backend = backend or SentenceTransformerBackend(config.semantic)
     papers_total = len(papers)
     if progress is not None:
         files_total = len({str(Path(ref.path).resolve()) for paper in papers for ref in paper.files})
@@ -90,10 +98,14 @@ def index_library(
     )
     db = connect(config.database)
     try:
-        initialize(db)
         with db:
             db.execute("BEGIN IMMEDIATE")
+            initialize(db, in_transaction=True)
             previous = dict(db.execute("SELECT key,value FROM settings"))
+            if previous.get("bib_path", str(config.bib)) != str(config.bib):
+                raise ValueError("Index belongs to another library; choose a different database")
+            previous_vectors = {row[0] for row in db.execute(
+                "SELECT DISTINCT paper_id FROM embeddings WHERE paper_id IS NOT NULL")}
             reextract = rebuild or previous.get("extraction_options") != options_json
             old = {
                 row["citekey"]: dict(row)
@@ -156,13 +168,22 @@ def index_library(
                     )
                 papers_done += 1
                 emit("indexing")
-            emit("committing")
             for removed in deleted.values():
                 db.execute("DELETE FROM papers WHERE id=?", (removed["id"],))
                 report["papers_deleted"] += 1
             db.execute(
                 "DELETE FROM attachments WHERE id NOT IN (SELECT attachment_id FROM paper_attachments)"
             )
+            if config.semantic.enabled:
+                from .semantic import update_vectors
+
+                emit("embedding")
+                report["semantic"] = update_vectors(
+                    db, config, backend, rebuild=rebuild, previous_papers=previous_vectors,
+                )
+            else:
+                report["semantic"] = {"enabled": False}
+            emit("committing")
             if digest(config.bib) != bib_hash:
                 raise RuntimeError(
                     "BibDesk library changed during indexing; transaction rolled back"

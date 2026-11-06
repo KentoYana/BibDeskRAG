@@ -17,3 +17,18 @@ max_archive_members = 1000
 max_archive_bytes = 209715200
 max_compression_ratio = 100
 max_chunks = 50000
+
+# Optional local title/abstract semantic search; see docs/semantic-search.md.
+# 任意のローカル意味検索。未設定・enabled=falseでは追加の推論依存は不要です。
+[semantic]
+enabled = false
+model = "intfloat/multilingual-e5-small"
+revision = "fd1525a9fd15316a2d503bf26ab031a61d056e98"
+dimensions = 384
+passage_prefix = "passage: "
+query_prefix = "query: "
+max_tokens = 512
+default_limit = 5
+batch_size = 16
+# Vectors use the existing database; models/ beside it is the default cache.
+# cache_dir = "~/.local/share/bibdesk-rag/models"

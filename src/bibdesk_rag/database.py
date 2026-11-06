@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import sqlite3
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 # SQLite application identifier: ASCII "BRAG". Never adopt an unrelated DB.
 APPLICATION_ID = 0x42524147
 SCHEMA = """
@@ -55,9 +55,15 @@ CREATE TABLE IF NOT EXISTS embedding_models (
  UNIQUE(name,version,dimensions,config_json)
 );
 CREATE TABLE IF NOT EXISTS embeddings (
- chunk_id INTEGER NOT NULL REFERENCES chunks(id) ON DELETE CASCADE,
+ id INTEGER PRIMARY KEY,
+ chunk_id INTEGER REFERENCES chunks(id) ON DELETE CASCADE,
+ paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
+ part INTEGER NOT NULL DEFAULT 0 CHECK(part >= 0),
  model_id INTEGER NOT NULL REFERENCES embedding_models(id) ON DELETE CASCADE,
- content_hash TEXT NOT NULL, vector BLOB NOT NULL, PRIMARY KEY(chunk_id,model_id)
+ content_hash TEXT NOT NULL, vector BLOB NOT NULL,
+ embedded_at TEXT NOT NULL DEFAULT '', title_only INTEGER NOT NULL DEFAULT 0,
+ CHECK ((chunk_id IS NOT NULL AND paper_id IS NULL) OR
+        (chunk_id IS NULL AND paper_id IS NOT NULL))
 );
 """
 
@@ -74,7 +80,7 @@ def _check_identity(db: sqlite3.Connection, *, allow_empty: bool) -> None:
         raise ValueError(
             "Refusing database without the bibdesk-rag application identifier; choose a separate index path"
         )
-    if version not in (0, SCHEMA_VERSION) or (version == 0 and not allow_empty):
+    if version not in (0, 1, SCHEMA_VERSION) or (version == 0 and not allow_empty):
         raise ValueError(
             f"Unsupported or uninitialized index schema {version}; use a compatible application"
         )
@@ -108,7 +114,7 @@ def connect(path: Path, *, readonly: bool = False) -> sqlite3.Connection:
     return db
 
 
-def initialize(db: sqlite3.Connection) -> None:
+def initialize(db: sqlite3.Connection, *, in_transaction: bool = False) -> None:
     triggers = []
     for table, columns in (
         (
@@ -129,21 +135,49 @@ def initialize(db: sqlite3.Connection) -> None:
           INSERT INTO {table}_fts({table}_fts,rowid,{cols}) VALUES('delete',old.id,{old});
           INSERT INTO {table}_fts(rowid,{cols}) VALUES(new.id,{new}); END;
         """)
-    try:
-        db.executescript(
-            "BEGIN IMMEDIATE;\n"
-            + SCHEMA
-            + "\n".join(triggers)
-            + f"\nPRAGMA application_id={APPLICATION_ID};"
-            + f"\nPRAGMA user_version={SCHEMA_VERSION};\nCOMMIT;"
-        )
-    except Exception:
-        db.rollback()
-        raise
+    def execute_script(script):
+        # executescript commits an existing transaction. Execute complete SQLite
+        # statements individually so migration + both indexes share one commit.
+        statement = ""
+        for line in script.splitlines(keepends=True):
+            statement += line
+            if sqlite3.complete_statement(statement):
+                db.execute(statement)
+                statement = ""
+        if statement.strip():
+            raise ValueError("Incomplete schema statement")
+
+    def create():
+        old_columns = {row[1] for row in db.execute("PRAGMA table_info(embeddings)")}
+        if old_columns and "paper_id" not in old_columns:
+            db.execute("ALTER TABLE embeddings RENAME TO embeddings_v1")
+        execute_script(SCHEMA + "\n" + "\n".join(triggers))
+        if old_columns and "paper_id" not in old_columns:
+            db.execute("INSERT INTO embeddings(chunk_id,model_id,content_hash,vector) "
+                       "SELECT chunk_id,model_id,content_hash,vector FROM embeddings_v1")
+            db.execute("DROP TABLE embeddings_v1")
+        db.execute("CREATE UNIQUE INDEX IF NOT EXISTS embeddings_chunk_model "
+                   "ON embeddings(chunk_id,model_id) WHERE chunk_id IS NOT NULL")
+        db.execute("CREATE UNIQUE INDEX IF NOT EXISTS embeddings_paper_part_model "
+                   "ON embeddings(paper_id,part,model_id) WHERE paper_id IS NOT NULL")
+        db.execute(f"PRAGMA application_id={APPLICATION_ID}")
+        db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
+
+    if in_transaction:
+        if not db.in_transaction:
+            raise ValueError("Schema migration requires a write transaction")
+        create()
+    else:
+        with db:
+            db.execute("BEGIN IMMEDIATE")
+            create()
 
 
-def status(db: sqlite3.Connection) -> dict:
+def status(db: sqlite3.Connection, config=None) -> dict:
+    from .semantic import semantic_status
+
     return {
+        "semantic": semantic_status(db, config),
         "counts": {
             t: db.execute(f"SELECT count(*) FROM {t}").fetchone()[0]
             for t in ("papers", "attachments", "chunks")
@@ -164,7 +198,7 @@ def status(db: sqlite3.Connection) -> dict:
     }
 
 
-def doctor(db: sqlite3.Connection) -> dict:
+def doctor(db: sqlite3.Connection, config=None) -> dict:
     issues = []
     check = db.execute("PRAGMA quick_check").fetchone()[0]
     if check != "ok":
@@ -187,11 +221,16 @@ def doctor(db: sqlite3.Connection) -> dict:
             "SELECT id,path,extraction_status,error_message FROM attachments WHERE extraction_status NOT IN ('ok','unsupported')"
         )
     ]
+    from .semantic import semantic_check
+
+    semantic_result = semantic_check(db, config)
+    issues.extend(semantic_result["issues"])
     return {
+        "semantic": semantic_result,
         "ok": not issues,
         "issues": issues,
         "extraction_failures": failures,
-        "status": status(db),
+        "status": status(db, config),
     }
 
 

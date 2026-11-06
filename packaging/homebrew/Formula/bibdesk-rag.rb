@@ -17,6 +17,10 @@ class BibdeskRag < Formula
   depends_on :macos
   depends_on "python@3.14"
 
+  on_arm do
+    depends_on macos: :sonoma
+  end
+
   resource "build-wheels" do
     url "@@BUILD_URL@@"
     sha256 "@@BUILD_SHA256@@"
@@ -189,6 +193,17 @@ class BibdeskRag < Formula
       inreplace "pyproject.toml", "flit_core >=2,<3", "flit_core ==3.12.0"
       venv.pip_install Pathname.pwd
     end
+    if Hardware::CPU.arm?
+      # Inference wheels are locked/verified in the same offline resource bundle.
+      # Model weights are not included and are acquired only by explicit setup choice.
+      manifest = JSON.parse((backend_wheels/"manifest.json").read)
+      semantic_wheels = manifest.fetch("resources").select { |item| item["semantic_runtime"] }
+      odie "Offline semantic wheels are missing" if semantic_wheels.empty?
+      ENV["PIP_NO_DEPS"] = "1"
+      venv.pip_install semantic_wheels.map { |item| backend_wheels/item.fetch("filename") }
+      ENV.delete("PIP_NO_DEPS")
+      system "python3.14", "-m", "pip", "--python", libexec/"bin/python", "check"
+    end
     pkgshare.install "tools/package_smoke.py"
   end
 
@@ -225,6 +240,11 @@ class BibdeskRag < Formula
 
       Default configuration: ~/.config/bibdesk-rag/config.toml
       Default index: ~/.local/share/bibdesk-rag/index.sqlite3
+      Apple Silicon includes local semantic inference in this same installation.
+      In --setup, choose whether to use it and explicitly download the model.
+      Index/search/MCP never download models. Do not pip-install into libexec.
+      Semantic setup and offline operation:
+        https://github.com/KentoYana/BibDeskRAG/blob/main/docs/semantic-search.md
       Existing custom locations are unchanged.
       Upgrades and uninstall do not remove them or modify your BibDesk originals.
       Optional data removal and removal without the Codex CLI:
@@ -233,6 +253,9 @@ class BibdeskRag < Formula
   end
 
   test do
+    if Hardware::CPU.arm?
+      system libexec/"bin/python", "-c", "import numpy, torch, sentence_transformers"
+    end
     system libexec/"bin/python", pkgshare/"package_smoke.py",
            "--command", bin/"bibdesk-rag", "--mcp-command", bin/"bibdesk-rag-mcp",
            "--workdir", testpath/"smoke"
