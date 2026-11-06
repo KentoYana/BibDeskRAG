@@ -4,6 +4,38 @@
 
 # Third-party notices
 
+## Optional semantic extra
+
+The optional `semantic` extra adds NumPy and SentenceTransformers; pip keeps it separate from the base dependency set. Homebrew Apple Silicon installs
+a fixed runtime wheel set in its existing managed environment, with checksums in
+`packaging/homebrew/build-resources.json` (`semantic_runtime` records). On macOS arm64, the implementation was exercised with
+NumPy 2.5.4, SentenceTransformers 5.7.0, PyTorch 2.15.0, Transformers 5.22.1,
+Hugging Face Hub 2.4.0, safetensors 0.8.0, SciPy 1.18.1 and scikit-learn 1.9.1.
+Installed license metadata/files were inspected for these packages. SentenceTransformers,
+Transformers, Hugging Face Hub and safetensors provide Apache-2.0 notices; scikit-learn
+uses BSD-3-Clause. NumPy's installed license expression includes BSD-3-Clause, 0BSD,
+MIT, Zlib and CC0-1.0. PyTorch's expression includes Apache-2.0 (also with LLVM exception),
+BSD-2-Clause, BSD-3-Clause, BSL-1.0, ISC, MIT and Zlib. Preserve all installed LICENSE,
+NOTICE and third-party files when redistributing these dependencies.
+
+SciPy includes BSD notices and notices for bundled OpenBLAS/LAPACK and compiler
+runtimes (including GCC runtime exceptions and LGPL libquadmath where present).
+Do not describe a bundled scientific Python environment as uniformly MIT/BSD licensed.
+Pip retains upstream distribution metadata and licenses; the BibDeskRAG wheel/sdist
+contains no copies of model weights or these optional libraries. The offline Homebrew bundle retains each original wheel intact, including its upstream
+license/notice files. Its 31 runtime wheel files were verified against PyPI SHA-256 metadata.
+The fixed target is Python 3.14/macOS 14+ arm64. No Intel semantic-runtime coverage is claimed.
+Any changed binary set must be audited and its full notices preserved before release.
+
+The default model is `intfloat/multilingual-e5-small`, fixed to revision
+`fd1525a9fd15316a2d503bf26ab031a61d056e98`. Its model card declares MIT licensing.
+The explicit model-download command retains model-card/license files alongside the
+cache where supplied by upstream. Model weights are downloaded separately, never
+bundled with BibDeskRAG or fetched automatically during retrieval.
+
+The table below describes the original base runtime lock, separately from the
+optional semantic environment.
+
 BibDeskRAG application code is MIT-licensed. Dependencies retain their own licenses;
 this project does not relicense them. The table below records the exact tested
 runtime set. `packaging/homebrew/resources.json` contains immutable source URLs,

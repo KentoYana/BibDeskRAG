@@ -78,6 +78,9 @@ def test_show_resolves_effective_values_without_library_or_index_access(
     monkeypatch.setattr(cli, "connect", forbidden)
     monkeypatch.setattr(cli, "index_library", forbidden)
     result = json.loads(success(capsys, "--temp", config, "--config", "show", "--format", "json"))
+    semantic = result.pop("semantic")
+    assert semantic["enabled"] is False
+    assert "database" not in semantic
     assert result == {
         "config": str(config), "source": "explicit",
         "bib": str(tmp_path / "absent.bib"),

@@ -4,6 +4,16 @@
 
 # Changelog
 
+## [0.4.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) — 2026-11-06
+
+- Add optional CPU multilingual title/abstract semantic search with fixed-revision E5,
+  explicit model download, offline inference, token-aware splitting and per-paper scores.
+- Reuse the existing SQLite embedding tables with schema-1 migration, atomic bibliography/text/vector
+  updates, unified `--index` actions, interactive semantic/model setup, `--paper search --mode semantic`, and the
+  read-only MCP tool `semantic_search_papers`. Existing keyword/fulltext tools stay compatible.
+- Keep pip semantic dependencies optional; include a checksum-locked offline inference wheel set
+  in the existing Apple Silicon Homebrew environment. Development uses only Python 3.12.13 `.venv`.
+
 ## [0.3.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.1) — 2026-11-03
 
 - Register MCP without arguments during ordinary setup so it follows the selected
@@ -82,6 +92,13 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.4.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) — 2026-11-06（日本語）
+
+- Title・Abstractだけを対象とするローカル多言語ベクトル検索を追加。固定revisionのE5モデルをCPUで使い、明示的な初回取得後はオフラインで動作します。長い入力はトークン数を確認して分割し、結果を論文単位に集約します。
+- 既存SQLiteのembeddingテーブルを再利用し、schema 1から2へトランザクション移行。書誌・本文・ベクトルを `--index update/rebuild/status/check` で統合管理し、差分更新・既存データ保持に対応しました。移行後は旧schema-1専用アプリへ戻せません。
+- `--setup` で意味検索の利用とモデル取得を選択できます。CLIの `--mode semantic` と読み取り専用MCPツール `semantic_search_papers` を追加し、従来のキーワード検索・全文検索と検索既定値を維持します。
+- pipの推論依存は任意のextraとし、Apple SiliconのHomebrew版では固定済みオフラインwheelを既存環境へ同梱。開発環境はPython 3.12.13の `.venv` に統一しました。
 
 ## [0.3.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.3.1) — 2026-11-03（日本語）
 

@@ -64,6 +64,13 @@ def _tool(name, description, properties, required):
 
 TOOLS = [
     _tool(
+        "semantic_search_papers",
+        "Search title/abstract meaning with a local multilingual model. Scores are not "
+        "probabilities or verified scientific evidence. Verify candidates with search_fulltext.",
+        {"query": QUERY, "limit": _integer(1, 100, 5)},
+        ["query"],
+    ),
+    _tool(
         "search_papers",
         "Search indexed bibliographic metadata; exact DOI and citekey bypass ranking.",
         {
@@ -175,11 +182,12 @@ def _bounded_paper(paper: dict, budget: int) -> dict:
             return {key: trim(item, location + "." + key) for key, item in value.items()}
         return value
 
-    priority = ("id", "citekey", "doi", "title", "author", "year", "journal", "abstract")
+    priority = ("id", "citekey", "doi", "title", "author", "year", "journal",
+                "embedding_model", "abstract")
     for name in (*priority, *(key for key in paper if key not in priority)):
         if name not in paper:
             continue
-        if name in {"id", "citekey", "doi"}:
+        if name in {"id", "citekey", "doi", "embedding_model", "source_bib", "indexed_bib_hash"}:
             result[name] = paper[name]
         else:
             result[name] = trim(paper[name], name)
@@ -207,12 +215,26 @@ class MCPServer:
         self.config_path = config_path
         self.initialized = False
         self.ready = False
+        self._semantic_backend = None
+        self._semantic_options = None
 
     def call_tool(self, name: str, arguments: dict):
         try:
             _validate(arguments, TOOL_BY_NAME[name]["inputSchema"])
             arguments = dict(arguments)
             config = load_config(self.config_path)
+            if name == "semantic_search_papers":
+                from dataclasses import asdict
+                from .semantic import SentenceTransformerBackend, require_enabled, semantic_search
+
+                require_enabled(config)
+                options = asdict(config.semantic)
+                if self._semantic_options != options:
+                    self._semantic_backend = SentenceTransformerBackend(config.semantic)
+                    self._semantic_options = options
+                data = semantic_search(config, **arguments, backend=self._semantic_backend)
+                # Per-paper budget plus global serialized response budget below.
+                return _tool_result([_bounded_paper(item, 8000) for item in data])
             with closing(connect(config.database, readonly=True)) as db:
                 engine = SQLiteSearch(db)
                 if name == "get_paper":
@@ -252,7 +274,7 @@ class MCPServer:
                 else:
                     data = getattr(engine, name)(**arguments)
                 return _tool_result(data)
-        except (ValueError, KeyError, OSError, sqlite3.Error, TypeError) as exc:
+        except (ValueError, KeyError, OSError, sqlite3.Error, TypeError, RuntimeError) as exc:
             return _tool_result(error=str(exc)[:2000])
 
     def handle(self, request):

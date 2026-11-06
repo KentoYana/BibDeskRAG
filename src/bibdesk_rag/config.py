@@ -6,12 +6,14 @@ from dataclasses import asdict, dataclass, field, fields
 import json
 import os
 from pathlib import Path
+import re
 import stat
 import sys
 import tempfile
 import tomllib
 
 from .extractors import ExtractionOptions
+from .semantic_config import SemanticOptions
 
 
 def config_directory() -> Path:
@@ -107,12 +109,21 @@ class Config:
     bib: Path
     database: Path
     extraction: ExtractionOptions = field(default_factory=ExtractionOptions)
+    semantic: SemanticOptions = field(default_factory=SemanticOptions)
+
+    def __post_init__(self):
+        if self.semantic.cache_dir is None:
+            self.semantic.cache_dir = self.database.parent / "models"
 
     def protect_sources(self, sources: list[Path], config_path: Path | None = None) -> None:
         outputs = [
             self.database,
             *(Path(str(self.database) + s) for s in ("-journal", "-wal", "-shm")),
         ]
+        if any(same_file(self.semantic.cache_dir, p) for p in [self.bib, *outputs, *sources]):
+            raise ValueError("Model cache overlaps a source or database")
+        if config_path and same_file(self.semantic.cache_dir, config_path):
+            raise ValueError("Model cache overlaps configuration")
         if config_path:
             if any(same_file(config_path, output) for output in outputs):
                 raise ValueError("Configuration path overlaps the database or a SQLite sidecar")
@@ -129,7 +140,7 @@ def load_config(path: Path | None = None) -> Config:
     path = resolve_config_path(path)
     with path.open("rb") as handle:
         raw = tomllib.load(handle)
-    unknown = set(raw) - {"bib", "database", "extraction"}
+    unknown = set(raw) - {"bib", "database", "extraction", "semantic"}
     if unknown:
         raise ValueError("Unknown configuration keys: " + ", ".join(sorted(unknown)))
 
@@ -146,9 +157,96 @@ def load_config(path: Path | None = None) -> Config:
     unknown_options = set(extraction) - {item.name for item in fields(ExtractionOptions)}
     if unknown_options:
         raise ValueError("Unknown extraction options: " + ", ".join(sorted(unknown_options)))
-    config = Config(resolve("bib"), resolve("database"), ExtractionOptions(**extraction))
+    semantic = raw.get("semantic", {})
+    if not isinstance(semantic, dict):
+        raise ValueError("Configuration 'semantic' must be a TOML table")
+    unknown_semantic = set(semantic) - {item.name for item in fields(SemanticOptions)}
+    if unknown_semantic:
+        raise ValueError("Unknown semantic options: " + ", ".join(sorted(unknown_semantic)))
+    for key in ("cache_dir",):
+        if key in semantic:
+            value = semantic[key]
+            if not isinstance(value, str) or not value or "\x00" in value:
+                raise ValueError(f"semantic.{key} must be a nonempty path")
+            candidate = Path(value).expanduser()
+            semantic[key] = (candidate if candidate.is_absolute() else path.parent / candidate).resolve()
+    config = Config(resolve("bib"), resolve("database"), ExtractionOptions(**extraction),
+                    SemanticOptions(**semantic))
     config.protect_sources([], path)
     return config
+
+
+def set_semantic_enabled(path: Path, enabled: bool) -> Config:
+    """Change exactly one chosen option, preserving other TOML values and comments.
+
+    Each textual candidate is checked against the full parsed document. A token
+    inside a multiline string/comment can never authorize an unrelated edit.
+    """
+    import copy
+    from .bibdesk import read_library
+
+    path = resolve_config_path(path)
+    info = path.stat()
+    original = path.read_bytes()
+    config = load_config(path)
+    if path.read_bytes() != original:
+        raise ValueError("Configuration changed concurrently; retry setup")
+    check_output_locations(path, config.database)
+    text = original.decode("utf-8")
+    raw = tomllib.loads(text)
+    previous = raw.get("semantic", {}).get("enabled", False)
+    if previous == enabled:
+        return config
+    if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+        raise ValueError("Setup cannot change a linked or non-regular configuration")
+    expected = copy.deepcopy(raw)
+    expected.setdefault("semantic", {})["enabled"] = enabled
+    value = "true" if enabled else "false"
+    candidates = []
+    if "enabled" in raw.get("semantic", {}):
+        for match in re.finditer(r'''(?:\benabled\b|"enabled"|'enabled')\s*=\s*(true|false)''', text):
+            a, b = match.span(1)
+            candidates.append(text[:a] + value + text[b:])
+    else:
+        line = f"enabled = {value}\n"
+        for match in re.finditer(r"(?m)^\s*\[[^\n]+\][^\n]*(?:\n|$)", text):
+            candidates.append(text[:match.end()] + line + text[match.end():])
+        for match in re.finditer(r'''(?:\bsemantic\b|"semantic"|'semantic')\s*=\s*\{''', text):
+            candidates.append(text[:match.end()] + f" enabled = {value}," + text[match.end():])
+        candidates.extend([f"semantic.enabled = {value}\n" + text,
+                           text + f"\n[semantic]\nenabled = {value}\n"])
+    changed = None
+    for candidate in candidates:
+        try:
+            parsed = tomllib.loads(candidate)
+        except tomllib.TOMLDecodeError:
+            continue
+        if parsed == expected:
+            changed = candidate.encode("utf-8")
+            break
+    if changed is None:
+        raise ValueError("Cannot safely edit this TOML layout; set semantic.enabled manually")
+    papers = read_library(config.bib)
+    config.protect_sources([Path(ref.path) for p in papers for ref in p.files], path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=".semantic-config-",
+                                         delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(changed)
+            handle.flush()
+            os.fsync(handle.fileno())
+        after = path.stat()
+        if ((after.st_dev, after.st_ino, after.st_mtime_ns, after.st_ctime_ns, after.st_nlink)
+                != (info.st_dev, info.st_ino, info.st_mtime_ns, info.st_ctime_ns, info.st_nlink)
+                or path.read_bytes() != original):
+            raise ValueError("Configuration changed concurrently; retry setup")
+        os.replace(temporary, path)
+        temporary = None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    return load_config(path)
 
 
 def _protect_selection(selector: Path, path: Path, config: Config, sources: list[Path]) -> None:
@@ -156,6 +254,7 @@ def _protect_selection(selector: Path, path: Path, config: Config, sources: list
     protected = [
         path, config.bib, config.database, *sources,
         *(Path(str(config.database) + suffix) for suffix in ("-journal", "-wal", "-shm")),
+        config.semantic.cache_dir,
     ]
     if any(same_file(selector, source) for source in protected):
         raise ValueError("Active configuration selection overlaps a source, config, or database")

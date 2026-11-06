@@ -129,3 +129,28 @@ No GitHub push, release publication, remote tap creation, or PyPI upload was per
 - Python 3.11/3.13とLinuxはCIに設定済みですが、そのCI実行をローカルで行ってはいません。
 - 公開Release/tap URL、`brew audit --online`、リモートCI結果は後日の許可された公開に依存します。
 - OCR、埋め込み、意味・ハイブリッド検索、高度な図表処理は将来項目です。インターフェースと埋め込みモデル・版・次元数スキーマは用意しています。
+
+## Semantic extension validation — 2026-11-05
+
+The earlier sections are historical keyword/fulltext evidence. Title/abstract-only
+semantic retrieval is now implemented; hybrid retrieval and OCR remain outside scope.
+Generated-fixture tests and the opt-in E5 test are in `tests/test_semantic.py`; fake
+embedding results establish mechanics only. The actual multilingual model was downloaded
+explicitly into project-local ignored validation data, never the user's library.
+Eight English/Japanese queries against four synthetic English references placed every
+predefined expected reference in the top two. Socket connections were blocked during
+model loading, index construction and retrieval. This is a small relevance check,
+not validation on a real bibliography or an M1/16-GB performance benchmark.
+
+意味検索の検証は生成した文献集合だけで実施しました。ダミーモデルの結果と実E5モデルの
+結果を区別し、実ライブラリの検索品質やM1のメモリ性能を確認したとは扱いません。
+設定・実行方法は [意味検索ガイド](semantic-search.md) を参照してください。
+
+## Unified SQLite/index/setup extension — 2026-11-06
+
+This supersedes the separate semantic-database trial. Paper vectors now reuse the existing
+embedding tables, schema migration and all index data share one transaction, and `--index`
+manages both retrieval methods. Setup explicitly chooses semantic use/model acquisition.
+Apple Silicon Homebrew uses one managed environment with locked offline inference wheels.
+See the [current validation report](semantic-validation.md); older dated results above
+remain historical evidence, not the current feature boundary.

@@ -71,7 +71,7 @@ def test_all_six_tools_preserve_sources_and_index(mcp_fixture):
     assert response["result"]["capabilities"] == {"tools": {"listChanged": False}}
     assert "untrusted" in response["result"]["instructions"]
     listing = server.handle({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
-    assert len(listing["result"]["tools"]) == 6
+    assert len(listing["result"]["tools"]) == 7
     assert all(item["annotations"]["readOnlyHint"] for item in listing["result"]["tools"])
     papers = tool(server, "search_papers", query="10.1234/recq")
     assert papers[0]["citekey"] == "Example2025"
@@ -306,6 +306,7 @@ def test_mcp_rejects_both_selection_spellings(tmp_path, capsys):
 
 def test_tool_names_are_exact():
     assert {tool["name"] for tool in TOOLS} == {
+        "semantic_search_papers",
         "search_papers",
         "search_fulltext",
         "get_paper",

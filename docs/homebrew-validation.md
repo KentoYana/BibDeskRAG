@@ -329,3 +329,36 @@ virtualenvはHomebrew Cellar内で `include-system-site-packages = false`、CLI 
 生成したローカルFormulaは固定ローカルアーカイブと非公開homepage `example.invalid` を使います。公開してはいけません。コミット済みFormulaは未公開テンプレートであり、実際の所有者・リポジトリ、固定Release URL、検証済みSHA-256から公開版を生成してください。`brew audit --online` は実公開URLが必要で、実施済みとはしていません。
 
 Intel用入力はありますが、Intel実機とホストGitHub Actions matrixは実行していません。この時点でGitHub Release・公開tapは未作成です。ローカルtapと導入済みアプリは確認用に残し、合成fixture・不変の検証リリースはGit管理外 `.local/` に保持しています。
+
+## Semantic extension packaging — 2026-11-05
+
+A separate keg-only local Formula, `local/bibdesk-rag-semantic-test/bibdesk-rag-semantic-test`,
+was generated from actual local sdist/backend archives. Source installation and the
+`0.3.1` → `0.3.1_1` validation revision upgrade succeeded. The public linked executable
+was not replaced. Both the initial and final Formula passed style, strict audit, Formula
+`brew test`, and synthetic `tools/package_smoke.py` checks. The upgraded installation's
+26 Python modules were byte-identical to the final application source.
+
+After the upgrade and smoke, all generated sources/configs, the separate semantic index,
+and the model-cache retention sentinel retained their pre-upgrade SHA-256 hashes.
+The keyword index retained its papers/chunks and passed persisted-index checks; its file
+hash changed because the smoke deliberately runs `--index update` and records a new
+`last_indexed` time. This is content-retention evidence, not a byte-identity claim for
+that explicitly updated file. The cache sentinel is generated fixture data, not a real
+model inference test inside the base Formula.
+
+NumPy/SentenceTransformers remain optional and are not added to the base Formula's fixed
+resource lock. Real CPU model retrieval was validated separately in a user-owned venv,
+including an installed application wheel; see [implementation report](semantic-validation.md).
+No user bibliography or attachment was used. No release, push or public tap publication
+was performed. The isolated local validation tap/keg was retained for review.
+
+## Unified semantic runtime — 2026-11-06
+
+This replaces the earlier companion-venv trial for Apple Silicon Homebrew. The same existing
+keg-only validation Formula now includes 31 PyPI-verified semantic runtime wheels in the
+offline resource bundle, installed into its existing Python 3.14 environment. Model weights
+remain separate. Local source installation, imports, `brew test`, strict audit and actual
+E5 CPU semantic retrieval succeeded without an additional user venv. Final artifacts and
+upgrade-retention results are summarized in [the current report](semantic-validation.md).
+The normal public Formula link/registration and the user's source library were not changed.

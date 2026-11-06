@@ -21,6 +21,7 @@ MAX_RESPONSE_CHARS = 1_000_000
 EXPECTED_TOOLS = {
     "search_papers", "search_fulltext", "get_paper", "get_attachments",
     "get_chunk", "build_context",
+    "semantic_search_papers",
 }
 
 

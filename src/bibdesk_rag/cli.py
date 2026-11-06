@@ -56,6 +56,8 @@ def config_command(args: argparse.Namespace) -> None:
     config = load_config(path)
     result.update(bib=str(config.bib), database=str(config.database),
                   extraction=asdict(config.extraction))
+    result["semantic"] = {key: str(value) if isinstance(value, Path) else value
+                          for key, value in asdict(config.semantic).items()}
     if args.format == "json":
         print_result(result, args.format)
         return
@@ -64,6 +66,9 @@ def config_command(args: argparse.Namespace) -> None:
     print("\n[extraction]")
     for name, value in result["extraction"].items():
         print(f"{name} = {value}")
+    print("\n[semantic]")
+    for name, value in result["semantic"].items():
+        print(f"{name} = {json.dumps(value, ensure_ascii=False)}")
 
 
 def update_index(config, args: argparse.Namespace) -> None:
@@ -76,6 +81,7 @@ def update_index(config, args: argparse.Namespace) -> None:
         result = index_library(
             config, rebuild=args.index_action == "rebuild", verify_hashes=args.verify_hashes,
             progress=progress.update if show_progress else None,
+            config_path=config_selection(args.temp)[0],
         )
     issues = result["errors"] if args.verbose else result["errors"][:3]
     if human_output or args.verbose:
@@ -93,6 +99,12 @@ def update_index(config, args: argparse.Namespace) -> None:
           f"{result['files_reused']} reused, {result['files_hashed']} hashed.")
     print(f"Attachment issues: {len(result['errors'])} "
           "(this run; including partial/unsupported).")
+    if result["semantic"]["enabled"]:
+        semantic = result["semantic"]
+        print(f"Semantic: {semantic['embedded']} embedded, {semantic['reused']} reused, "
+              f"{semantic['skipped']} skipped, {semantic['title_only']} title-only.")
+    else:
+        print("Semantic search: disabled (no model loaded).")
     if result["errors"]:
         print("Use --format json for all issue details, or --paper attachments KEY "
               "--format json with the same configuration to inspect a paper.")
@@ -147,13 +159,28 @@ def main(argv: list[str] | None = None) -> int:
 
             return run_setup(args.temp, remember=args.temp is None)
         config = load_config(args.temp)
+        if args.command == "semantic":
+            from .semantic import protect, require_enabled
+
+            from .embeddings import download_model
+
+            require_enabled(config)
+            protect(config, config_selection(args.temp)[0])
+            result = download_model(config.semantic)
+            print_result(result, args.format)
+            return 0
+        if args.command == "paper" and args.paper_action == "search" and args.mode == "semantic":
+            from .semantic import semantic_search
+
+            print_result(semantic_search(config, args.value, args.semantic_limit), args.format)
+            return 0
         if args.command == "index" and args.index_action in {"update", "rebuild"}:
             update_index(config, args)
             return 0
         db = connect(config.database, readonly=True)
         try:
             if args.command == "index":
-                result = doctor(db) if args.index_action == "check" else status(db)
+                result = doctor(db, config) if args.index_action == "check" else status(db, config)
             else:
                 result = paper_result(SQLiteSearch(db), args)
                 if args.format == "bibtex":

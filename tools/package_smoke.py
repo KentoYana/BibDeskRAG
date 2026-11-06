@@ -204,8 +204,11 @@ def main() -> None:
     tools = mcp_request("tools/list", {})["tools"]
     names = {tool["name"] for tool in tools}
     assert names == {"search_papers", "search_fulltext", "get_paper", "get_attachments",
-                     "get_chunk", "build_context"}, names
+                     "get_chunk", "build_context", "semantic_search_papers"}, names
     assert all(tool["annotations"]["readOnlyHint"] for tool in tools), tools
+    optional = mcp_request("tools/call", {"name": "semantic_search_papers",
+                                         "arguments": {"query": "DNA repair"}})
+    assert optional["isError"] and "disabled" in optional["content"][0]["text"], optional
     papers = mcp_tool("search_papers", {"query": "RecQ", "top": 5})
     assert [paper["citekey"] for paper in papers] == ["Test2026"], papers
     hits = mcp_tool("search_fulltext", {"query": "RecQ", "top": 5, "per_paper": 2,

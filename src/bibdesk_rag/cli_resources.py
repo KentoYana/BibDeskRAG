@@ -33,6 +33,7 @@ def brief_help_text() -> str:
         "  --setup                    Interactive initial setup\n"
         "  -c, --config ACTION [PATH]  Settings: show, path, use, create\n"
         "  -i, --index ACTION         Index: update, rebuild, status, check\n"
+        "  --semantic download        Explicit optional model download\n"
         "  -p, --paper ACTION VALUE   Papers: search, show, attachments, context\n"
         "  --temp PATH                Use another configuration for this invocation\n\n"
         "  -h, --help                 Full help\n"

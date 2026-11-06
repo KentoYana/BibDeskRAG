@@ -45,3 +45,12 @@ overwrites an existing file; bibliography files and attachments stay read-only.
 
 例のパス・citekeyは自分のものに置き換えてください。設定作成は既存ファイルを
 上書きせず、書誌ファイルと添付は読み取り専用のままです。
+
+Optional semantic search / 任意の意味検索（--setupで選択）:
+  bibdesk-rag --semantic download
+  bibdesk-rag --index update --format json
+  bibdesk-rag --paper search "相同組換え修復" --mode semantic --top 5
+  bibdesk-rag --paper search "RecQ helicase and genome stability" --mode semantic
+  bibdesk-rag --index status --format json
+  bibdesk-rag --index rebuild
+  Interactive setup, unified index and Homebrew: docs/semantic-search.md

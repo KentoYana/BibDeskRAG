@@ -4,7 +4,7 @@
 
 # Architecture
 
-The only authoritative data is the user-selected BibDesk library and its explicitly linked attachments. The application never saves a `bibdeskparser.Library`, resolves online metadata, evaluates spreadsheet formulas, executes document instructions, or downloads an embedding model.
+The only authoritative data is the user-selected BibDesk library and its explicitly linked attachments. The application never saves a `bibdeskparser.Library`, resolves online metadata, evaluates spreadsheet formulas, executes document instructions, or automatically downloads an embedding model.
 
 ## Data flow
 
@@ -20,7 +20,7 @@ The read adapter uses BibDeskParser's public interfaces for bibliography, groups
 - `chunks`: stable ID until re-extraction; attachment ID; source type; page start/end, sheet and row range, archive member; original extracted text; separate normalized search text; chunk order.
 - `papers_fts`, `chunks_fts`: independent FTS5 external-content indexes updated by insert/delete/update triggers in the same transaction as their source rows.
 - `settings`: schema-independent library hash, path, extraction options and last successful index timestamp.
-- `embedding_models`, `embeddings`: optional model name/version/dimensions/config, chunk ID and source hash. A future backend must key vectors by model and source content, and must never auto-send text externally. No current code writes these tables.
+- `embedding_models`, `embeddings`: model signatures and little-endian float32 vectors, paper/part or legacy chunk references, content hashes and timestamps. See the semantic extension below.
 
 `PRAGMA application_id` (`0x42524147`, ASCII `BRAG`) identifies an application-owned index, and `PRAGMA user_version` guards schema compatibility. Existing unrelated databases are inspected read-only and refused before opening for writes or changing permissions. Schema initialization is transactional. Foreign keys cascade deletions into links/chunks/embedding rows. The indexer holds one immediate write transaction per update, so readers see the last committed state. Search/MCP use `mode=ro` and `query_only`. Doctor performs the FTS integrity INSERT only on an in-memory backup.
 
@@ -54,7 +54,7 @@ PEP 621 metadata, setuptools, sdist and wheel are independent from pyenv. Develo
 
 # 設計
 
-正本は、利用者が選択したBibDeskライブラリと明示的にリンクされた添付ファイルだけです。アプリは `bibdeskparser.Library` を保存せず、オンライン書誌情報の取得、表計算の数式評価、資料中の命令実行、埋め込みモデルのダウンロードも行いません。
+正本は、利用者が選択したBibDeskライブラリと明示的にリンクされた添付ファイルだけです。アプリは `bibdeskparser.Library` を保存せず、オンライン書誌情報の取得、表計算の数式評価、資料中の命令実行、埋め込みモデルの自動ダウンロードも行いません。
 
 ## データの流れ
 
@@ -70,7 +70,7 @@ PEP 621 metadata, setuptools, sdist and wheel are independent from pyenv. Develo
 - `chunks`：再抽出まで安定したID、添付ID、資料種別、開始・終了ページ、シートと行範囲、ZIPメンバー、抽出した原文、独立した正規化検索文、チャンク順序。
 - `papers_fts`、`chunks_fts`：独立したFTS5外部コンテンツ索引。原本行と同じトランザクション内でinsert/delete/updateトリガーにより更新します。
 - `settings`：スキーマに依存しないライブラリのハッシュ、パス、抽出設定、最後に成功した索引日時。
-- `embedding_models`、`embeddings`：将来用のモデル名・版・次元数・設定、チャンクIDと原本ハッシュ。将来のバックエンドはモデルと原本内容をベクトルのキーにし、本文を外部へ自動送信してはいけません。現在これらのテーブルへ書き込むコードはありません。
+- `embedding_models`、`embeddings`：モデル署名とfloat32ベクトル、論文ID/分割番号または既存chunkとの対応、内容ハッシュ・時刻。Title・Abstractだけの意味検索で使用します。
 
 `PRAGMA application_id`（`0x42524147`、ASCIIで `BRAG`）でアプリの索引を識別し、`PRAGMA user_version` でスキーマ互換性を確認します。無関係な既存DBは読み取り専用で調べ、書き込みや権限変更の前に拒否します。スキーマ初期化はトランザクション内で行い、外部キーによりリンク・チャンク・埋め込み行を連鎖削除します。索引更新ごとに1つのimmediate書き込みトランザクションを保持するため、読み手には最後にコミットした状態が見えます。検索・MCPは `mode=ro` と `query_only` を使います。DoctorのFTS整合性INSERTはメモリ内バックアップだけで実行します。
 
@@ -97,3 +97,24 @@ PDFのチャンクはページを跨ぎません。CSV/TSVは論理レコード�
 ## パッケージング
 
 PEP 621メタデータ、setuptools、sdist、wheelはpyenvに依存しません。開発はローカル固定Pythonとpipを使い、Homebrewは独自のPython virtualenvとチェックサム固定resourceを使います。データは利用者所有のインストール先外に置きます。リポジトリ内のFormulaは、実在する不変のソース・bundle URLとハッシュが揃うまでリリース用ではありません。
+
+## Title/abstract semantic extension
+
+`embedding_models` and `embeddings.vector` are reused in the same BRAG SQLite index.
+Schema 2 allows either legacy chunk_id or paper_id/part links, retaining legacy rows.
+Little-endian float32 vectors share papers' IDs; no second bibliography or SQLite is created.
+`indexer.index_library` preflights the local model, then holds one transaction across schema
+migration, bibliography, fulltext and paper-vector updates. Initialization executes complete
+SQL statements individually; it never invokes an implicit-commit executescript inside the
+update transaction. Failed inference/source checks roll back migration and all index changes.
+
+`--index update/rebuild/status/check` manage both retrieval methods. Semantic options default
+to disabled; disabled ingestion/diagnostics need no heavy imports. Status/check work on schema 1
+without modifying it, and check uses stdlib float32 validation rather than loading a model.
+MCP remains read-only. `--setup` chooses semantic use and separately confirms a missing-model
+download, atomically changing only the chosen TOML option. The downloaded cache stays outside
+Python/Homebrew and library sources. Source text is never uploaded.
+
+意味検索は同じSQLiteへTitle・Abstractだけのベクトルを保存します。既存chunkベクトルは
+移行時に保持し、今回の機能では作成しません。明示的なモデル取得以外はオフラインです。
+詳細は [意味検索ガイド](semantic-search.md) を参照してください。
