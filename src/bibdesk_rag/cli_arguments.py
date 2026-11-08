@@ -63,7 +63,8 @@ def parser() -> argparse.ArgumentParser:
     output.add_argument("--format", choices=("text", "json", "bibtex"),
                         help="Result format (default: text; bibtex only for --paper show)")
     output.add_argument("--verbose", action="store_true", help="Show all indexing diagnostics")
-    output.add_argument("--no-progress", action="store_true", help="Hide the indexing progress bar")
+    output.add_argument("--no-progress", action="store_true",
+                        help="Hide the indexing and model-loading progress bars")
     search = p.add_argument_group("Search and context")
     search.add_argument("--mode", choices=("keyword", "semantic"),
                         help="Paper search mode (default: keyword; semantic uses title/abstract)")

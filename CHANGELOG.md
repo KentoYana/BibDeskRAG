@@ -4,6 +4,16 @@
 
 # Changelog
 
+## [0.4.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) — 2026-11-09
+
+- Match the model-loading and indexing progress bars in width, characters and label
+  alignment; retain the completed loading bar above the indexing bar.
+- Keep dependency diagnostics off the bibliography-reading line and fit the displayed
+  1,560-file/1,718-paper counts within an 80-column terminal.
+- Suppress both bars for JSON, redirected output, `--no-progress` and `--verbose`;
+  restore dependency progress settings on completion, failure and interruption.
+- Keep runtime dependencies, the index schema and extraction limits unchanged.
+
 ## [0.4.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) — 2026-11-06
 
 - Add optional CPU multilingual title/abstract semantic search with fixed-revision E5,
@@ -92,6 +102,13 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.4.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) — 2026-11-09（日本語）
+
+- モデル読み込みと索引処理のバーの幅・文字・ラベル位置を統一し、完了した読み込みバーの下に索引バーを表示します。
+- 依存ライブラリの診断が書誌読み込みの行に重ならないよう改行し、80桁の端末でも1,560添付・1,718文献の件数を最後まで表示します。
+- JSON・リダイレクト・`--no-progress`・`--verbose` では両方のバーを抑制。正常終了・失敗・中断時に依存ライブラリの進捗設定を復元します。
+- 実行時依存・索引スキーマ・抽出上限の変更はありません。
 
 ## [0.4.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) — 2026-11-06（日本語）
 

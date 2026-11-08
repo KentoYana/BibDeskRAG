@@ -108,11 +108,13 @@ OUTPUT
   --verbose
       Print full parser warnings and attachment issues during update/rebuild.
   --no-progress
-      Hide the update/rebuild terminal progress bar.
+      Hide the update/rebuild indexing and model-loading progress bars.
 
 Results go to standard output; progress and diagnostics go to standard error.
 Progress requires both output streams to be terminals and TERM not to be dumb.
 JSON output disables progress. Verbose diagnostics do not contaminate JSON.
+Model loading and indexing use matching bars on separate lines. The completed
+model-loading bar remains above the indexing bar; indexing reaches 100% after commit.
 Information/setup operations do not accept --format; unrelated options fail.
 
 SEARCH AND EVIDENCE
