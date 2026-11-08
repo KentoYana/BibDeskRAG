@@ -2,14 +2,73 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from contextvars import ContextVar
 import logging
 import shutil
 import sys
 import time
-from typing import TextIO
+from typing import TYPE_CHECKING, TextIO
 import warnings
 
-from .indexer import IndexProgress
+if TYPE_CHECKING:
+    from .indexer import IndexProgress
+
+
+LABEL_WIDTH = 15
+BAR_WIDTH = 20
+MODEL_BAR_FORMAT = (
+    f"{{desc:<{LABEL_WIDTH}}} [{{bar:{BAR_WIDTH}}}] {{percentage:3.0f}}% | {{n_fmt}}/{{total_fmt}}"
+)
+_active_progress: ContextVar[IndexProgressBar | None] = ContextVar("index_progress", default=None)
+
+
+@contextmanager
+def model_loading_progress():
+    """Style the optional loader's real progress within a CLI indexing operation.
+
+    The context also suppresses dependency bars for JSON, pipes and --no-progress.
+    Imports remain lazy, and dependency state is restored even when loading fails.
+    """
+    progress = _active_progress.get()
+    if progress is None:
+        yield
+        return
+    # Finish the reading line before imports can emit dependency diagnostics.
+    progress.finish_line()
+    from transformers.utils import logging as transformers_logging
+
+    def options(kwargs):
+        return dict(kwargs, file=progress.stream, ascii="-#", leave=True,
+                    dynamic_ncols=True, position=0, mininterval=0.1,
+                    bar_format=MODEL_BAR_FORMAT,
+                    disable=not progress.enabled or bool(kwargs.get("disable")))
+
+    def hook(factory, args, kwargs):
+        return factory(*args, **options(kwargs))
+
+    setter = getattr(transformers_logging, "set_tqdm_hook", None)
+    if setter is not None:
+        previous = setter(hook)
+        try:
+            yield
+        finally:
+            setter(previous)
+    else:
+        # Older supported Transformers versions predate set_tqdm_hook. Their
+        # existing tqdm wrapper delegates to this class, including imported refs.
+        tqdm_lib = transformers_logging.tqdm_lib
+        original = tqdm_lib.tqdm
+
+        class StyledTqdm(original):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **options(kwargs))
+
+        tqdm_lib.tqdm = StyledTqdm
+        try:
+            yield
+        finally:
+            tqdm_lib.tqdm = original
 
 
 def single_line(value: str, limit: int = 180) -> str:
@@ -29,6 +88,7 @@ class IndexProgressBar:
         self._last_update = 0.0
 
     def __enter__(self) -> IndexProgressBar:
+        self._token = _active_progress.set(self)
         return self
 
     def update(self, event: IndexProgress) -> None:
@@ -51,12 +111,12 @@ class IndexProgressBar:
             percent = min(99, int(100 * completed / total)) if total else 0
             if event.phase == "done":
                 percent = 100
-            filled = percent * 20 // 100
-            bar = "#" * filled + "-" * (20 - filled)
+            filled = percent * BAR_WIDTH // 100
+            bar = "#" * filled + "-" * (BAR_WIDTH - filled)
             label = "Indexed" if event.phase == "done" else "Indexing"
             line = (
-                f"{label} [{bar}] {percent:3d}% | "
-                f"files {event.files_done}/{event.files_total} | "
+                f"{label:<{LABEL_WIDTH}} [{bar}] {percent:3d}% | "
+                f"files {event.files_done}/{event.files_total}, "
                 f"papers {event.papers_done}/{event.papers_total}"
             )
         self._write(line)
@@ -70,12 +130,19 @@ class IndexProgressBar:
         self.stream.flush()
         self._width = len(line)
 
-    def __exit__(self, exc_type, exc, traceback) -> None:
+    def finish_line(self) -> None:
         if self.enabled and self._width:
-            if exc_type is not None:
-                self._write("Indexing stopped; operation did not finish.")
             self.stream.write("\n")
             self.stream.flush()
+            self._width = 0
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        try:
+            if self.enabled and self._width and exc_type is not None:
+                self._write("Indexing stopped; operation did not finish.")
+            self.finish_line()
+        finally:
+            _active_progress.reset(self._token)
 
 
 class IndexDiagnostics(logging.Handler):

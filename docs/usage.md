@@ -119,11 +119,18 @@ bibdesk-rag --temp "/absolute/path/to/other.toml" --index update
 
 `--index update/rebuild` の進捗は標準エラー出力、結果は標準出力です。両方が端末につながり、`TERM=dumb` でない場合に進捗バーを表示します。保存が完了してから100%を表示します。抽出試行数は本文の抽出成功数ではなく、未対応形式や本文なしも含みます。
 
+意味検索が有効な場合、モデル読み込みと索引処理のバーは同じ書式で別々の行に表示します。完了したモデル読み込みの行を残し、その下で索引処理を更新します。
+
+```text
+Loading weights [####################] 100% | 199/199
+Indexed         [####################] 100% | files 1560/1560, papers 1718/1718
+```
+
 | オプション | 表示 |
 | --- | --- |
 | 指定なし | テキスト結果。索引処理では端末に進捗と短い要約、要確認事項は最大3例 |
 | `--format json` | 全件の集計・要確認事項をJSON出力。進捗バーなし |
-| `--no-progress` | 索引処理の進捗バーを無効化 |
+| `--no-progress` | 索引処理・モデル読み込みの進捗バーを無効化 |
 | `--verbose` | 索引処理の警告・要確認事項を標準エラー出力へすべて表示 |
 
 `--verbose` と `--no-progress` は索引の更新・再構築用です。`--format json --verbose` の併用も可能で、警告はJSONに混ざりません。再抽出せずに状態を調べるには `--index status` や `--paper attachments KEY` を使います。
@@ -322,11 +329,13 @@ Results default to `text`, including in files/pipes. Specify `--format json` for
 
 For `--index update/rebuild`, progress goes to standard error and results to standard output. A bar appears when both streams are terminals and `TERM` is not `dumb`. It reaches 100% only after commit. Extraction attempts include unsupported/no-text files and do not equal successful extractions.
 
+When semantic search is enabled, model loading and indexing use matching bars on separate lines. The completed model-loading line remains above the updating index line. JSON, redirected output, `--no-progress` and `--verbose` suppress both bars.
+
 | Option | Output |
 | --- | --- |
 | None | Text results; terminal indexing shows progress, a short summary and at most three issue examples |
 | `--format json` | Complete aggregate/issue report as JSON; no progress bar |
-| `--no-progress` | Disable the indexing progress bar |
+| `--no-progress` | Disable the indexing and model-loading progress bars |
 | `--verbose` | All indexing warnings/issues on standard error |
 
 `--verbose` and `--no-progress` apply to update/rebuild. `--format json --verbose` is supported; warnings do not contaminate JSON. Inspect states without re-extraction using `--index status` or `--paper attachments KEY`.

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from typing import Protocol
 
+from .progress import model_loading_progress
 from .semantic_config import SemanticOptions
 
 INSTALL_HELP = "Install in a standard venv with: python -m pip install 'bibdesk-rag[semantic]'"
@@ -112,18 +113,19 @@ class SentenceTransformerBackend:
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
         os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
         try:
-            from sentence_transformers import SentenceTransformer
-            from huggingface_hub import snapshot_download
+            with model_loading_progress():
+                from sentence_transformers import SentenceTransformer
+                from huggingface_hub import snapshot_download
+
+                snapshot = snapshot_download(options.model, revision=options.revision,
+                                             cache_dir=str(options.cache_dir), local_files_only=True,
+                                             allow_patterns=MODEL_FILES)
+                self.model = SentenceTransformer(
+                    snapshot, device="cpu", local_files_only=True, trust_remote_code=False,
+                    model_kwargs={"use_safetensors": True},
+                )
         except ImportError as exc:
             raise ValueError(INSTALL_HELP) from exc
-        try:
-            snapshot = snapshot_download(options.model, revision=options.revision,
-                                         cache_dir=str(options.cache_dir), local_files_only=True,
-                                         allow_patterns=MODEL_FILES)
-            self.model = SentenceTransformer(
-                snapshot, device="cpu", local_files_only=True, trust_remote_code=False,
-                model_kwargs={"use_safetensors": True},
-            )
         except (OSError, ValueError, RuntimeError) as exc:
             raise ValueError("Local model unavailable. Run bibdesk-rag --semantic download "
                              "with this configuration while online. " + str(exc)[:300]) from exc

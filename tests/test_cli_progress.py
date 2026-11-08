@@ -4,16 +4,75 @@ import hashlib
 from io import StringIO
 import json
 import logging
+import os
 from pathlib import Path
 import runpy
 import sys
+from types import ModuleType, SimpleNamespace
 import warnings
 
 import pytest
 
 from bibdesk_rag import cli
 from bibdesk_rag.config import init_config
+from bibdesk_rag.embeddings import SentenceTransformerBackend
 from bibdesk_rag.indexer import IndexProgress
+from bibdesk_rag.progress import IndexProgressBar, model_loading_progress
+from bibdesk_rag.semantic_config import SemanticOptions
+
+
+@pytest.fixture
+def model_loader(monkeypatch):
+    """Exercise real tqdm formatting with generated weights, without a model or network."""
+    tqdm = pytest.importorskip("tqdm").tqdm
+    state = SimpleNamespace(hook=None)
+
+    def set_hook(hook):
+        previous, state.hook = state.hook, hook
+        return previous
+
+    def loading_bar(*args, **kwargs):
+        factory = state.tqdm_lib.tqdm
+        return state.hook(factory, args, kwargs) if state.hook else factory(*args, **kwargs)
+
+    state.set_tqdm_hook = set_hook
+    state.tqdm_lib = SimpleNamespace(tqdm=tqdm)
+    state.tqdm = loading_bar
+    transformers = ModuleType("transformers")
+    utils = ModuleType("transformers.utils")
+    utils.logging = state
+    transformers.utils = utils
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+    monkeypatch.setitem(sys.modules, "transformers.utils", utils)
+
+    class GeneratedModel:
+        max_seq_length = 512
+
+        def __init__(self, snapshot, **kwargs):
+            assert snapshot == "generated-snapshot"
+            assert kwargs == dict(device="cpu", local_files_only=True, trust_remote_code=False,
+                                  model_kwargs={"use_safetensors": True})
+            for _ in loading_bar(range(199), desc="Loading weights"):
+                pass
+
+        def get_embedding_dimension(self):
+            return 384
+
+    def local_snapshot(*args, **kwargs):
+        assert kwargs["local_files_only"] is True
+        return "generated-snapshot"
+
+    sentence_transformers = ModuleType("sentence_transformers")
+    sentence_transformers.SentenceTransformer = GeneratedModel
+    hub = ModuleType("huggingface_hub")
+    hub.snapshot_download = local_snapshot
+    monkeypatch.setitem(sys.modules, "sentence_transformers", sentence_transformers)
+    monkeypatch.setitem(sys.modules, "huggingface_hub", hub)
+    monkeypatch.setattr("bibdesk_rag.embeddings.version", lambda name: "generated-fixture")
+    # Do not leave the backend's offline flags behind in the test process.
+    for name in ("HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE", "HF_HUB_DISABLE_TELEMETRY"):
+        monkeypatch.setenv(name, "1")
+    return state
 
 
 class TerminalStream(StringIO):
@@ -233,3 +292,99 @@ def test_failure_or_interrupt_finishes_progress_line_without_false_completion(
     assert stderr.endswith("\n")
     assert (logger.level, logger.propagate, logger.disabled, logger.handlers) == previous
     assert (warnings.showwarning, warnings.filters) == warning_state
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("files,papers", [(2, 3), (1560, 1718)])
+def test_model_and_index_bars_have_matching_columns_and_separate_completed_lines(
+    model_loader, legacy, files, papers, monkeypatch
+):
+    monkeypatch.setattr("bibdesk_rag.progress.shutil.get_terminal_size",
+                        lambda **kwargs: os.terminal_size((80, 24)))
+    original_class = model_loader.tqdm_lib.tqdm
+    if legacy:
+        del model_loader.set_tqdm_hook
+    stream = TerminalStream(tty=True)
+    with IndexProgressBar(enabled=True, stream=stream) as progress:
+        progress.update(IndexProgress("reading"))
+        SentenceTransformerBackend(SemanticOptions())
+        progress.update(IndexProgress("indexing", 0, papers, 0, files))
+        progress.update(IndexProgress("done", papers, papers, files, files))
+
+    # Interpret carriage returns as a terminal does, keeping the final version of each row.
+    rows = [row.split("\r")[-1].rstrip() for row in stream.getvalue().split("\n") if row]
+    assert len(rows) == 3
+    assert rows[0] == "Reading bibliography..."
+    assert rows[1] == "Loading weights [####################] 100% | 199/199"
+    assert rows[2] == ("Indexed         [####################] 100% | "
+                       f"files {files}/{files}, papers {papers}/{papers}")
+    assert rows[1].index("[") == rows[2].index("[")
+    assert "\x1b" not in stream.getvalue()  # No cursor-up sequences or leftover extra rows.
+    assert model_loader.hook is None
+    assert model_loader.tqdm_lib.tqdm is original_class
+
+
+@pytest.mark.parametrize(
+    "arguments,stdout_tty,stderr_tty,term,visible",
+    [((), True, True, "xterm", True),
+     (("--no-progress",), True, True, "xterm", False),
+     (("--format", "json"), True, True, "xterm", False),
+     (("--verbose",), True, True, "xterm", False),
+     ((), False, True, "xterm", False),
+     ((), True, False, "xterm", False),
+     ((), True, True, "dumb", False)],
+)
+def test_cli_model_bar_obeys_the_same_output_policy_as_index_bar(
+    progress_library, monkeypatch, model_loader,
+    arguments, stdout_tty, stderr_tty, term, visible,
+):
+    config, bib, pdf = progress_library
+    before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in (bib, pdf)}
+    original_index = cli.index_library
+
+    def load_then_index(*args, **kwargs):
+        if callback := kwargs.get("progress"):
+            callback(IndexProgress("reading"))
+        SentenceTransformerBackend(SemanticOptions())
+        return original_index(*args, **kwargs)
+
+    monkeypatch.setattr(cli, "index_library", load_then_index)
+    code, stdout, stderr = invoke(
+        monkeypatch, config, "update", *arguments,
+        stdout_tty=stdout_tty, stderr_tty=stderr_tty, term=term,
+    )
+    assert code == 0
+    assert ("Loading weights" in stderr) is visible
+    assert ("\r" in stderr) is visible
+    assert "Loading weights" not in stdout
+    if "json" in arguments:
+        assert json.loads(stdout)["papers_added"] == 1
+    assert model_loader.hook is None
+    assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in before} == before
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("exception", [RuntimeError("load failed"), KeyboardInterrupt()])
+def test_model_progress_restores_dependency_state_on_failure(model_loader, legacy, exception):
+    original_class = model_loader.tqdm_lib.tqdm
+
+    def previous_hook(factory, args, kwargs):
+        return factory(*args, **kwargs)
+
+    model_loader.hook = previous_hook
+    if legacy:
+        del model_loader.set_tqdm_hook
+        model_loader.hook = None
+    stream = TerminalStream(tty=True)
+    with pytest.raises(type(exception)), IndexProgressBar(enabled=True, stream=stream):
+        with model_loading_progress():
+            with model_loader.tqdm(total=199, desc="Loading weights") as bar:
+                bar.update(1)
+                raise exception
+    assert "100%" not in stream.getvalue()
+    assert stream.getvalue().endswith("\n")
+    assert model_loader.hook is (None if legacy else previous_hook)
+    assert model_loader.tqdm_lib.tqdm is original_class
+    # Outside an indexing scope the optional loader context changes no state.
+    with model_loading_progress():
+        assert model_loader.hook is (None if legacy else previous_hook)

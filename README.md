@@ -8,7 +8,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.4.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.4.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
@@ -102,7 +102,7 @@ bibdesk-rag --index status --format json
 
 `--config create` は設定を作成し、`--index update` は書誌情報と対応する添付ファイルの本文を索引化します。初回はファイル数・サイズに応じて時間がかかります。`--index status` で文献数と抽出状態を確認してください。本文を抽出できない添付があっても、書誌情報は検索できます。
 
-`--index update` / `--index rebuild` をターミナルで実行すると、文献・添付ファイルの処理件数を1行の進捗バーで表示します。終了時には短い結果要約を表示し、PDF読み取り時の警告は件数と少数の例にまとめます。`--format json` で集計結果と要確認事項の全件をJSON出力、`--verbose` で警告・要確認事項をすべて表示、`--no-progress` で進捗バーだけを無効にできます。ファイル・パイプへ渡す場合も既定形式はテキストです。[表示オプション](docs/usage.md#進捗と結果の表示)
+`--index update` / `--index rebuild` をターミナルで実行すると、文献・添付ファイルの処理件数を進捗バーで表示します。意味検索モデルの読み込みも同じ書式で表示し、完了した読み込みバーの下に索引バーを並べます。終了時には短い結果要約を表示し、PDF読み取り時の警告は件数と少数の例にまとめます。`--format json` で集計結果と要確認事項の全件をJSON出力、`--verbose` で警告・要確認事項をすべて表示、`--no-progress` で両方の進捗バーを無効にできます。ファイル・パイプへ渡す場合も既定形式はテキストです。[表示オプション](docs/usage.md#進捗と結果の表示)
 
 この手順では、設定と索引を次の場所に保存します。`--config create` と `--index update` が必要なフォルダを作成するため、手でフォルダを作る必要はありません。
 
@@ -301,7 +301,7 @@ A local tool for searching and consulting literature managed in BibDesk from Cod
 
 The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
 
-The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.4.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.4.1 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
 
 These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
 
@@ -396,7 +396,7 @@ bibdesk-rag --index status --format json
 
 `--config create` creates the configuration; `--index update` indexes metadata and the text of linked attachments. The first run can take time depending on file count and size. Check counts and extraction states with `--index status`. Metadata remains searchable even when some attachments cannot be extracted.
 
-In a terminal, `--index update` / `--index rebuild` display a single-line progress bar for papers and attachments, then a concise summary. PDF parser warnings are summarized as counts and a few examples. Use `--format json` for the complete aggregate report and all issues, `--verbose` for all warnings/issues, or `--no-progress` to hide only the bar. Redirected or piped output also defaults to text. See [Output options](docs/usage.md#progress-and-result-output).
+In a terminal, `--index update` / `--index rebuild` display a progress bar for papers and attachments, then a concise summary. Semantic model loading uses the same format, with its completed bar above the indexing bar. PDF parser warnings are summarized as counts and a few examples. Use `--format json` for the complete aggregate report and all issues, `--verbose` for all warnings/issues, or `--no-progress` to hide both bars. Redirected or piped output also defaults to text. See [Output options](docs/usage.md#progress-and-result-output).
 
 The commands create the required directories automatically:
 
