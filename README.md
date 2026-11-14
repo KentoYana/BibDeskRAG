@@ -8,7 +8,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.4.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.5.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
@@ -25,7 +25,7 @@ bibdesk-rag --index update      # 索引の初回作成・差分更新
 bibdesk-rag --paper search "RecQ helicase"
 ```
 
-設定は `-c/--config`、索引は `-i/--index`、文献情報は `-p/--paper` の引数で操作を選びます。主操作は1回につき1つです。結果は既定でテキスト、機械処理には `--format json` を指定します。引数なしなら主な操作と案内だけの短縮ヘルプ、`-h/--help` なら詳細ヘルプを表示します。
+設定は `-c/--config`、索引は `-i/--index`、文献情報は `-p/--paper` の引数で操作を選びます。主操作は1回につき1つです。結果は既定でテキスト、機械処理には `--format json` を指定します。引数なしなら版番号・開発者名・説明と主な操作を表示し、端末ではusage・オプションを色分けします。`NO_COLOR`設定時、`TERM=dumb`、パイプやファイル出力では色を付けません。`-h/--help` なら詳細ヘルプを表示します。
 
 `-o/--output` は `manual`・`config-template`・`citation` のいずれかを標準出力へ出します。例えば `bibdesk-rag --output config-template > example.toml` で設定テンプレートを保存できます。案内と資料出力は設定・索引がなくても利用できます。[操作体系と移行先](docs/usage.md)
 
@@ -239,8 +239,8 @@ bibdesk-rag --index status --format json
 
 ## 検索できるものとデータの扱い
 
-- 対応形式はPDF・CSV・TSV・XLSX・ZIPです。書誌情報と抽出できた本文をSQLite FTS5で検索します。オプションの意味検索はTitle・Abstractだけを対象とします。OCRは行いません。
-- PDFはページ番号、CSV/TSVはレコード行、XLSXはシートと行、ZIPは内部ファイル名を出典として返します。本文の検索結果にはchunk IDがあります。
+- 対応形式はPDF・CSV・TSV・XLSX・DOCX・PPTX・DOC・XLS・TeX・Keynote・Pages・Numbers・ZIPです。画像・動画は明示的に対象外です。[抽出範囲と制約](docs/file-formats.md)を参照してください。書誌情報と抽出できた本文をSQLite FTS5で検索します。オプションの意味検索はTitle・Abstractだけを対象とします。OCRは行いません。
+- PDFはページ番号、PPTXはスライド番号、表計算はシート/表と行、文書は内部パート/段落・オブジェクト、TeXは原文行、ZIPは内部ファイル名を出典として返します。本文の検索結果にはchunk IDがあります。
 - 本文なし・部分抽出・未対応形式を区別します。画像だけのPDF、暗号化や破損のある資料、段組・表などは本文を十分取得できない場合があります。研究上の主張は原本で確認してください。
 - BibDesk RAGの索引作成・検索はローカルで完結し、外部API送信やモデルの自動ダウンロードはしません。**Codexへ返した書誌情報・抜粋は、Codex側のモデル処理に渡ります。** その扱いはCodexの契約・設定に従います。
 - 索引は平文のSQLiteです。アプリは設定・索引を0600で作成します。バックアップやMacのアクセス権は利用者が管理してください。
@@ -301,7 +301,7 @@ A local tool for searching and consulting literature managed in BibDesk from Cod
 
 The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
 
-The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.4.1 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.5.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
 
 These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
 
@@ -318,7 +318,7 @@ bibdesk-rag --index update      # Create or incrementally update the index
 bibdesk-rag --paper search "RecQ helicase"
 ```
 
-Choose configuration operations with `-c/--config`, index operations with `-i/--index`, and paper operations with `-p/--paper`. Use one main operation per invocation. Results default to text; use `--format json` for machine processing. No arguments shows brief guidance; `-h/--help` shows the full option reference.
+Choose configuration operations with `-c/--config`, index operations with `-i/--index`, and paper operations with `-p/--paper`. Use one main operation per invocation. Results default to text; use `--format json` for machine processing. No arguments shows the version, author, tagline and operation overview. Usage/options are colored on terminals; `NO_COLOR`, `TERM=dumb` or redirected output disables colors; `-h/--help` shows the full option reference.
 
 `-o/--output` prints `manual`, `config-template` or `citation` to standard output. For example, `bibdesk-rag --output config-template > example.toml` saves a configuration template. Information and resource output work without a configuration or index. See the [CLI guide](docs/usage.md#operations-and-guidance).
 
@@ -533,8 +533,8 @@ Bibliography/text and vectors share the same SQLite and `--index` actions. Only 
 
 ## Search coverage and data handling
 
-- Supported formats: PDF, CSV, TSV, XLSX and ZIP. Metadata and extracted text are searched with SQLite FTS5. Optional semantic search embeds title/abstract only. OCR is not performed.
-- Citations identify PDF pages, CSV/TSV record rows, XLSX sheets/rows or ZIP member names. Full-text results include chunk IDs.
+- Supported formats: PDF, CSV, TSV, XLSX, DOCX, PPTX, DOC, XLS, TeX, Keynote, Pages, Numbers and ZIP. Images/videos are explicitly excluded. See [extraction scope and limitations](docs/file-formats.md). Metadata and extracted text are searched with SQLite FTS5. Optional semantic search embeds title/abstract only. OCR is not performed.
+- Citations identify PDF pages, PPTX slides, spreadsheet sheets/tables and rows, document parts/paragraphs or objects, TeX source lines and ZIP members. Full-text results include chunk IDs.
 - Missing text, partial extraction and unsupported formats are distinguished. Image-only, encrypted or damaged PDFs, columns and tables may yield insufficient text. Verify scientific claims against original sources.
 - Indexing and search run locally, without external API submission or automatic model downloads. **Metadata/excerpts returned to Codex are passed to Codex's model processing**, subject to its terms and settings.
 - The index is plaintext SQLite. The application creates configuration/index files with mode 0600. Users manage backups and Mac access permissions.

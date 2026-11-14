@@ -15,6 +15,8 @@ from pathlib import Path
 import re
 import sys
 
+from .extractors.sources import is_iwork_directory
+
 
 @dataclass(frozen=True)
 class AttachmentReference:
@@ -140,13 +142,13 @@ def resolve_attachments(entry, bib_path: Path) -> list[AttachmentReference]:
             if not candidate.is_absolute():
                 candidate = base / candidate
             candidate = candidate.resolve()
-            if not candidate.is_file():
+            if not candidate.is_file() and not is_iwork_directory(candidate):
                 # 0.8.1 compatibility bridge, limited to unavailable paths.
                 if native_objects is None:
                     native_objects = entry._file_objects()
                 native = native_objects[index]
                 moved = resolve_native_reference(native.bookmark, native.alias_data)
-                if moved is not None and moved.is_file():
+                if moved is not None and (moved.is_file() or is_iwork_directory(moved)):
                     candidate = moved.resolve()
                 else:
                     error = "attachment does not exist or is not a regular file"

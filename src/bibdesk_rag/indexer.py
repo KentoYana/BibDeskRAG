@@ -14,6 +14,8 @@ from .bibdesk import read_library
 from .config import Config
 from .database import connect, initialize
 from .extractors import extract_file
+from .extractors.formats import EXCLUDED_FORMATS, EXTRACTION_REVISION, NEW_FORMATS
+from .extractors.sources import is_iwork_directory, source_digest, source_stat
 from .normalization import normalize_search
 
 
@@ -107,6 +109,7 @@ def index_library(
             previous_vectors = {row[0] for row in db.execute(
                 "SELECT DISTINCT paper_id FROM embeddings WHERE paper_id IS NOT NULL")}
             reextract = rebuild or previous.get("extraction_options") != options_json
+            policy_changed = previous.get("extraction_revision") != EXTRACTION_REVISION
             old = {
                 row["citekey"]: dict(row)
                 for row in db.execute("SELECT id,citekey,doi,fingerprint FROM papers")
@@ -154,7 +157,10 @@ def index_library(
                     path = str(Path(ref.path).resolve())
                     if path not in incoming_paths:
                         _index_attachment(
-                            db, Path(path), ref.error, config, reextract, verify_hashes, report
+                            db, Path(path), ref.error, config,
+                            reextract or (policy_changed and Path(path).suffix.lower()
+                                          in NEW_FORMATS | {".zip"}),
+                            verify_hashes, report,
                         )
                         incoming_paths.add(path)
                         files_done += 1
@@ -193,6 +199,7 @@ def index_library(
                 "bib_hash": bib_hash,
                 "last_indexed": str(time.time()),
                 "extraction_options": options_json,
+                "extraction_revision": EXTRACTION_REVISION,
             }.items():
                 db.execute(
                     "INSERT INTO settings VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -218,9 +225,23 @@ def _index_attachment(db, path, resolution_error, config, reextract, verify_hash
             # Failed locators may carry a diagnostic placeholder path. Never
             # mistake an existing file at that path for an authorized source.
             raise ValueError(resolution_error)
-        stat = path.stat()
-        if not path.is_file():
+        stat = source_stat(path, config.extraction)
+        if not path.is_file() and not is_iwork_directory(path):
             raise ValueError("Attachment is not a regular file")
+        if path.suffix.lower() in EXCLUDED_FORMATS:
+            if (old and old["extraction_status"] == "excluded"
+                    and old["file_size"] == stat.st_size and old["mtime_ns"] == stat.st_mtime_ns):
+                report["files_reused"] += 1
+                return
+            # Classification requires no reading/hashing of excluded media bytes.
+            db.execute("DELETE FROM chunks WHERE attachment_id=?", (attachment_id,))
+            db.execute(
+                "UPDATE attachments SET file_size=?,mtime_ns=?,content_hash=NULL,"
+                "extraction_status='excluded',error_message=?,members_json='[]' WHERE id=?",
+                (stat.st_size, stat.st_mtime_ns, "Images and videos are explicitly excluded", attachment_id),
+            )
+            report["files_extracted"] += 1
+            return
         if stat.st_size > config.extraction.max_file_bytes:
             raise ValueError("Attachment exceeds max_file_bytes")
         if (
@@ -243,7 +264,8 @@ def _index_attachment(db, path, resolution_error, config, reextract, verify_hash
         ):
             report["files_reused"] += 1
             return
-        content_hash = digest(path)
+        content_hash = (source_digest(path, config.extraction) if is_iwork_directory(path)
+                        else digest(path))
         report["files_hashed"] += 1
         if not reextract and old and old["content_hash"] == content_hash:
             db.execute(
@@ -254,7 +276,7 @@ def _index_attachment(db, path, resolution_error, config, reextract, verify_hash
             return
         result = extract_file(path, config.extraction)
         report["files_extracted"] += 1
-        after = path.stat()
+        after = source_stat(path, config.extraction)
         if (stat.st_size, stat.st_mtime_ns, stat.st_ino) != (
             after.st_size,
             after.st_mtime_ns,

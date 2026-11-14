@@ -11,8 +11,10 @@ USAGE
   bibdesk-rag [INFORMATION OPTION]
   bibdesk-rag [--temp PATH] OPERATION [OPTIONS]
 
-With no arguments, show a brief help overview and exit. Use -h/--help for the
-complete option reference. Choose one operation per invocation.
+With no arguments, show the version, author, tagline and operation overview.
+Usage/options are colored on terminals; NO_COLOR, TERM=dumb or redirection
+disables colors. Use -h/--help for the complete option reference.
+Choose one operation per invocation.
 Unrelated options and conflicting operations are errors, before any operation
 runs. Quote paths or queries containing spaces.
 
@@ -117,6 +119,13 @@ Model loading and indexing use matching bars on separate lines. The completed
 model-loading bar remains above the indexing bar; indexing reaches 100% after commit.
 Information/setup operations do not accept --format; unrelated options fail.
 
+FILE FORMATS
+  PDF, CSV, TSV, XLSX, DOCX, PPTX, DOC, XLS, TeX, Keynote, Pages, Numbers, ZIP.
+  Images/videos are explicitly excluded (no OCR). Legacy DOC/XLS and iWork
+  extraction is partial. Citations retain document parts/paragraphs/objects,
+  PPTX slides, table rows or TeX source lines. No apps or macros are executed.
+  The first update retries newly supported formats and ZIPs.
+
 SEARCH AND EVIDENCE
   --scope {all,metadata,fulltext}  Search scope; default all (search only).
   --top N                       Result count, 1..100; search default 10,
@@ -195,7 +204,9 @@ BibDesk RAGはローカルBibDeskライブラリとリンク添付を検索し�
   bibdesk-rag [案内オプション]
   bibdesk-rag [--temp PATH] 操作 [オプション]
 
-引数なしでは短縮ヘルプを表示して終了します。全オプションは -h/--help です。
+引数なしでは版番号・開発者名・説明と主な操作を表示して終了します。
+端末ではusage・オプションを色分けし、NO_COLOR・TERM=dumb・リダイレクトでは色なしです。
+全オプションは -h/--help です。
 主操作は1回につき1つ。無関係なオプションや競合操作は処理前にエラーにします。
 空白を含むパス・検索語は引用符で囲みます。
 
@@ -288,6 +299,12 @@ MCPは検索・参照だけでSQLiteを読み取り専用で開き、索引保�
 結果は標準出力、進捗・診断は標準エラーです。進捗は両出力が端末で、
 TERMがdumbでない場合に表示します。JSONでは進捗を無効にし、詳細診断も混ぜません。
 案内・setupには --format を使えず、無関係なオプションは拒否します。
+
+対応形式 / FILE FORMATS
+  PDF・CSV・TSV・XLSX・DOCX・PPTX・DOC・XLS・TeX・Keynote・Pages・Numbers・ZIP。
+  画像・動画は明示的に対象外（OCRなし）。旧DOC/XLSとiWorkは部分抽出です。
+  文書パート/段落/オブジェクト、PPTXスライド、表の行、TeX原文行を出典にします。
+  アプリ・マクロは実行しません。最初のupdateで新規対応形式・ZIPを再抽出します。
 
 検索と証拠 / SEARCH AND EVIDENCE
   --scope {all,metadata,fulltext}  検索範囲。search専用、既定all。

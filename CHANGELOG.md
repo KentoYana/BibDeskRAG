@@ -4,6 +4,14 @@
 
 # Changelog
 
+## [0.5.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) — 2026-11-14
+
+- Show the version/author introduction and tagline before the no-argument usage overview; color usage/options on terminals, respecting NO_COLOR and TERM=dumb and keeping redirected output plain.
+- Set the default per-file limit to 200 MiB, matching the container expansion budget; preserve existing explicit settings on upgrade.
+- Add read-only DOCX, PPTX, Word 97–2003 DOC, BIFF XLS, literal TeX and iWork XML/IWA extraction, including linked iWork directory packages. Preserve document/slide/paragraph/object/table/line provenance and explicitly report partial coverage.
+- Explicitly exclude images/videos, including ZIP members, without reading media bytes. Share container/IWA expansion budgets and preserve nested document locations.
+- Retry newly supported formats and ZIPs on the first update of the extraction revision; retain incremental reuse for other formats. Add pinned olefile/xlrd dependencies and verified source locks.
+
 ## [0.4.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) — 2026-11-09
 
 - Match the model-loading and indexing progress bars in width, characters and label
@@ -102,6 +110,14 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.5.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) — 2026-11-14（日本語）
+
+- 引数なしの案内に版番号・開発者名・説明を追加。端末ではusageとオプションを色分けし、NO_COLOR・TERM=dumb・リダイレクト時は色なしで表示。
+- 1ファイルの既定上限を200 MiBに変更し、コンテナ展開後の合計上限と統一。アップグレード時は既存設定の明示値を保持。
+- DOCX・PPTX・Word 97–2003 DOC・BIFF XLS・TeX原文・iWork XML/IWAを読み取り専用で抽出。リンクされたiWorkディレクトリパッケージ、詳細な出典位置、部分抽出の明示に対応。
+- 画像・動画はZIP内部も明示的に対象外。コンテナ/IWAの展開予算を共有し、内部文書の出典を保持。
+- 新規対応形式とZIPは最初のupdateで再抽出し、他形式の差分再利用は維持。olefile/xlrdのバージョンと検証済みソースを固定。
 
 ## [0.4.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.4.1) — 2026-11-09（日本語）
 

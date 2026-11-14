@@ -16,7 +16,7 @@ bibdesk-rag -e
 bibdesk-rag -r
 ```
 
-引数なしでは主な操作と案内だけの短縮ヘルプ、`-h/--help` ではすべてのオプションを含む詳細ヘルプを表示します。`-v/--version` は版番号とソフトウェア引用情報、`-e/--example` は操作例を表示します。`-r/--readme` は同梱マニュアルを端末のページャーで表示し、非TTYまたはページャーがない場合は標準出力へ出します。設定・索引がなくても利用でき、ネットワークへ接続しません。
+引数なしでは版番号・開発者名・説明と主な操作を表示します。端末ではusage・オプションを色分けし、`NO_COLOR`設定時、`TERM=dumb`、パイプやファイル出力では色を付けません。`-h/--help` ではすべてのオプションを含む詳細ヘルプを表示します。`-v/--version` は版番号とソフトウェア引用情報、`-e/--example` は操作例を表示します。`-r/--readme` は同梱マニュアルを端末のページャーで表示し、非TTYまたはページャーがない場合は標準出力へ出します。設定・索引がなくても利用でき、ネットワークへ接続しません。
 
 | 主操作 | 引数 | 用途 |
 | --- | --- | --- |
@@ -202,8 +202,8 @@ bibdesk-rag --index status
 - `--index check`：SQLite/外部キー/FTS整合性と添付エラーを確認。FTS検査のためDBをメモリにコピーします。大規模DBではメモリが必要です。
 - 欠損・移動ファイル：まずBibDesk上でリンクを確認してください。公開 `Entry.files` を優先し、既存パスがない場合のみmacOS bookmark/aliasをUI・マウントなしで解決します。現代のbookmark移動追跡は合成データで検証済み。古い実機alias形式は未検証です。
 - 画像のみPDF：`no_text` として記録。OCRはありません。暗号化PDF・壊れたPDFは理由を記録し、処理を継続します。
-- ZIP：内部一覧を記録し、対応形式のみメモリ内で解析。パス逸脱、symlink、暗号化、サイズ・件数・圧縮率超過を拒否。入れ子ZIPは本文未解析です。XLSXもZIP/XMLの安全性を検査します。
-- `.xls`、画像、その他形式：名前・拡張子を記録し、本文未解析にします。
+- ZIP：内部一覧を記録し、対応形式のみメモリ内で解析。パス逸脱、symlink、暗号化、サイズ・件数・圧縮率超過を拒否。入れ子ZIPは本文未解析です。XLSX・OOXML・iWorkもコンテナ/XMLの安全性を検査し、展開予算を共有します。iWork内部のIndex.zipは文書形式として解析します。
+- DOCX・PPTX・DOC・XLS・TeX・Keynote・Pages・Numbersも対象です。旧DOC/XLSとApple形式は制約を示して部分抽出します。画像・動画は明示的に`excluded`です。[形式別の範囲・出典位置](file-formats.md)を参照してください。
 - PDFの読み順・段組・表の再構成精度はpypdfの抽出に依存します。抽出テキストは原本を代替しません。
 - 索引は平文のローカルSQLiteです。アプリはファイルを0600で作成します。バックアップやOSのアクセス権は利用者側で管理します。
 - 生物学的表記の正規化は検索補助であり、異なる実験条件や変異体が同一であるとは推論しません。
@@ -226,7 +226,7 @@ bibdesk-rag -e
 bibdesk-rag -r
 ```
 
-No arguments shows brief guidance; `-h/--help` shows every option. `-v/--version` prints the version and software citation, and `-e/--example` prints examples. `-r/--readme` displays the bundled manual in a terminal pager, or on standard output without a TTY/pager. These work without configuration, an index or network access.
+No arguments shows the version, author, tagline and operation overview. Usage/options are colored on terminals; `NO_COLOR`, `TERM=dumb` or redirected output disables colors; `-h/--help` shows every option. `-v/--version` prints the version and software citation, and `-e/--example` prints examples. `-r/--readme` displays the bundled manual in a terminal pager, or on standard output without a TTY/pager. These work without configuration, an index or network access.
 
 | Main operation | Arguments | Purpose |
 | --- | --- | --- |
@@ -407,8 +407,8 @@ New defaults are `~/.config/bibdesk-rag/config.toml` and `~/.local/share/bibdesk
 - `--index check` checks SQLite, foreign keys, FTS consistency and attachment errors. It copies the database into memory for FTS validation; large databases need memory.
 - Missing/moved files: inspect BibDesk links first. Public `Entry.files` paths take priority; only missing paths trigger macOS bookmark/alias resolution without UI or mounting. Modern bookmark move tracking has synthetic-fixture coverage; authentic old alias formats remain unverified.
 - Image-only PDFs are recorded as `no_text`; no OCR is performed. Encrypted/damaged PDFs record their reason while processing continues.
-- ZIP member lists are recorded; supported members are parsed in memory. Traversal, symlinks, encryption and size/count/ratio excesses are rejected. Nested ZIP text is not parsed. XLSX also receives ZIP/XML safety checks.
-- `.xls`, images and other formats retain names/extensions without text extraction.
+- ZIP member lists are recorded; supported members are parsed in memory. Traversal, symlinks, encryption and size/count/ratio excesses are rejected. Nested ZIP text is not parsed. XLSX, OOXML and iWork receive container/XML safety checks and share expansion budgets. Internal iWork Index.zip is parsed as part of the document format.
+- DOCX, PPTX, DOC, XLS, TeX, Keynote, Pages and Numbers are also supported. Legacy DOC/XLS and iWork return partial extraction with explicit limitations. Images/videos are explicitly `excluded`. See [format scope and provenance](file-formats.md).
 - PDF reading order, columns and table reconstruction depend on pypdf. Extracted text does not replace original sources.
 - The index is plaintext local SQLite; files are created with mode 0600. Users manage backups and OS permissions.
 - Biological-identifier normalization assists matching; it does not imply different experimental conditions or mutants are equivalent.
