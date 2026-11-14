@@ -14,9 +14,12 @@ from .bibdesk import read_library
 from .config import Config
 from .database import connect, initialize
 from .extractors import extract_file
-from .extractors.formats import EXCLUDED_FORMATS, EXTRACTION_REVISION, NEW_FORMATS
+from .extractors.formats import (
+    EXCLUDED_FORMATS, EXTRACTION_REVISION, EXTRACTION_VERSIONS,
+    LEGACY_EXTRACTION_VERSIONS, NEW_FORMATS,
+)
 from .extractors.sources import is_iwork_directory, source_digest, source_stat
-from .normalization import normalize_search
+from .normalization import NORMALIZATION_REVISION, normalize_search
 
 
 @dataclass(frozen=True)
@@ -98,18 +101,31 @@ def index_library(
         files_hashed=0,
         errors=[],
     )
-    db = connect(config.database)
+    db = connect(config.database, bib=config.bib, allow_unbound=True)
     try:
         with db:
-            db.execute("BEGIN IMMEDIATE")
             initialize(db, in_transaction=True)
             previous = dict(db.execute("SELECT key,value FROM settings"))
-            if previous.get("bib_path", str(config.bib)) != str(config.bib):
-                raise ValueError("Index belongs to another library; choose a different database")
             previous_vectors = {row[0] for row in db.execute(
                 "SELECT DISTINCT paper_id FROM embeddings WHERE paper_id IS NOT NULL")}
             reextract = rebuild or previous.get("extraction_options") != options_json
             policy_changed = previous.get("extraction_revision") != EXTRACTION_REVISION
+            old_versions = json.loads(previous.get("extraction_versions", "null"))
+            if old_versions is None:
+                old_versions = dict(LEGACY_EXTRACTION_VERSIONS)
+            if not isinstance(old_versions, dict) or any(
+                not isinstance(k, str) or not isinstance(v, str) for k, v in old_versions.items()
+            ):
+                raise ValueError("Invalid extraction version metadata; keep this index for inspection")
+            changed_formats = {
+                suffix for suffix in old_versions.keys() | EXTRACTION_VERSIONS.keys()
+                if old_versions.get(suffix) != EXTRACTION_VERSIONS.get(suffix)
+            }
+            if policy_changed:
+                changed_formats |= NEW_FORMATS | {".zip"}
+            if changed_formats:
+                changed_formats.add(".zip")
+            normalize_changed = previous.get("normalization_revision") != NORMALIZATION_REVISION
             old = {
                 row["citekey"]: dict(row)
                 for row in db.execute("SELECT id,citekey,doi,fingerprint FROM papers")
@@ -134,7 +150,7 @@ def index_library(
                         report["papers_renamed"] += 1
                 if existing:
                     paper_id = existing["id"]
-                    if values["fingerprint"] != existing["fingerprint"]:
+                    if rebuild or normalize_changed or values["fingerprint"] != existing["fingerprint"]:
                         db.execute(
                             "UPDATE papers SET "
                             + ",".join(f"{k}=?" for k in values)
@@ -158,8 +174,7 @@ def index_library(
                     if path not in incoming_paths:
                         _index_attachment(
                             db, Path(path), ref.error, config,
-                            reextract or (policy_changed and Path(path).suffix.lower()
-                                          in NEW_FORMATS | {".zip"}),
+                            reextract or Path(path).suffix.lower() in changed_formats,
                             verify_hashes, report,
                         )
                         incoming_paths.add(path)
@@ -180,6 +195,15 @@ def index_library(
             db.execute(
                 "DELETE FROM attachments WHERE id NOT IN (SELECT attachment_id FROM paper_attachments)"
             )
+            if normalize_changed or rebuild:
+                last_id = 0
+                while batch := db.execute(
+                    "SELECT id,text FROM chunks WHERE id>? ORDER BY id LIMIT 256", (last_id,)
+                ).fetchall():
+                    for chunk in batch:
+                        db.execute("UPDATE chunks SET search_text=? WHERE id=?",
+                                   (normalize_search(chunk["text"]), chunk["id"]))
+                    last_id = batch[-1]["id"]
             if config.semantic.enabled:
                 from .semantic import update_vectors
 
@@ -200,6 +224,8 @@ def index_library(
                 "last_indexed": str(time.time()),
                 "extraction_options": options_json,
                 "extraction_revision": EXTRACTION_REVISION,
+                "extraction_versions": json.dumps(EXTRACTION_VERSIONS, sort_keys=True),
+                "normalization_revision": NORMALIZATION_REVISION,
             }.items():
                 db.execute(
                     "INSERT INTO settings VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",

@@ -378,7 +378,7 @@ SEMANTIC SEARCH / 意味検索（任意）
   Existing configs retain the current choice as the default.
   Setup changes only the selected semantic.enabled option, preserving other TOML/comments.
 
-  Development: use .python-version Python 3.12.13 and the existing .venv.
+  Development/local validation: use only .python-version Python 3.14.10 via pyenv and .venv.
     .venv/bin/python -m pip install -e '.[dev,semantic]'
   Pip: install the semantic extra in your existing standard venv if needed.
   Homebrew Apple Silicon: locked inference wheels are included in the Formula environment.

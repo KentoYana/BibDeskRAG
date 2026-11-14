@@ -4,6 +4,32 @@
 
 # Third-party notices
 
+## PDF dependencies added after 0.5.0
+
+- `fonttools==4.68.0`: MIT; used by pypdf to decode embedded CFF Type1 fonts.
+- `cryptography==50.0.2`: Apache-2.0 OR BSD-3-Clause; used by pypdf for AES PDF decryption.
+- `cffi==2.1.1`: MIT-0, with upstream per-file notices retained.
+- `pycparser==3.12`: BSD-3-Clause.
+
+The four source archives were checked against PyPI SHA-256 metadata on
+2026-11-14 and their complete top-level LICENSE files were inspected, including
+cryptography's LICENSE.APACHE and LICENSE.BSD. Source URLs/hashes are in
+`packaging/homebrew/resources.json`; upstream code and notices remain in their
+separate pip/Homebrew distributions, not in the application's own wheel.
+
+Homebrew builds cryptography from source with Rust and Homebrew OpenSSL
+(Apache-2.0); CFFI uses libffi (MIT). The upstream Cargo.lock pins Rust crates
+and checksums; preserve their individual licenses when redistributing the
+resulting dependency. Pip's upstream cryptography wheels bundle their own
+OpenSSL and retain its license. Do not describe the full crypto binary as
+uniformly BSD-licensed.
+
+Build isolation additionally uses verified CFFI/pycparser wheels and
+`maturin==1.16.0` (MIT OR Apache-2.0), with macOS arm64/x86_64 inputs in
+`build-resources.json`. Their original wheel LICENSE/NOTICE files are retained
+intact in the offline bundle. They are build inputs, not a new package manager
+or an application-time download.
+
 ## Document readers added in 0.5.0
 
 - `olefile==0.47`: BSD-2-Clause plus the retained PIL-derived permission notice. No image decoding is used.
@@ -174,6 +200,15 @@ vendored into BibDeskRAG's source/wheel or its runtime environment.
 <a id="japanese"></a>
 
 # 第三者ライセンスと依存一覧
+
+## 0.5.0以降に追加したPDF依存
+
+fonttools 4.68.0（MIT）、cryptography 50.0.2（Apache-2.0 OR BSD-3-Clause）と、
+間接依存cffi 2.1.1（MIT-0）・pycparser 3.12（BSD-3-Clause）を追加しました。
+2026-11-14にソースのPyPI SHAと上流LICENSEを確認しています。Homebrewの
+Rust/OpenSSL/libffi、隔離ビルド用maturin 1.16.0と関連wheelも、上記英語節の
+ライセンス・原本notice保持方針に従います。アプリ本体への依存コード同梱や
+実行時の自動取得は行いません。
 
 ## 0.5.0で追加した文書読み取り依存
 

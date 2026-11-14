@@ -4,6 +4,24 @@
 
 # Changelog
 
+## [0.5.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) — 2026-11-14
+
+- Pin development and local validation to pyenv Python 3.14.10, preserving the
+  existing dependency versions and aligning package CI with that interpreter.
+
+- Include pinned fontTools/cryptography PDF dependencies, AES/CFF regression and
+  package-smoke fixtures, and fixed Homebrew source/build inputs. Refresh cached
+  PDFs and ZIPs once on the next index update; password-required PDFs stay locked.
+
+- Validate library/index binding across CLI, MCP, setup and updates before
+  accepting an existing index; keep read requests in a consistent snapshot.
+- Continue context assembly after shortened source fields and distinguish source
+  truncation from total-budget exhaustion.
+- Version per-format extraction and lexical normalization; selectively refresh
+  derived text/FTS without parsing unaffected attachments.
+- Document compatibility/recovery and add installed seven-tool SDK, fixed-release
+  upgrade, tag/runtime/archive version checks to PR/tag package validation.
+
 ## [0.5.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) — 2026-11-14
 
 - Show the version/author introduction and tagline before the no-argument usage overview; color usage/options on terminals, respecting NO_COLOR and TERM=dumb and keeping redirected output plain.
@@ -110,6 +128,19 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.5.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) — 2026-11-14（日本語）
+
+- 開発・ローカル検証をpyenv Python 3.14.10に統一し、既存依存の版を保持。
+
+- fontTools・cryptographyをPDF抽出依存に追加し、Homebrew入力を固定。
+  次回updateでPDF・ZIPを一度再抽出し、CFF文字コードとAESの生成fixtureを検証。
+  パスワード必須PDFは引き続き抽出対象外。
+
+- CLI・MCP・セットアップ・索引更新でライブラリ照合を共通化し、読取スナップショットを保持。
+- contextで短縮済みの抜粋と全体予算不足を分離し、後続の文献を収録。
+- 形式別抽出版・検索正規化版を保存し、必要な派生テキスト/FTSだけを更新。
+- 互換性・復旧手順を文書化し、7ツールSDK・実正式版からの更新・版番号照合を配布CIへ追加。
 
 ## [0.5.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) — 2026-11-14（日本語）
 

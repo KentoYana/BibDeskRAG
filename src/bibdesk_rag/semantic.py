@@ -232,11 +232,8 @@ def semantic_search(config: Config, query: str, limit=None, *, backend=None):
         raise ValueError("Semantic limit must be between 1 and 100")
     if not config.database.is_file():
         raise ValueError("Index missing. Run bibdesk-rag --index update first.")
-    with closing(connect(config.database, readonly=True)) as db:
-        db.execute("BEGIN")
+    with closing(connect(config.database, readonly=True, bib=config.bib)) as db:
         settings = dict(db.execute("SELECT key,value FROM settings"))
-        if settings.get("bib_path") != str(config.bib.resolve()):
-            raise ValueError("Index belongs to a different library; choose a different database")
         model = active_model(db)
         if not model or not has_paper_vectors(db):
             raise ValueError("Semantic index missing. Run bibdesk-rag --index update first.")

@@ -16,7 +16,7 @@ from typing import TextIO
 
 from . import __version__
 from .config import load_config
-from .database import connect
+from .database import LibraryIdentityError, connect
 from .search import SQLiteSearch
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
@@ -235,7 +235,7 @@ class MCPServer:
                 data = semantic_search(config, **arguments, backend=self._semantic_backend)
                 # Per-paper budget plus global serialized response budget below.
                 return _tool_result([_bounded_paper(item, 8000) for item in data])
-            with closing(connect(config.database, readonly=True)) as db:
+            with closing(connect(config.database, readonly=True, bib=config.bib)) as db:
                 engine = SQLiteSearch(db)
                 if name == "get_paper":
                     budget = arguments.pop("max_chars", 10000)
@@ -274,6 +274,12 @@ class MCPServer:
                 else:
                     data = getattr(engine, name)(**arguments)
                 return _tool_result(data)
+        except LibraryIdentityError as exc:
+            result = _tool_result(error=str(exc))
+            payload = json.loads(result["content"][0]["text"])
+            payload["error_code"] = exc.code
+            result["content"][0]["text"] = json.dumps(payload, ensure_ascii=False)
+            return result
         except (ValueError, KeyError, OSError, sqlite3.Error, TypeError, RuntimeError) as exc:
             return _tool_result(error=str(exc)[:2000])
 

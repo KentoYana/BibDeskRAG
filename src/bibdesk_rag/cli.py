@@ -177,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "index" and args.index_action in {"update", "rebuild"}:
             update_index(config, args)
             return 0
-        db = connect(config.database, readonly=True)
+        db = connect(config.database, readonly=True, bib=config.bib)
         try:
             if args.command == "index":
                 result = doctor(db, config) if args.index_action == "check" else status(db, config)

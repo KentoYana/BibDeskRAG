@@ -8,7 +8,7 @@ import re
 from typing import Protocol
 
 from .bibdesk import normalize_doi
-from .database import paper_dict
+from .database import paper_dict, read_snapshot
 from .normalization import match_query, normalize_search
 
 MAX_RESULTS = 100
@@ -77,6 +77,9 @@ class SearchEngine(Protocol):
 class SQLiteSearch:
     def __init__(self, db):
         self.db = db
+
+    def snapshot(self):
+        return read_snapshot(self.db)
 
     def search_papers(
         self,

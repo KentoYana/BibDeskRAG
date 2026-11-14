@@ -60,8 +60,18 @@ async def validate(app_python: Path):
             env=env,
         )
         checks = []
+        expected_version = subprocess.run(
+            [str(app_python), "-c",
+             "from importlib.metadata import version; from bibdesk_rag import __version__; "
+             "assert version('bibdesk-rag') == __version__; print(__version__)"],
+            env=env, check=True, capture_output=True, text=True, timeout=10,
+        ).stdout.strip()
+        cli_version = subprocess.run([*command, "--version"], env=env, check=True,
+                                     capture_output=True, text=True, timeout=10).stdout
+        assert cli_version.splitlines()[0] == f"bibdesk-rag {expected_version}"
         async with Client(server, read_timeout_seconds=10) as client:
             assert client.protocol_version == "2025-06-18"
+            assert client.server_info.version == expected_version
             listing = await client.list_tools()
             names = {tool.name for tool in listing.tools}
             assert names == {
@@ -71,12 +81,14 @@ async def validate(app_python: Path):
                 "get_attachments",
                 "get_chunk",
                 "build_context",
+                "semantic_search_papers",
             }
             assert all(tool.annotations.read_only_hint for tool in listing.tools)
 
             async def call(name, arguments):
                 response = await client.call_tool(name, arguments)
                 assert not response.is_error, response
+                assert len(response.content[0].text) <= 120000
                 result = json.loads(response.content[0].text)
                 assert result["untrusted_source"] is True
                 checks.append(name)
@@ -101,12 +113,17 @@ async def validate(app_python: Path):
             assert "text" not in context["results"][0]
             rejected = await client.call_tool("get_chunk", {"chunk_id": 1, "max_chars": 20001})
             assert rejected.is_error
+            optional = await client.call_tool("semantic_search_papers", {"query": "DNA repair"})
+            assert optional.is_error and "disabled" in optional.content[0].text
+            checks.append("semantic_search_papers (disabled, no model download)")
             report = {
                 "mcp_sdk": version("mcp"),
                 "protocol": client.protocol_version,
                 "server_version": client.server_info.version,
                 "tools_passed": checks,
                 "invalid_argument_rejected": True,
+                "response_bounds_checked": True,
+                "installed_metadata_cli_server_versions_match": True,
             }
         assert {path: sha(path) for path in before} == before
         report["source_and_index_hashes_unchanged"] = True

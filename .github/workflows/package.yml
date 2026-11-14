@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14.10'
       - run: python -m pip install build
       - run: python -m build
       - run: python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz
@@ -28,6 +28,18 @@ jobs:
           "$RUNNER_TEMP/sdist-test/bin/python" -m pip install dist/bibdesk_rag-*.tar.gz
           "$RUNNER_TEMP/sdist-test/bin/python" -m pip check
           python tools/package_smoke.py --command "$RUNNER_TEMP/sdist-test/bin/bibdesk-rag" --mcp-command "$RUNNER_TEMP/sdist-test/bin/bibdesk-rag-mcp" --workdir "$RUNNER_TEMP/sdist-data"
+      - name: Official SDK against installed wheel and sdist
+        run: |
+          python -m venv "$RUNNER_TEMP/mcp-sdk"
+          "$RUNNER_TEMP/mcp-sdk/bin/python" -m pip install -r tools/requirements-mcp-sdk.txt
+          "$RUNNER_TEMP/mcp-sdk/bin/python" tools/validate_mcp_sdk.py --app-python "$RUNNER_TEMP/wheel-test/bin/python"
+          "$RUNNER_TEMP/mcp-sdk/bin/python" tools/validate_mcp_sdk.py --app-python "$RUNNER_TEMP/sdist-test/bin/python"
+      - name: Upgrade the previous public release's generated index
+        run: |
+          python -m venv "$RUNNER_TEMP/previous-release"
+          "$RUNNER_TEMP/previous-release/bin/python" -m pip install -r tools/requirements-upgrade-baseline.txt
+          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.0 --app-python "$RUNNER_TEMP/wheel-test/bin/python"
+          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.0 --app-python "$RUNNER_TEMP/sdist-test/bin/python"
       - uses: actions/upload-artifact@v4
         with:
           name: python-distributions
@@ -38,7 +50,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14.10'
       - run: python -m pip install build
       - run: python -m build
       - run: python tools/bundle_build_resources.py --output dist/bibdesk-rag-build-wheels.tar.gz

@@ -39,7 +39,8 @@ Apple Silicon版では、NumPy/SentenceTransformers/PyTorchと追加の推論依
 既存のFormula環境へ導入します。`build-resources.json` の `semantic_runtime` 行を
 同じ `bibdesk-rag-build-wheels.tar.gz` に同梱し、`PIP_NO_INDEX=1` でインストールします。
 別venvや実行時pipは使いません。モデル本体は含まず、`--setup` の選択時だけ取得します。
-推論wheelはPython 3.14・macOS 14以上のarm64用です。Intel版は従来の基本検索を維持します。
+推論wheelはPython 3.14・macOS 14以上のarm64用です。Intelは基本検索の構成ですが、
+新しい暗号依存を含むソースビルドは未検証です。
 `tools/lock_semantic_resources.py` はテスト済み `.venv` から追加依存を辿り、
 明示的にwheelを取得してPyPIのSHA-256と照合します。モデルは取得しません。
 変更前後のライセンスとネイティブ依存を確認し、Formula導入・import・実推論を検証してください。
@@ -54,10 +55,17 @@ Apple Silicon版では、NumPy/SentenceTransformers/PyTorchと追加の推論依
 設定と統合SQLite・モデルキャッシュはFormulaの更新・再導入でも削除しません。
 手順は [意味検索ガイド](../../docs/semantic-search.md) を参照してください。
 
-31 の実行時 Python 依存の sdist は `resources.json` と Formula 内に URL・
+35 の実行時 Python 依存の sdist は `resources.json` と Formula 内に URL・
 バージョン・SHA-256 を固定しています。lxml は Homebrew の libxml2/libxslt を使って
 ソースからビルドします。Python 本体やネイティブライブラリの patch 更新は
 Homebrew の管理対象です。Python minor を変更するときは後述の backend bundle も更新します。
+
+PDF用fontTools・cryptographyと、その間接依存CFFI・pycparserも基本依存です。
+cryptographyはRust（ビルド時）とHomebrew OpenSSL、CFFIはlibffiを使って
+ソースから構築します。Pythonの隔離ビルド用maturin・CFFI・pycparser wheelは
+同じ固定bundleに含めます。Rust crateは上流Cargo.lockの版・SHAに従うビルド入力で、
+アプリ実行時には取得しません。cryptography 49以降は上流のIntel macOS対応が
+終了しているため、この最新依存でのIntelソースビルド動作は未検証です。
 
 PEP 517 ビルドには異なる setuptools の版が必要です。公開 PyPI wheel を
 `build-resources.json` で固定し、独立した `bibdesk-rag-build-wheels.tar.gz` にまとめます。
@@ -246,7 +254,15 @@ Keep the generation template in this repository. Never publish fictitious or `fi
 
 The Formula uses Homebrew `python@3.14` and `Language::Python::Virtualenv`, creating a separate environment in `libexec`. `system_site_packages: false` isolates it from global pip packages; pyenv is unnecessary. It invokes no pip, external API or model downloads at runtime.
 
-The 31 runtime dependency sdists have fixed URLs, versions and SHA-256 values in `resources.json` and the Formula. lxml builds from source against Homebrew libxml2/libxslt. Python/native-library patch updates are managed by Homebrew. Changing Python minor versions also requires updating the backend bundle below.
+The 35 runtime dependency sdists have fixed URLs, versions and SHA-256 values in `resources.json` and the Formula. lxml builds from source against Homebrew libxml2/libxslt. Python/native-library patch updates are managed by Homebrew. Changing Python minor versions also requires updating the backend bundle below.
+
+PDF decoding includes fontTools/cryptography and indirect CFFI/pycparser.
+Cryptography builds from source with Rust (build-only) and Homebrew OpenSSL;
+CFFI uses libffi. Pinned maturin/CFFI/pycparser wheels satisfy isolated Python
+build requirements. Rust crates follow upstream Cargo.lock versions/checksums
+at build time; application runtime performs no downloads. Upstream cryptography
+49+ no longer supports Intel macOS; this dependency's Intel source build remains
+unverified. See [upstream release notes](https://cryptography.io/en/50.0.2/changelog/).
 
 PEP 517 builds need different setuptools versions. Public PyPI wheels are locked in `build-resources.json` and packaged separately as `bibdesk-rag-build-wheels.tar.gz`, including macOS arm64/x86_64 inputs. Each file and the whole bundle are SHA-256 checked. The Formula builds with `PIP_NO_INDEX=1` and local `PIP_FIND_LINKS`, avoiding unpinned dependency downloads during builds. Only the standard helper's `--no-binary` restriction is lifted to allow backend wheels; application/runtime dependencies still build from explicit sdists. BibDeskParser's backend is named `uv_build`; pip invokes it without the uv package manager. Since socksio's old flit 2 uses `ast.Str`, removed in Python 3.14, the Formula temporarily changes only its build requirement to flit 3.12.0. Runtime code is unchanged.
 
@@ -363,5 +379,6 @@ installs them into its one managed venv on arm64, without dependencies/network r
 then checks dependency consistency. Base runtime sdists remain locked separately. This
 keeps pip extras optional while Homebrew Apple Silicon supports the setup choice without
 a companion venv. The model cache is acquired only by an explicit setup/download action.
-The binary runtime lock targets Python 3.14/macOS 14+ arm64; Intel retains base retrieval.
+The binary runtime lock targets Python 3.14/macOS 14+ arm64; Intel has the base
+retrieval configuration, with the new cryptography source build unverified.
 Run the semantic lock tool after changing either backend or base/runtime dependency locks.
