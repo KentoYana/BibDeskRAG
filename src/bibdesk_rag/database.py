@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 
@@ -86,7 +87,50 @@ def _check_identity(db: sqlite3.Connection, *, allow_empty: bool) -> None:
         )
 
 
-def connect(path: Path, *, readonly: bool = False) -> sqlite3.Connection:
+class LibraryIdentityError(ValueError):
+    """Stable, source-independent diagnostic for a wrongly bound index."""
+
+    def __init__(self, code: str, message: str):
+        self.code = code
+        super().__init__(f"[{code}] {message}")
+
+
+def check_library(db: sqlite3.Connection, bib: Path, *, allow_unbound: bool = False) -> None:
+    tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    settings = dict(db.execute("SELECT key,value FROM settings")) if "settings" in tables else {}
+    saved = settings.get("bib_path")
+    if saved and saved != str(Path(bib).expanduser().resolve()):
+        raise LibraryIdentityError(
+            "library_mismatch", "Index belongs to another library (different library). "
+            "Choose a different database in the configuration; do not reuse this index.")
+    if saved and not settings.get("last_indexed") and not allow_unbound:
+        raise LibraryIdentityError("index_incomplete", "Index has no completed build; run --index update.")
+    if not saved:
+        populated = any(db.execute(f"SELECT 1 FROM {table} LIMIT 1").fetchone()
+                        for table in ("papers", "attachments", "chunks", "embeddings",
+                                      "embedding_models", "paper_attachments", "sqlite_sequence")
+                        if table in tables)
+        if not allow_unbound or populated or settings:
+            raise LibraryIdentityError(
+                "library_identity_missing", "Index library identity is missing. "
+                "Keep this index for inspection and choose a fresh database for an explicit rebuild.")
+
+
+@contextmanager
+def read_snapshot(db: sqlite3.Connection):
+    """Keep all SELECTs in one snapshot without ending a caller's transaction."""
+    owned = not db.in_transaction
+    if owned:
+        db.execute("BEGIN")
+    try:
+        yield
+    finally:
+        if owned:
+            db.rollback()
+
+
+def connect(path: Path, *, readonly: bool = False, bib: Path | None = None,
+            allow_unbound: bool = False) -> sqlite3.Connection:
     path = Path(path).expanduser().resolve()
     # Inspect an existing file in read-only mode before opening it for writing,
     # chmodding it, recovering a journal, or creating any application tables.
@@ -94,6 +138,8 @@ def connect(path: Path, *, readonly: bool = False) -> sqlite3.Connection:
         existing = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=30)
         try:
             _check_identity(existing, allow_empty=True)
+            if bib is not None:
+                check_library(existing, bib, allow_unbound=allow_unbound)
         finally:
             existing.close()
     if readonly:
@@ -106,6 +152,10 @@ def connect(path: Path, *, readonly: bool = False) -> sqlite3.Connection:
     try:
         db.execute("PRAGMA foreign_keys=ON")
         _check_identity(db, allow_empty=not readonly)
+        if bib is not None:
+            # Recheck under a transaction, including after a writer's preflight.
+            db.execute("BEGIN" if readonly else "BEGIN IMMEDIATE")
+            check_library(db, bib, allow_unbound=allow_unbound)
         if not readonly:
             path.chmod(0o600)
     except Exception:

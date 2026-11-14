@@ -8,7 +8,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.5.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.5.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
@@ -263,13 +263,13 @@ DBの整合性は `bibdesk-rag --index check --format json` で検査できま�
 
 ## 開発とソースからの利用
 
-Python 3.11以上を対象とし、開発用の `.python-version` は3.12.13です。Homebrew版は `python@3.14` と独立したvirtualenvを使用します。Homebrew利用者に以下の作業は不要です。
+Python 3.11以上を対象とし、開発・ローカル検証はpyenvのPython 3.14.10だけを使います。`.python-version` も3.14.10です。Homebrew版は `python@3.14` と独立したvirtualenvを使用します。Homebrew利用者に以下の作業は不要です。
 
 ソースのルートで、pyenvのローカル設定と標準venv・pipを使います。
 
 ```sh
-pyenv install -s 3.12.13
-pyenv local 3.12.13
+pyenv install -s 3.14.10
+pyenv local 3.14.10
 python -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
 .venv/bin/python -m pytest
@@ -287,6 +287,7 @@ python -m venv .venv
 sdistとwheelを `dist/` に生成します。公開用Formulaには、実際に公開した固定URLと確認済みSHA-256が必要です。このリポジトリのFormulaは生成用テンプレートであり、インストール用のFormulaは外部tapにあります。ローカル検証と公開手順は [Homebrew配布手順](packaging/homebrew/README.md) にまとめています。
 
 - [検証記録](docs/validation.md) / [Homebrew検証](docs/homebrew-validation.md) / [MCP検証](docs/mcp-validation.md)
+- [互換性・索引更新の契約](docs/compatibility.md) / [P0対応の検証](docs/p0-validation.md)
 - [Codex接続の詳細](docs/codex.md) / [CLI・設定・抽出仕様](docs/usage.md)
 - [設計と拡張](docs/architecture.md)：Title・Abstractのローカル意味検索を追加しました。ハイブリッド検索、OCR、図表解析は未実装です。
 - [MIT License](LICENSE) / [第三者ライセンスと依存一覧](THIRD_PARTY_NOTICES.md)
@@ -301,7 +302,7 @@ A local tool for searching and consulting literature managed in BibDesk from Cod
 
 The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
 
-The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.5.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.5.1 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
 
 These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
 
@@ -557,13 +558,13 @@ Check database integrity with `bibdesk-rag --index check --format json`. Inspect
 
 ## Development and source installation
 
-Python 3.11+ is supported; `.python-version` pins development to 3.12.13. Homebrew uses `python@3.14` and a separate virtualenv. Homebrew users do not need these development steps.
+Python 3.11+ is supported; development and local validation use only pyenv Python 3.14.10, pinned by `.python-version`. Homebrew uses `python@3.14` and a separate virtualenv. Homebrew users do not need these development steps.
 
 From the source root, use local pyenv configuration, standard venv and pip:
 
 ```sh
-pyenv install -s 3.12.13
-pyenv local 3.12.13
+pyenv install -s 3.14.10
+pyenv local 3.14.10
 python -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
 .venv/bin/python -m pytest
@@ -581,6 +582,7 @@ Source commands are `.venv/bin/bibdesk-rag` and `.venv/bin/bibdesk-rag-mcp`. Reg
 This generates sdist and wheel in `dist/`. A published Formula needs actual fixed release URLs and verified SHA-256 hashes. This repository keeps a generation template; the installable Formula lives in the external tap. See [Homebrew distribution](packaging/homebrew/README.md#english) for local validation and publication procedures.
 
 - [Validation record](docs/validation.md#english) / [Homebrew validation](docs/homebrew-validation.md#english) / [MCP validation](docs/mcp-validation.md#english)
+- [Compatibility and index upgrades](docs/compatibility.md) / [P0 validation](docs/p0-validation.md)
 - [Codex connection guide](docs/codex.md#english) / [CLI, configuration and extraction](docs/usage.md#english)
 - [Architecture and extensions](docs/architecture.md#english): local title/abstract embeddings are optional; hybrid search, OCR and figure/table analysis are not implemented.
 - [MIT License](LICENSE) / [Third-party licenses and dependencies](THIRD_PARTY_NOTICES.md#english)

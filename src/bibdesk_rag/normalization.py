@@ -3,6 +3,9 @@
 import re
 import unicodedata
 
+# Bump whenever matching normalization changes; refresh derived fields, not sources.
+NORMALIZATION_REVISION = "1"
+
 _DASHES = str.maketrans({c: "-" for c in "‐‑‒–—−﹣－"})
 
 

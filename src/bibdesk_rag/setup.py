@@ -25,7 +25,7 @@ from .config import (
     set_semantic_enabled,
 )
 from .config import check_output_locations as check_config_output_locations
-from .database import connect, status
+from .database import LibraryIdentityError, connect, status
 from .indexer import index_library
 from .progress import IndexDiagnostics, IndexProgressBar, single_line
 from .setup_connection import discover_executable, inspect_registration, probe_mcp, register
@@ -96,7 +96,9 @@ def private_diagnostics(terminal: Terminal):
 
 def read_index_status(config: Config) -> dict:
     try:
-        db = connect(config.database, readonly=True)
+        db = connect(config.database, readonly=True, bib=config.bib, allow_unbound=True)
+    except LibraryIdentityError as exc:
+        raise SetupProblem(str(exc)) from exc
     except ValueError:
         # A first all-or-nothing build can leave only an empty SQLite header.
         # Recognize it read-only; do not adopt any database with user tables.
@@ -111,15 +113,9 @@ def read_index_status(config: Config) -> dict:
         result = status(db, config)
     finally:
         db.close()
-    if result["settings"].get("bib_path") not in (None, str(config.bib)):
-        raise SetupProblem("Index belongs to another library; check database in the configuration "
-                           "manually. No index changes were made.")
     # An initialized-but-uncommitted index is not a completed first build.
     if not result["settings"].get("last_indexed"):
         raise IncompleteIndex("Index has no completed build; choose update to resume")
-    if result["settings"].get("bib_path") != str(config.bib):
-        raise SetupProblem("Index library identity is missing; inspect it with --index check "
-                           "before retrying.")
     return result
 
 

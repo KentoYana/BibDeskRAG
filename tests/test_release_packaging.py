@@ -32,6 +32,7 @@ def sdist_files(version="0.1.0"):
         f"{root}/pyproject.toml": f'[project]\nname = "bibdesk-rag"\nversion = "{version}"\n'.encode(),
         f"{root}/LICENSE": b"Synthetic MIT notice",
         f"{root}/THIRD_PARTY_NOTICES.md": b"Synthetic dependency notices",
+        f"{root}/src/bibdesk_rag/__init__.py": f'__version__ = "{version}"\n'.encode(),
     }
 
 
@@ -65,6 +66,33 @@ def test_formula_keeps_explicit_version_for_misleading_archive_name(tmp_path):
     assert '  version "0.1.0"' in formula
     assert hashlib.sha256(source.read_bytes()).hexdigest() in formula
     assert "@@" not in formula and "disable!" not in formula
+
+
+@pytest.mark.parametrize("raw", [
+    b'__version__ = "9.9.9"',
+    b'__version__ = __import__("os").environ["NEVER_EXECUTE"]',
+    b'__version__ = "0.1.0"\n__version__ = "9.9.9"',
+])
+def test_runtime_version_mismatch_is_rejected_without_executing(raw):
+    with pytest.raises(ValueError, match="Runtime"):
+        checks.check_runtime_version(raw, "0.1.0")
+
+
+def test_tag_must_match_exact_release():
+    checks.check_tag(None, "0.5.0")
+    checks.check_tag("v0.5.0", "0.5.0")
+    for tag in ("v0.4.1", "0.5.0", "v0.5.0-extra"):
+        with pytest.raises(ValueError, match="tag"):
+            checks.check_tag(tag, "0.5.0")
+
+
+def test_sdist_runtime_version_must_match_metadata(tmp_path):
+    path = tmp_path / "source.tar.gz"
+    files = sdist_files()
+    files["bibdesk_rag-0.1.0/src/bibdesk_rag/__init__.py"] = b'__version__ = "9.9.9"'
+    write_tar(path, files)
+    with path.open("rb") as stream, pytest.raises(ValueError, match="Runtime"):
+        checks.check_sdist(stream, "0.1.0")
 
 
 @pytest.mark.parametrize("name", [".local/config.toml", "data/index.sqlite3", "library.bib",
@@ -112,6 +140,7 @@ def release_fixture(tmp_path, monkeypatch):
     with zipfile.ZipFile(dist / "bibdesk_rag-0.1.0-py3-none-any.whl", "w") as archive:
         prefix = "bibdesk_rag-0.1.0.dist-info/"
         archive.writestr(prefix + "METADATA", "Name: bibdesk-rag\nVersion: 0.1.0\n\n")
+        archive.writestr("bibdesk_rag/__init__.py", '__version__ = "0.1.0"\n')
         archive.writestr(prefix + "licenses/LICENSE", "synthetic MIT")
         archive.writestr(prefix + "licenses/THIRD_PARTY_NOTICES.md", "synthetic notices")
     write_tar(dist / "bibdesk-rag-build-wheels.tar.gz", {

@@ -4,6 +4,12 @@
 
 # Validation record
 
+Current local execution uses only pyenv Python 3.14.10; see the
+[single-version validation](python314-validation.md).
+
+For the unreleased PDF dependency addition, see the
+[2026-11-14 validation record](pdf-dependency-validation.md).
+
 Date: 2026-11-01 (Asia/Tokyo). Machine: Apple Silicon macOS. Application version: 0.1.0.
 
 Phases 1–3 below record the initial generated-fixture validation. The later

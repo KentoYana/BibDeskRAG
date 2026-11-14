@@ -14,3 +14,13 @@ VIDEO_FORMATS = frozenset({
 EXCLUDED_FORMATS = IMAGE_FORMATS | VIDEO_FORMATS
 # Changing extraction policy must also invalidate cached unsupported records.
 EXTRACTION_REVISION = "office-iwork-1"
+
+# Frozen baseline for pre-versioned indexes; never edit these historical values.
+LEGACY_EXTRACTION_VERSIONS = dict.fromkeys(
+    (".pdf", ".csv", ".tsv", ".xlsx", ".zip", ".key", ".docx",
+     ".xls", ".pptx", ".doc", ".tex", ".pages", ".numbers"), "1")
+# Bump affected formats on parser/policy/dependency changes. ZIP also depends on
+# every member parser's version, computed by the indexer.
+EXTRACTION_VERSIONS = dict(LEGACY_EXTRACTION_VERSIONS)
+# fontTools enables CFF decoding and cryptography enables empty-password AES PDFs.
+EXTRACTION_VERSIONS[".pdf"] = "2"

@@ -19,7 +19,8 @@ The read adapter uses BibDeskParser's public interfaces for bibliography, groups
 - `paper_attachments`: many-to-many association with original locator and per-paper role. Shared source paths share chunks.
 - `chunks`: stable ID until re-extraction; attachment ID; source type; page start/end, sheet and row range, archive member; original extracted text; separate normalized search text; chunk order.
 - `papers_fts`, `chunks_fts`: independent FTS5 external-content indexes updated by insert/delete/update triggers in the same transaction as their source rows.
-- `settings`: schema-independent library hash, path, extraction options and last successful index timestamp.
+- `settings`: library hash/path, extraction options, per-format extraction versions,
+  lexical normalization revision and last successful index timestamp.
 - `embedding_models`, `embeddings`: model signatures and little-endian float32 vectors, paper/part or legacy chunk references, content hashes and timestamps. See the semantic extension below.
 
 `PRAGMA application_id` (`0x42524147`, ASCII `BRAG`) identifies an application-owned index, and `PRAGMA user_version` guards schema compatibility. Existing unrelated databases are inspected read-only and refused before opening for writes or changing permissions. Schema initialization is transactional. Foreign keys cascade deletions into links/chunks/embedding rows. The indexer holds one immediate write transaction per update, so readers see the last committed state. Search/MCP use `mode=ro` and `query_only`. Doctor performs the FTS integrity INSERT only on an in-memory backup.

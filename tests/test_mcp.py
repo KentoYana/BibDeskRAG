@@ -149,7 +149,7 @@ def test_readonly_connection_used_by_mcp(mcp_fixture, monkeypatch):
     calls = []
 
     def checked_connect(path, **kwargs):
-        assert kwargs == {"readonly": True}
+        assert kwargs == {"readonly": True, "bib": load_config(mcp_fixture[0]).bib}
         connection = original(path, **kwargs)
         assert connection.execute("PRAGMA query_only").fetchone()[0] == 1
         calls.append(path)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 
 from .search import check_top
 
@@ -19,6 +20,12 @@ def build_context(
     citekeys: list[str] | None = None,
     metadata_query: str | None = None,
 ) -> dict:
+    with engine.snapshot() if hasattr(engine, "snapshot") else nullcontext():
+        return _build_context(engine, query, top, max_chars, per_paper=per_paper,
+                              citekeys=citekeys, metadata_query=metadata_query)
+
+
+def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metadata_query):
     check_top(top)
     if type(max_chars) is not int or not 256 <= max_chars <= 100000:
         raise ValueError("max_chars must be between 256 and 100000")
@@ -79,10 +86,12 @@ def build_context(
         parts.append(block)
         remaining -= len(block)
         results.append(
-            {**citation, "text": excerpt, "truncated": truncated, "untrusted_source": True}
+            {**citation, "text": excerpt, "truncated": truncated,
+             "source_truncated": already_truncated,
+             "budget_truncated": len(excerpt) < len(content), "untrusted_source": True}
         )
-        budget_exhausted |= truncated
-        if truncated:
+        if len(excerpt) < len(content):
+            budget_exhausted = True
             break
     unverified = [
         "Results are retrieved excerpts; completeness and scientific claims have not been verified."
@@ -101,6 +110,8 @@ def build_context(
         )
     if budget_exhausted:
         unverified.append("The character budget omitted or truncated evidence.")
+    if any(hit["source_truncated"] for hit in results):
+        unverified.append("Some source excerpts were already shortened before context assembly.")
     return {
         "query": query,
         "context": "".join(parts),

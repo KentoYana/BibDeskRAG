@@ -12,9 +12,12 @@ class BibdeskRag < Formula
   disable! date: "2026-11-01", because: "unreleased template; run tools/generate_formula.py"
 
   depends_on "pkgconf" => :build
+  depends_on "rust" => :build
+  depends_on "libffi"
   depends_on "libxml2"
   depends_on "libxslt"
   depends_on :macos
+  depends_on "openssl@3"
   depends_on "python@3.14"
 
   on_arm do
@@ -52,6 +55,11 @@ class BibdeskRag < Formula
     sha256 "a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd"
   end
 
+  resource "cffi" do
+    url "https://files.pythonhosted.org/packages/9e/ef/008a1939e372c06329a3fce4279c02f328488f3526744906eeec3da7ad5f/cffi-2.1.1.tar.gz"
+    sha256 "dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be"
+  end
+
   resource "charset-normalizer" do
     url "https://files.pythonhosted.org/packages/33/1c/f41d4e74c28ab327ff3acd36053f7ea506c55872d7a90b0fa71aa3ab0c89/charset_normalizer-3.5.2.tar.gz"
     sha256 "39de2a259fc954455c57274dc94c79d5842774e1247a016aff30bc0efed0f4ef"
@@ -62,6 +70,11 @@ class BibdeskRag < Formula
     sha256 "ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34"
   end
 
+  resource "cryptography" do
+    url "https://files.pythonhosted.org/packages/9d/af/182eb91b0df3fe75c4d9f26fe70684569566745f6ba7e5c9c73a862c5252/cryptography-50.0.2.tar.gz"
+    sha256 "7b46165bb56eb4704e2eaaf86f3c940d19154535d9b0ca7d6d590b04060e00d5"
+  end
+
   resource "defusedxml" do
     url "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz"
     sha256 "1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69"
@@ -70,6 +83,11 @@ class BibdeskRag < Formula
   resource "et-xmlfile" do
     url "https://files.pythonhosted.org/packages/d3/38/af70d7ab1ae9d4da450eeec1fa3918940a5fafb9055e934af8d6eb0c2313/et_xmlfile-2.0.0.tar.gz"
     sha256 "dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54"
+  end
+
+  resource "fonttools" do
+    url "https://files.pythonhosted.org/packages/0c/b5/672312ae80ce8b8eb9779c56052a24c8f36652aa7293a1a420553bcf03e5/fonttools-4.68.0.tar.gz"
+    sha256 "73294e233070f71e2b3653b6bd8564af676d57f26d075761fb06d1ab2e4a7a5d"
   end
 
   resource "h11" do
@@ -125,6 +143,11 @@ class BibdeskRag < Formula
   resource "packaging" do
     url "https://files.pythonhosted.org/packages/7d/fa/3944b40b07da9ce895c0e6303a5ab7d53da063554f534556b134a54d6093/packaging-26.3.tar.gz"
     sha256 "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"
+  end
+
+  resource "pycparser" do
+    url "https://files.pythonhosted.org/packages/cb/27/eeb9f307bf07060f3d9f9aa0fb8c15b01bdfded0a941e4b2719c7f94cacd/pycparser-3.12.tar.gz"
+    sha256 "f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6"
   end
 
   resource "pylatexenc" do
@@ -196,6 +219,10 @@ class BibdeskRag < Formula
     ENV["PIP_FIND_LINKS"] = backend_wheels.to_s
     ENV["XML2_CONFIG"] = formula_opt_bin("libxml2")/"xml2-config"
     ENV["XSLT_CONFIG"] = formula_opt_bin("libxslt")/"xslt-config"
+    ENV["OPENSSL_DIR"] = formula_opt_prefix("openssl@3")
+    ENV.prepend_path "PKG_CONFIG_PATH", formula_opt_lib("libffi")/"pkgconfig"
+    ENV["CARGO_HOME"] = buildpath/"cargo-home"
+    ENV["MATURIN_PEP517_ARGS"] = "--locked"
     venv = virtualenv_install_with_resources(system_site_packages: false, without: %w[build-wheels socksio])
     resource("socksio").stage do
       # Upstream flit 2 uses ast.Str, removed in Python 3.14. Only replace the
@@ -214,7 +241,7 @@ class BibdeskRag < Formula
       ENV.delete("PIP_NO_DEPS")
       system "python3.14", "-m", "pip", "--python", libexec/"bin/python", "check"
     end
-    pkgshare.install "tools/package_smoke.py", "tools/format_fixtures.py"
+    pkgshare.install "tools/package_smoke.py", "tools/format_fixtures.py", "tools/pdf_fixtures.py"
   end
 
   def caveats

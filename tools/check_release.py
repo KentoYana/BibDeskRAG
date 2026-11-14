@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from email.parser import BytesParser
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import tarfile
 import tomllib
@@ -43,6 +45,21 @@ def check_metadata(raw: bytes, version: str) -> None:
     versions = metadata.get_all("Version", [])
     if names not in (["bibdesk-rag"], ["bibdesk_rag"]) or versions != [version]:
         raise ValueError(f"Expected bibdesk-rag {version}; found Name={names}, Version={versions}")
+
+
+def check_runtime_version(raw: bytes, version: str) -> None:
+    """Inspect a literal assignment without importing/executing archive code."""
+    tree = ast.parse(raw)
+    values = [node.value.value for node in tree.body if isinstance(node, ast.Assign)
+              and any(isinstance(t, ast.Name) and t.id == "__version__" for t in node.targets)
+              and isinstance(node.value, ast.Constant)]
+    if values != [version]:
+        raise ValueError("Runtime __version__ does not match release metadata")
+
+
+def check_tag(tag: str | None, version: str) -> None:
+    if tag is not None and tag != f"v{version}":
+        raise ValueError(f"Release tag must equal v{version}")
 
 
 def tar_members(archive: tarfile.TarFile) -> dict[str, tarfile.TarInfo]:
@@ -84,6 +101,8 @@ def check_sdist(stream: BinaryIO, version: str) -> None:
         project = tomllib.loads(read_member(archive, members[f"{root}/pyproject.toml"]).decode())
         if project["project"]["name"] != "bibdesk-rag" or project["project"]["version"] != version:
             raise ValueError("sdist pyproject.toml does not match the requested release")
+        runtime = f"{root}/src/bibdesk_rag/__init__.py"
+        check_runtime_version(read_member(archive, members[runtime]), version)
 
 
 def check_wheel(path: Path, version: str) -> None:
@@ -95,6 +114,7 @@ def check_wheel(path: Path, version: str) -> None:
             check_path(name)
         prefix = f"bibdesk_rag-{version}.dist-info/"
         check_metadata(archive.read(prefix + "METADATA"), version)
+        check_runtime_version(archive.read("bibdesk_rag/__init__.py"), version)
         for name in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
             if prefix + "licenses/" + name not in names:
                 raise ValueError(f"Wheel is missing {name}")
@@ -121,11 +141,14 @@ def check_backend_bundle(path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dist-dir", type=Path, required=True, help="Fresh release output directory")
+    parser.add_argument("--tag", default=os.environ.get("GITHUB_REF_NAME")
+                        if os.environ.get("GITHUB_REF_TYPE") == "tag" else None)
     args = parser.parse_args()
     version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
     names = [f"bibdesk_rag-{version}.tar.gz", f"bibdesk_rag-{version}-py3-none-any.whl",
              "bibdesk-rag-build-wheels.tar.gz"]
     try:
+        check_tag(args.tag, version)
         present = {path.name for path in args.dist_dir.iterdir()}
         if present - {"SHA256SUMS"} != set(names):
             raise ValueError("Use a fresh directory containing only this version's sdist, wheel and backend bundle")

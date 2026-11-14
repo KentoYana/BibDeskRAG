@@ -48,8 +48,10 @@ works and setup explains missing dependencies if semantic search is selected.
 Apple Silicon Homebrew builds include those inference dependencies in the Formula's
 existing managed virtualenv, installed from fixed/checksummed offline wheels. **No companion
 venv or pip modification of Cellar/libexec is needed.** Model weights are not bundled.
-The pinned semantic wheels target Python 3.14, macOS 14+ arm64. Intel builds retain base
-keyword/fulltext retrieval; this semantic runtime lock does not cover Intel.
+The pinned semantic wheels target Python 3.14, macOS 14+ arm64. Intel has the base
+keyword/fulltext configuration; this semantic runtime lock does not cover Intel.
+The added cryptography 50.0.2 source build remains unverified on Intel macOS;
+see [packaging requirements](../packaging/homebrew/README.md).
 
 ## 統合した索引管理 / Unified index operations
 

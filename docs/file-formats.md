@@ -2,6 +2,11 @@
 
 ## 日本語
 
+PDF抽出にはfontTools（埋め込みCFF文字コード）とcryptography（AES）を同梱依存として
+使用します。空パスワードで開けるAES PDFを読み取れますが、パスワード必須PDFは
+引き続き `encrypted` として本文を抽出しません。依存追加後の最初のupdateでは
+PDFとZIPを一度再抽出し、それ以外の未変更添付は差分再利用します。
+
 対応形式は PDF、CSV、TSV、XLSX、DOCX、PPTX、DOC、XLS、TeX、Keynote、Pages、Numbers、ZIP です。画像・動画ファイルは明示的に対象外（`excluded`）です。文書内に埋め込まれた画像・動画、プレビュー、OCRも対象にしません。既存のPDF本文抽出は継続します。
 
 | 拡張子 | 抽出する内容 | 出典位置・制約 |
@@ -26,6 +31,11 @@ Apple形式は単一ZIP文書と、明示的にリンクされた拡張子付き
 検索結果と `get_chunk` は `extraction_status`、必要に応じて最大1000文字の`extraction_warning`（切り詰め時はフラグ付き）を返します。部分抽出はコンテキストにも明記します。出典位置は描画された文書を再現するものではありません。科学的な主張は原本で確認してください。
 
 ## English
+
+PDF extraction includes fontTools for embedded CFF encodings and cryptography
+for AES. Empty-password AES PDFs can be read; password-required documents remain
+`encrypted` without extracted text. The first update after this dependency
+change retries PDFs and ZIPs once, reusing other unchanged attachments.
 
 The default per-file limit and total container expansion budget are both 200 MiB (209,715,200 bytes). Existing explicit configuration values are preserved on upgrade.
 
