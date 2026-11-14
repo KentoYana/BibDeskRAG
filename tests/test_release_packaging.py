@@ -123,6 +123,10 @@ def test_sdist_requires_matching_pyproject_and_license_notices(tmp_path):
 
 
 def release_fixture(tmp_path, monkeypatch):
+    # Synthetic v0.1.0 archives are independent of the outer CI release tag.
+    # Explicit tag-inheritance tests set their own environment after this setup.
+    monkeypatch.delenv("GITHUB_REF_TYPE", raising=False)
+    monkeypatch.delenv("GITHUB_REF_NAME", raising=False)
     root = tmp_path / "project"
     notices = root / "packaging/homebrew/licenses"
     notices.mkdir(parents=True)
@@ -161,6 +165,20 @@ def test_release_check_writes_only_three_verified_checksums_and_preserves_inputs
     assert {line.split("  ")[1]: line.split("  ")[0] for line in lines} == before
     assert all(hashlib.sha256((dist / name).read_bytes()).hexdigest() == digest
                for name, digest in before.items())
+
+
+@pytest.mark.parametrize("tag,accepted", [("v0.1.0", True), ("v0.5.1", False)])
+def test_release_check_inherits_and_enforces_ci_tag(tmp_path, monkeypatch, tag, accepted):
+    dist = release_fixture(tmp_path, monkeypatch)
+    monkeypatch.setenv("GITHUB_REF_TYPE", "tag")
+    monkeypatch.setenv("GITHUB_REF_NAME", tag)
+    if accepted:
+        checks.main()
+        assert (dist / "SHA256SUMS").is_file()
+    else:
+        with pytest.raises(SystemExit):
+            checks.main()
+        assert not (dist / "SHA256SUMS").exists()
 
 
 def test_stale_archive_is_rejected_without_replacing_existing_checksums(tmp_path, monkeypatch):
