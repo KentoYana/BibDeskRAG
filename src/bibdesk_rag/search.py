@@ -172,6 +172,10 @@ class SQLiteSearch:
         value["chunk_id"] = value.pop("id")
         value.pop("search_text", None)
         value["untrusted_source"] = True
+        if value.get("extraction_warning"):
+            warning = value["extraction_warning"]
+            value["extraction_warning"] = warning[:1000]
+            value["extraction_warning_truncated"] = len(warning) > 1000
         if not include_text:
             value.pop("text", None)
         return value
@@ -182,7 +186,8 @@ class SQLiteSearch:
         if type(max_chars) is not int or not 1 <= max_chars <= 20000:
             raise ValueError("max_chars must be between 1 and 20000")
         row = self.db.execute(
-            "SELECT c.*,a.path AS file_path,a.content_hash FROM chunks c JOIN attachments a ON a.id=c.attachment_id WHERE c.id=?",
+            "SELECT c.*,a.path AS file_path,a.content_hash,a.extraction_status,"
+            "a.error_message AS extraction_warning FROM chunks c JOIN attachments a ON a.id=c.attachment_id WHERE c.id=?",
             (chunk_id,),
         ).fetchone()
         if row is None:
@@ -218,7 +223,8 @@ class SQLiteSearch:
         # Stream ranking then apply per-paper limits: a prolific paper cannot exhaust a
         # fixed SQL candidate window and hide all other papers.
         rows = self.db.execute(
-            """SELECT c.*,a.path AS file_path,a.content_hash,p.citekey,p.title,p.doi,
+            """SELECT c.*,a.path AS file_path,a.content_hash,a.extraction_status,
+          a.error_message AS extraction_warning,p.citekey,p.title,p.doi,
           pa.role,bm25(chunks_fts) AS score
           FROM chunks_fts JOIN chunks c ON c.id=chunks_fts.rowid
           JOIN attachments a ON a.id=c.attachment_id

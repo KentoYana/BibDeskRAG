@@ -54,7 +54,7 @@ Apple Silicon版では、NumPy/SentenceTransformers/PyTorchと追加の推論依
 設定と統合SQLite・モデルキャッシュはFormulaの更新・再導入でも削除しません。
 手順は [意味検索ガイド](../../docs/semantic-search.md) を参照してください。
 
-29 の実行時 Python 依存の sdist は `resources.json` と Formula 内に URL・
+31 の実行時 Python 依存の sdist は `resources.json` と Formula 内に URL・
 バージョン・SHA-256 を固定しています。lxml は Homebrew の libxml2/libxslt を使って
 ソースからビルドします。Python 本体やネイティブライブラリの patch 更新は
 Homebrew の管理対象です。Python minor を変更するときは後述の backend bundle も更新します。
@@ -246,7 +246,7 @@ Keep the generation template in this repository. Never publish fictitious or `fi
 
 The Formula uses Homebrew `python@3.14` and `Language::Python::Virtualenv`, creating a separate environment in `libexec`. `system_site_packages: false` isolates it from global pip packages; pyenv is unnecessary. It invokes no pip, external API or model downloads at runtime.
 
-The 29 runtime dependency sdists have fixed URLs, versions and SHA-256 values in `resources.json` and the Formula. lxml builds from source against Homebrew libxml2/libxslt. Python/native-library patch updates are managed by Homebrew. Changing Python minor versions also requires updating the backend bundle below.
+The 31 runtime dependency sdists have fixed URLs, versions and SHA-256 values in `resources.json` and the Formula. lxml builds from source against Homebrew libxml2/libxslt. Python/native-library patch updates are managed by Homebrew. Changing Python minor versions also requires updating the backend bundle below.
 
 PEP 517 builds need different setuptools versions. Public PyPI wheels are locked in `build-resources.json` and packaged separately as `bibdesk-rag-build-wheels.tar.gz`, including macOS arm64/x86_64 inputs. Each file and the whole bundle are SHA-256 checked. The Formula builds with `PIP_NO_INDEX=1` and local `PIP_FIND_LINKS`, avoiding unpinned dependency downloads during builds. Only the standard helper's `--no-binary` restriction is lifted to allow backend wheels; application/runtime dependencies still build from explicit sdists. BibDeskParser's backend is named `uv_build`; pip invokes it without the uv package manager. Since socksio's old flit 2 uses `ast.Str`, removed in Python 3.14, the Formula temporarily changes only its build requirement to flit 3.12.0. Runtime code is unchanged.
 

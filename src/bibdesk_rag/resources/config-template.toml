@@ -12,7 +12,7 @@ database = "~/.local/share/bibdesk-rag/index.sqlite3"
 [extraction]
 chunk_size = 1500
 chunk_overlap = 200
-max_file_bytes = 104857600
+max_file_bytes = 209715200
 max_archive_members = 1000
 max_archive_bytes = 209715200
 max_compression_ratio = 100

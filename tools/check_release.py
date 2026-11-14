@@ -17,7 +17,10 @@ PRIVATE_PARTS = {
     ".git", ".local", ".codex", ".agents", ".build-wheels", ".brew-cache",
     "__pycache__", ".pytest_cache", ".ruff_cache", "config.toml",
 }
-SOURCE_SUFFIXES = {".bib", ".pdf", ".csv", ".tsv", ".xlsx", ".xls"}
+SOURCE_SUFFIXES = {
+    ".bib", ".pdf", ".csv", ".tsv", ".xlsx", ".xls", ".doc", ".docx", ".pptx",
+    ".tex", ".key", ".pages", ".numbers",
+}
 
 
 def check_path(name: str) -> None:
@@ -26,7 +29,7 @@ def check_path(name: str) -> None:
         raise ValueError(f"Unsafe archive member: {name}")
     if any(part in PRIVATE_PARTS or part.startswith(".venv") for part in path.parts):
         raise ValueError(f"Private/generated archive member: {name}")
-    if path.suffix in SOURCE_SUFFIXES or ".sqlite" in path.name or ".db" in path.suffixes:
+    if path.suffix.lower() in SOURCE_SUFFIXES or ".sqlite" in path.name or ".db" in path.suffixes:
         raise ValueError(f"Library/index data must not be distributed: {name}")
     if path.name.endswith((".pyc", ".pyo", ".db-wal", ".db-shm", ".db-journal")):
         raise ValueError(f"Generated archive member: {name}")

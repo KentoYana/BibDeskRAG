@@ -157,11 +157,14 @@ def read_setup_config(path: Path) -> Config:
 def show_counts(terminal: Terminal, result: dict) -> None:
     counts = result["counts"]
     extracted = result["extraction_status"].get("ok", 0)
+    excluded = result["extraction_status"].get("excluded", 0)
     terminal.say(f"Papers: {counts['papers']:,}")
     terminal.say(f"Attachments: {counts['attachments']:,}")
     terminal.say(f"Text chunks: {counts['chunks']:,}")
     terminal.say(f"Extraction succeeded: {extracted:,}")
-    terminal.say(f"Extraction incomplete/failed/unsupported: {counts['attachments'] - extracted:,}")
+    terminal.say(f"Extraction incomplete/failed/unsupported: {counts['attachments'] - extracted - excluded:,}")
+    if excluded:
+        terminal.say(f"Explicitly excluded images/videos: {excluded:,}")
     semantic = result["semantic"]
     terminal.say(f"Semantic: {semantic['indexed']:,}/{semantic['eligible']:,} papers; "
                  f"{semantic['vectors']:,} vectors; enabled={semantic['enabled']}")

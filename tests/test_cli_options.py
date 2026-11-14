@@ -7,7 +7,7 @@ import tomllib
 
 import pytest
 
-from bibdesk_rag import cli
+from bibdesk_rag import __version__, cli
 from bibdesk_rag.config import active_config_path, load_config
 
 
@@ -68,6 +68,12 @@ def test_help_examples_and_resources_describe_current_public_grammar(
         assert flag in help_text
     code, brief_help, _ = run(capsys)
     assert code == 0 and len(brief_help.splitlines()) < len(help_text.splitlines())
+    assert brief_help.startswith(
+        f"This is BibDesk RAG v{__version__}, developed by Kento Yanagisawa.\n"
+        "> Read-only local literature retrieval for BibDesk libraries\n"
+        "usage: bibdesk-rag [OPTIONS]\n"
+    )
+    assert "\033[" not in brief_help
     for flag in ("--config", "--index", "--paper", "--setup", "--help"):
         assert flag in brief_help
     assert "--verify-hashes" in help_text and "--verify-hashes" not in brief_help
@@ -87,7 +93,6 @@ def test_help_examples_and_resources_describe_current_public_grammar(
     assert citation.startswith("@manual{BibDeskRAG,")
     assert "author = {Kento Yanagisawa}" in citation
     assert "https://github.com/KentoYana/BibDeskRAG" in citation
-    from bibdesk_rag import __version__
     assert __version__ in citation
     code, version, _ = run(capsys, "--version")
     assert code == 0 and __version__ in version

@@ -9,7 +9,7 @@ import zipfile
 from defusedxml.ElementTree import iterparse
 from openpyxl import load_workbook
 
-from .common import ExtractionOptions, ExtractionResult, table_chunks
+from .common import ExpansionBudget, ExtractionOptions, ExtractionResult, table_chunks
 
 
 def cell_text(value: object) -> str:
@@ -20,13 +20,13 @@ def cell_text(value: object) -> str:
     return str(value)
 
 
-def extract_excel(source: BinaryIO, options: ExtractionOptions) -> ExtractionResult:
+def extract_excel(source: BinaryIO, options: ExtractionOptions, *, budget=None) -> ExtractionResult:
     from .archive import inspect_archive
 
     chunks = []
     workbook = None
     try:
-        inspect_archive(source, options)
+        inspect_archive(source, options, budget=budget or ExpansionBudget(options))
         source.seek(0)
         # Validate every XML part before openpyxl sees it. This remains safe even
         # when an optional XML backend or environment setting differs locally.

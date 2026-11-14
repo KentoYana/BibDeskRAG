@@ -60,6 +60,9 @@ def build_context(
         }
         if hit.get("truncated_fields"):
             citation["metadata_truncated_fields"] = hit["truncated_fields"]
+        if hit.get("extraction_status") == "partial":
+            citation["extraction_status"] = "partial"
+            citation["extraction_warning"] = hit.get("extraction_warning")
         header = (
             "\n[Citation]\n"
             + json.dumps(citation, ensure_ascii=False)

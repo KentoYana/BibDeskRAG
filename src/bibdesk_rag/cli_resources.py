@@ -28,7 +28,9 @@ def config_template_text() -> str:
 
 
 def brief_help_text() -> str:
-    return (
+    text = (
+        f"This is BibDesk RAG v{__version__}, developed by Kento Yanagisawa.\n"
+        "> Read-only local literature retrieval for BibDesk libraries\n"
         "usage: bibdesk-rag [OPTIONS]\n\n"
         "  --setup                    Interactive initial setup\n"
         "  -c, --config ACTION [PATH]  Settings: show, path, use, create\n"
@@ -42,6 +44,22 @@ def brief_help_text() -> str:
         "  -r, --readme               Full manual\n"
         "  -o, --output RESOURCE      manual, config-template, citation\n"
     )
+    if not sys.stdout.isatty() or os.environ.get("TERM") == "dumb" or "NO_COLOR" in os.environ:
+        return text
+
+    def style(value: str, code: str) -> str:
+        return f"\033[{code}m{value}\033[0m"
+
+    lines = []
+    for line in text.splitlines(keepends=True):
+        if line.startswith("usage:"):
+            line = (f"{style('usage:', '1;36')} {style('bibdesk-rag', '1')} "
+                    f"{style('[OPTIONS]', '33')}\n")
+        elif line.startswith("  -"):
+            option, description = line[2:].split("  ", 1)
+            line = f"  {style(option, '36')}  {description}"
+        lines.append(line)
+    return "".join(lines)
 
 
 def citation_text() -> str:

@@ -11,7 +11,7 @@ import math
 class ExtractionOptions:
     chunk_size: int = 1500
     chunk_overlap: int = 200
-    max_file_bytes: int = 100 * 1024 * 1024
+    max_file_bytes: int = 200 * 1024 * 1024
     max_archive_members: int = 1000
     max_archive_bytes: int = 200 * 1024 * 1024
     max_compression_ratio: float = 100
@@ -68,6 +68,22 @@ class ExtractionResult:
 
 class ExtractionLimitError(ValueError):
     """An input exceeds an explicitly configured local resource limit."""
+
+
+class ExpansionBudget:
+    """A shared budget across an archive, document packages and IWA blocks."""
+
+    def __init__(self, options: ExtractionOptions):
+        self.bytes = options.max_archive_bytes
+        self.members = options.max_archive_members
+
+    def charge(self, size: int, members: int = 0) -> None:
+        if size < 0 or size > self.bytes:
+            raise ExtractionLimitError("Container expanded size exceeds shared limit")
+        if members > self.members:
+            raise ExtractionLimitError("Container member count exceeds shared limit")
+        self.bytes -= size
+        self.members -= members
 
 
 def split_text(text: str, options: ExtractionOptions) -> Iterator[str]:

@@ -200,7 +200,7 @@ def test_xlsx_rejects_xml_entities_and_nested_expansion_budget(tmp_path):
         archive.write(normal, "normal.xlsx")
     budget = max(inner_size, normal.stat().st_size) + 1
     result = extract_file(outer, ExtractionOptions(max_archive_bytes=budget))
-    assert result.status == "error" and "nested XLSX expanded size" in result.error
+    assert result.status == "error" and "expanded size" in result.error
     result = extract_file(outer)
     assert result.status == "ok" and result.chunks[0].member_path == "normal.xlsx"
 
@@ -212,7 +212,7 @@ def test_global_chunk_file_limits_missing_and_unsupported(tmp_path):
     assert result.status == "error" and "Chunk limit" in result.error
     assert extract_file(source, ExtractionOptions(max_file_bytes=2)).status == "error"
     assert extract_file(tmp_path / "missing.pdf").status == "missing"
-    old = tmp_path / "old.xls"
+    old = tmp_path / "book.acsm"
     old.write_bytes(b"legacy workbook")
     assert extract_file(old).status == "unsupported"
 

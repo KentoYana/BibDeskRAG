@@ -116,6 +116,12 @@ class Config:
             self.semantic.cache_dir = self.database.parent / "models"
 
     def protect_sources(self, sources: list[Path], config_path: Path | None = None) -> None:
+        from .extractors.sources import is_iwork_directory, package_members
+
+        # Protect contained files too: an output outside a package may be a
+        # hard link to one of its members.
+        sources = [*sources, *(child for source in sources if is_iwork_directory(source)
+                              for child, _ in package_members(source, self.extraction))]
         outputs = [
             self.database,
             *(Path(str(self.database) + s) for s in ("-journal", "-wal", "-shm")),
@@ -129,8 +135,13 @@ class Config:
                 raise ValueError("Configuration path overlaps the database or a SQLite sidecar")
             outputs.append(config_path)
         for source in sources:
-            if any(same_file(source, output) for output in outputs):
+            if any(same_file(source, output)
+                   or (source.is_dir() and output.resolve().is_relative_to(source.resolve()))
+                   for output in outputs):
                 raise ValueError(f"Application output overlaps a source file: {source}")
+            if (source.is_dir()
+                    and self.semantic.cache_dir.resolve().is_relative_to(source.resolve())):
+                raise ValueError("Model cache overlaps a source package")
         # The library is always protected, including before an index exists.
         if any(same_file(self.bib, output) for output in outputs):
             raise ValueError("Configuration/database must not overwrite the BibDesk library")
@@ -251,6 +262,7 @@ def set_semantic_enabled(path: Path, enabled: bool) -> Config:
 
 def _protect_selection(selector: Path, path: Path, config: Config, sources: list[Path]) -> None:
     config.protect_sources(sources, path)
+    config.protect_sources(sources, selector)
     protected = [
         path, config.bib, config.database, *sources,
         *(Path(str(config.database) + suffix) for suffix in ("-journal", "-wal", "-shm")),

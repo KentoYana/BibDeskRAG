@@ -218,7 +218,7 @@ def doctor(db: sqlite3.Connection, config=None) -> dict:
     failures = [
         dict(row)
         for row in db.execute(
-            "SELECT id,path,extraction_status,error_message FROM attachments WHERE extraction_status NOT IN ('ok','unsupported')"
+            "SELECT id,path,extraction_status,error_message FROM attachments WHERE extraction_status NOT IN ('ok','unsupported','excluded')"
         )
     ]
     from .semantic import semantic_check

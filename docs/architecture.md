@@ -40,7 +40,7 @@ The context builder counts citation headers and delimiters in the character budg
 
 ## Resource and format limits
 
-PDF pages never cross chunk boundaries. CSV/TSV use logical record numbers, XLSX uses sheet coordinates, and ZIP preserves member paths without extracting to disk. ZIP and XLSX preflight rejects absolute/traversal paths, symlinks, ambiguous duplicate member paths, encrypted entries and excessive member counts/expanded bytes/ratios. An outer ZIP and its XLSX members share an aggregate expansion budget. XLSX XML is checked with defusedxml. Nested ZIP extraction is intentionally disabled.
+PDF pages never cross chunk boundaries. CSV/TSV use logical record numbers, XLSX uses sheet coordinates, and ZIP preserves member paths without extracting to disk. ZIP and XLSX preflight rejects absolute/traversal paths, symlinks, ambiguous duplicate member paths, encrypted entries and excessive member counts/expanded bytes/ratios. An outer ZIP and its XLSX/OOXML/iWork members share an aggregate expansion budget, including internal Index.zip and IWA decompression. See [format extraction and provenance](file-formats.md). XLSX XML is checked with defusedxml. Nested ZIP extraction is intentionally disabled.
 
 The configured byte and chunk limits bound ordinary ingestion. pypdf still parses individual page content in-process; this is not an OS sandbox for adversarial parser CPU/memory consumption. A future worker-process resource limiter is a separate hardening improvement, as is OCR.
 
@@ -90,7 +90,7 @@ context生成は引用ヘッダと区切りも文字数予算に含めます。�
 
 ## 資源と形式の制限
 
-PDFのチャンクはページを跨ぎません。CSV/TSVは論理レコード番号、XLSXはシート座標、ZIPはディスクへ展開せずメンバーパスを保持します。ZIP/XLSXの事前検査は絶対・逸脱パス、symlink、曖昧な重複メンバーパス、暗号化、件数・展開量・圧縮率の超過を拒否します。外側ZIPと内部XLSXは展開量の合計予算を共有します。XLSX XMLはdefusedxmlで検査し、入れ子ZIPの抽出は意図的に無効にしています。
+PDFのチャンクはページを跨ぎません。CSV/TSVは論理レコード番号、XLSXはシート座標、ZIPはディスクへ展開せずメンバーパスを保持します。ZIP/XLSXの事前検査は絶対・逸脱パス、symlink、曖昧な重複メンバーパス、暗号化、件数・展開量・圧縮率の超過を拒否します。外側ZIPと内部XLSX/OOXML/iWorkはIndex.zip・IWA伸長も含め展開量の合計予算を共有します。[形式別の抽出範囲・出典](file-formats.md)も参照してください。XLSX XMLはdefusedxmlで検査し、入れ子ZIPの抽出は意図的に無効にしています。
 
 設定したバイト数・チャンク数制限は通常の取込を制限します。ただしpypdfは個別ページを同一プロセス内で解析するため、悪意ある入力によるCPU・メモリ消費をOSで隔離するものではありません。ワーカープロセスによる資源制限とOCRは将来の別改善です。
 

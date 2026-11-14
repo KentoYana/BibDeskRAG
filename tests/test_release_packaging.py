@@ -68,6 +68,8 @@ def test_formula_keeps_explicit_version_for_misleading_archive_name(tmp_path):
 
 
 @pytest.mark.parametrize("name", [".local/config.toml", "data/index.sqlite3", "library.bib",
+                                 "paper.DOCX", "slides.key", "document.pages", "table.numbers",
+                                 "paper.doc", "slides.pptx", "source.tex",
                                  ".venv/bin/python", "../outside"])
 def test_sdist_rejects_private_data_and_escaping_members(tmp_path, name):
     path = tmp_path / "source.tar.gz"

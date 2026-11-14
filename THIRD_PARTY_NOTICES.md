@@ -4,6 +4,13 @@
 
 # Third-party notices
 
+## Document readers added in 0.5.0
+
+- `olefile==0.47`: BSD-2-Clause plus the retained PIL-derived permission notice. No image decoding is used.
+- `xlrd==2.0.2`: BSD-3-Clause plus its earlier advertising/acknowledgment license. **This product includes software developed by David Giffin <david@giffin.org>.**
+
+Both upstream sdists were verified against PyPI SHA-256 metadata on 2026-11-14; their complete LICENSE files were inspected. Keep both packages’ complete notices on redistribution, including the xlrd acknowledgment in advertising materials mentioning its features/use. The application wheel does not vendor their code; pip/Homebrew retain upstream distributions and licenses. Source locks and the unreleased Formula template include both readers. Existing build backends suffice; no runtime download is added.
+
 ## Optional semantic extra
 
 The optional `semantic` extra adds NumPy and SentenceTransformers; pip keeps it separate from the base dependency set. Homebrew Apple Silicon installs
@@ -167,6 +174,10 @@ vendored into BibDeskRAG's source/wheel or its runtime environment.
 <a id="japanese"></a>
 
 # 第三者ライセンスと依存一覧
+
+## 0.5.0で追加した文書読み取り依存
+
+olefile 0.47（BSD-2-ClauseおよびPIL由来の許諾通知）とxlrd 2.0.2（BSD-3-Clauseおよび旧広告・謝辞条項）を追加します。2026-11-14にsdistのPyPI SHA-256と完全なLICENSEを確認しました。再配布時は上記英語節を含む全通知とxlrdの謝辞を保持してください。アプリ本体へのコード同梱や実行時ダウンロードは行いません。
 
 BibDeskRAG本体はMITライセンスです。依存はそれぞれのライセンスを保持し、本プロジェクトは再ライセンスしません。以下は検証した正確な実行時依存です。`packaging/homebrew/resources.json` に各パッケージの固定ソースURL、版、SHA-256、公開PyPIメタデータURLがあります。2026-11-01に全ソースをダウンロードしてlockを検証しました。メタデータが不足・曖昧なPySocks、socksio、tomli-w、lxml、tqdmはインストール済みLICENSE/NOTICEも確認しました。
 

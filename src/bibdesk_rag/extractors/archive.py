@@ -10,7 +10,8 @@ import stat
 from typing import BinaryIO
 import zipfile
 
-from .common import ExtractionLimitError, ExtractionOptions, ExtractionResult
+from .common import ExpansionBudget, ExtractionLimitError, ExtractionOptions, ExtractionResult
+from .formats import EXCLUDED_FORMATS, TEXT_FORMATS
 
 
 def _validate_member(info: zipfile.ZipInfo, options: ExtractionOptions) -> None:
@@ -38,7 +39,8 @@ def _validate_member(info: zipfile.ZipInfo, options: ExtractionOptions) -> None:
         raise ExtractionLimitError(f"ZIP compression ratio exceeds limit: {name!r}")
 
 
-def inspect_archive(source: BinaryIO, options: ExtractionOptions) -> list[zipfile.ZipInfo]:
+def inspect_archive(source: BinaryIO, options: ExtractionOptions, *, budget=None
+                    ) -> list[zipfile.ZipInfo]:
     """Preflight ZIP and XLSX containers before opening any member data."""
     source.seek(0)
     with zipfile.ZipFile(source) as archive:
@@ -57,19 +59,21 @@ def inspect_archive(source: BinaryIO, options: ExtractionOptions) -> list[zipfil
             total += info.file_size
             if total > options.max_archive_bytes:
                 raise ExtractionLimitError(f"ZIP expanded size exceeds {options.max_archive_bytes}")
+        if budget is not None:
+            budget.charge(total, len(members))
         return members
 
 
-def extract_archive(source: BinaryIO, options: ExtractionOptions) -> ExtractionResult:
+def extract_archive(source: BinaryIO, options: ExtractionOptions, *, budget=None) -> ExtractionResult:
     from . import extract_stream
 
     result = ExtractionResult()
     try:
-        members = inspect_archive(source, options)
+        budget = budget or ExpansionBudget(options)
+        members = inspect_archive(source, options, budget=budget)
         source.seek(0)
         with zipfile.ZipFile(source) as archive:
             actual_total = 0
-            expanded_total = sum(info.file_size for info in members)
             for info in members:
                 if info.is_dir():
                     result.members.append(
@@ -83,7 +87,10 @@ def extract_archive(source: BinaryIO, options: ExtractionOptions) -> ExtractionR
                     "size": info.file_size,
                 }
                 result.members.append(record)
-                if suffix not in {".pdf", ".csv", ".tsv", ".xlsx"}:
+                if suffix in EXCLUDED_FORMATS:
+                    record.update(status="excluded", error="Images and videos are explicitly excluded")
+                    continue
+                if suffix not in TEXT_FORMATS:
                     record.update(
                         status="unsupported",
                         error="Nested ZIP archives are not parsed"
@@ -105,32 +112,28 @@ def extract_archive(source: BinaryIO, options: ExtractionOptions) -> ExtractionR
                     or actual_total > options.max_archive_bytes
                 ):
                     raise ExtractionLimitError("ZIP actual expanded size exceeds limit")
-                if suffix == ".xlsx":
-                    # XLSX is itself a ZIP container. Charge both levels against
-                    # one budget, so many small workbooks cannot amplify it.
-                    inner = inspect_archive(io.BytesIO(payload), options)
-                    expanded_total += sum(item.file_size for item in inner)
-                    if expanded_total > options.max_archive_bytes:
-                        raise ExtractionLimitError(
-                            "ZIP and nested XLSX expanded size exceeds limit"
-                        )
                 child = extract_stream(
                     io.BytesIO(payload),
                     suffix,
                     replace(options, max_chunks=remaining),
                     allow_archive=False,
+                    budget=budget,
                 )
                 record.update(status=child.status, error=child.error)
                 result.chunks.extend(
-                    replace(chunk, member_path=info.filename) for chunk in child.chunks
+                    replace(chunk, member_path=info.filename + (
+                        "!/" + chunk.member_path if chunk.member_path else ""
+                    )) for chunk in child.chunks
                 )
         errors = [
             f"{m['path']}: {m.get('error')}"
             for m in result.members
-            if m["status"] not in {"ok", "directory"}
+            if m["status"] not in {"ok", "directory", "excluded"}
         ]
         if errors:
-            result.status = "partial" if result.chunks else "no_text"
+            result.status = "partial" if result.chunks else (
+                "error" if any(m["status"] == "error" for m in result.members) else "no_text"
+            )
             result.error = "; ".join(errors)
         elif not result.chunks:
             result.status = "no_text"
