@@ -92,7 +92,7 @@ BibDesk. This application never rewrites the bibliography.
 
 The package workflow runs on PRs and tags. It builds/installs wheel and sdist,
 executes package smoke, and runs the pinned validation-only MCP SDK against both
-installed packages. All seven tools are exercised; semantic search is tested
+installed packages. All eight tools are exercised; semantic search is tested
 through its disabled error without downloading a model. Fake-backend semantic
 success and model-unavailable cases remain in the unit tests. This is not a
 claim of real-model SDK interoperability in hosted CI.
@@ -142,3 +142,14 @@ cannot be marked complete solely by a local run.
 SDKは検証専用環境に固定し、意味検索は無効時の応答を確認します。
 実モデルの品質・性能や現行候補の実Codex接続を検証済みとはしません。
 v1.0公開前には現行コミットのホストCI、Homebrew検証、実配布物のSHA照合が必要です。
+
+## Additive index diagnostics / 索引診断の追加
+
+The eight-tool interface adds read-only `get_index_status()` without changing
+existing tool arguments. Context results add saved hashes, index generation and
+actual search scope. Older indexes report a null generation until an explicit
+successful update. Selective retry is CLI-only. See [the contract](index-status-retry.md).
+
+既存ツールの引数を保ち、読み取り専用の `get_index_status()` を追加した8ツール構成です。
+contextに保存済みハッシュ・索引世代・実際の検索範囲を追加します。古い索引の世代は
+明示的な更新成功までnullです。選択的再試行はCLI専用です。[仕様](index-status-retry.md)を参照してください。

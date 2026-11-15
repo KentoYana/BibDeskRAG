@@ -436,3 +436,11 @@ New defaults are `~/.config/bibdesk-rag/config.toml` and `~/.local/share/bibdesk
 ## Optional semantic search / 任意の意味検索
 
 Use `--setup` for the semantic/model choice, `--semantic download` for explicit noninteractive acquisition, unified `--index update|rebuild|status|check`, and `--paper search QUERY --mode semantic --top N`. Keyword is still the default; `--mode keyword` makes it explicit. See the [Japanese/English semantic search guide](semantic-search.md) for optional dependencies, single-file SQLite, Homebrew, configuration, offline operation and MCP examples. Embeddings compare title/abstract only and do not generate text.
+
+## 索引状態と再試行 / Index status and retry
+
+`--index update --retry-status error` で同じ内容の失敗添付を再抽出できます。
+対象指定・残存問題の見方・鮮度未確認の意味は [ガイド](index-status-retry.md) を参照してください。
+
+Use `--index update --retry-status error` to re-extract unchanged failed attachments.
+See the [guide](index-status-retry.md) for target selection, remaining issues and unverified freshness.

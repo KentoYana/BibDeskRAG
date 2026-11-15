@@ -86,6 +86,8 @@ def update_index(config, args: argparse.Namespace) -> None:
             config, rebuild=args.index_action == "rebuild", verify_hashes=args.verify_hashes,
             progress=progress.update if show_progress else None,
             config_path=config_selection(args.temp)[0],
+            retry_citekeys=args.retry_citekeys, retry_attachment_ids=args.retry_attachment_ids,
+            retry_paths=args.retry_paths, retry_statuses=args.retry_statuses,
         )
     if not human_output:
         if args.verbose:

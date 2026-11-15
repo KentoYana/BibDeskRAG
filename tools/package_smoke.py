@@ -197,6 +197,10 @@ def main() -> None:
     assert "supplement.csv" in json.dumps(attachments), attachments
     context = json.loads(cli("--paper", "context", "RecQ", "--format", "json"))
     assert "RecQ" in context["context"] and context["results"], context
+    assert context["index"]["index_generation"] == index_status["index_generation"]
+    assert context["index"]["freshness"] == "unverified"
+    assert context["search_scope"]["fulltext_citekeys"] == ["Test2026"]
+    assert all(item["content_hash"] and item["indexed_bib_hash"] for item in context["results"])
     diagnosis = json.loads(cli("--index", "check", "--format", "json"))
     assert diagnosis["ok"], diagnosis
     assert before_inspection == hashes_for(
@@ -204,6 +208,11 @@ def main() -> None:
     ), "Inspection changed synthetic configuration, sources, selection or index"
     update = json.loads(cli("--index", "update", "--format", "json"))
     assert update["files_extracted"] == 0 and update["files_reused"] == 13, update
+    retried = json.loads(cli("--index", "update", "--retry-path", str(supplementary),
+                             "--format", "json"))
+    assert retried["retry"] == {"selected": 1, "attempted": 1}, retried
+    assert retried["files_extracted"] == 1 and retried["files_reused"] == 12, retried
+    assert "remaining_issues" in retried and "new_issues" in retried
     assert hashes == source_hashes()
     persisted = tuple(path for path in (
         selected, workdir / "data/index.sqlite3", workdir / "data/active-config.json",
@@ -239,8 +248,11 @@ def main() -> None:
     tools = mcp_request("tools/list", {})["tools"]
     names = {tool["name"] for tool in tools}
     assert names == {"search_papers", "search_fulltext", "get_paper", "get_attachments",
-                     "get_chunk", "build_context", "semantic_search_papers"}, names
+                     "get_chunk", "build_context", "semantic_search_papers", "get_index_status"}, names
     assert all(tool["annotations"]["readOnlyHint"] for tool in tools), tools
+    saved_status = mcp_tool("get_index_status", {})
+    assert saved_status["freshness"] == "unverified" and saved_status["index_generation"]
+    assert saved_status["counts"]["papers"] == 3
     optional = mcp_request("tools/call", {"name": "semantic_search_papers",
                                          "arguments": {"query": "DNA repair"}})
     assert optional["isError"] and "disabled" in optional["content"][0]["text"], optional
@@ -264,6 +276,10 @@ def main() -> None:
     assert any(citation["citekey"] == "Test2026"
                and citation["doi"] == "10.1234/synthetic-test"
                for citation in chunk["citations"]), chunk
+    context = mcp_tool("build_context", {"query": "RecQ", "max_chars": 3000})
+    assert context["index"]["index_generation"] == saved_status["index_generation"]
+    assert context["search_scope"]["fulltext_citekeys"] == ["Test2026"]
+    assert context["results"][0]["indexed_bib_hash"] == hashes[str(bib)]
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
     # Exercise installed web assets and API without a browser, Skim or personal data.

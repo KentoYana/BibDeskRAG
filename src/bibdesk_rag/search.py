@@ -8,7 +8,7 @@ import re
 from typing import Protocol
 
 from .bibdesk import normalize_doi
-from .database import paper_dict, read_snapshot
+from .database import index_state, paper_dict, read_snapshot
 from .normalization import match_query, normalize_search
 
 MAX_RESULTS = 100
@@ -80,6 +80,9 @@ class SQLiteSearch:
 
     def snapshot(self):
         return read_snapshot(self.db)
+
+    def index_state(self):
+        return index_state(self.db)
 
     def search_papers(
         self,
@@ -261,6 +264,7 @@ class SQLiteSearch:
         per_paper: int = 2,
         citekeys: list[str] | None = None,
         metadata_query: str | None = None,
+        _scope: dict | None = None,
     ) -> list[dict]:
         check_top(top)
         if scope == "metadata":
@@ -277,7 +281,18 @@ class SQLiteSearch:
         selected = (
             citekeys if citekeys is not None else ([p["citekey"] for p in candidates] or None)
         )
+        if _scope is not None:
+            _scope.update(
+                metadata_query=(metadata_query or query) if citekeys is None else None,
+                metadata_candidate_limit=min(100, max(20, top)) if citekeys is None else 0,
+                metadata_candidate_citekeys=[p["citekey"] for p in candidates],
+                fulltext_citekeys=selected,
+                fulltext_scope="selected_papers" if selected is not None else "all_indexed_papers",
+                per_paper=per_paper,
+            )
         if metadata_query is not None and not candidates and citekeys is None:
+            if _scope is not None:
+                _scope.update(fulltext_citekeys=[], fulltext_scope="not_searched")
             return []
         fulltext = self.search_fulltext(query, top, citekeys=selected, per_paper=per_paper)
         seen = {hit["citekey"] for hit in fulltext}

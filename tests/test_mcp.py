@@ -62,7 +62,7 @@ def mcp_fixture(tmp_path):
     return config_path, bib, supplement
 
 
-def test_all_six_tools_preserve_sources_and_index(mcp_fixture):
+def test_all_tools_preserve_sources_and_index(mcp_fixture):
     config_path, bib, supplement = mcp_fixture
     db_path = load_config(config_path).database
     before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in (bib, supplement, db_path)}
@@ -71,8 +71,10 @@ def test_all_six_tools_preserve_sources_and_index(mcp_fixture):
     assert response["result"]["capabilities"] == {"tools": {"listChanged": False}}
     assert "untrusted" in response["result"]["instructions"]
     listing = server.handle({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
-    assert len(listing["result"]["tools"]) == 7
+    assert len(listing["result"]["tools"]) == 8
     assert all(item["annotations"]["readOnlyHint"] for item in listing["result"]["tools"])
+    status = tool(server, "get_index_status")
+    assert status["freshness"] == "unverified" and status["index_generation"]
     papers = tool(server, "search_papers", query="10.1234/recq")
     assert papers[0]["citekey"] == "Example2025"
     matches = tool(server, "search_fulltext", query="helicase", citekeys=["Example2025"])
@@ -123,6 +125,7 @@ def test_unpinned_mcp_follows_selection_on_next_call_while_explicit_config_stays
         ("search_papers", {"query": "RecQ", "top": True}),
         ("search_papers", {"query": "RecQ", "top": 101}),
         ("search_fulltext", {"query": "RecQ", "citekeys": ["x"] * 101}),
+        ("get_index_status", {"refresh": True}),
         ("get_paper", {"citekey": "Example2025", "write": True}),
         ("get_chunk", {"chunk_id": 1, "max_chars": 20001}),
         ("build_context", {"query": "x", "max_chars": 100001}),
@@ -306,6 +309,7 @@ def test_mcp_rejects_both_selection_spellings(tmp_path, capsys):
 
 def test_tool_names_are_exact():
     assert {tool["name"] for tool in TOOLS} == {
+        "get_index_status",
         "semantic_search_papers",
         "search_papers",
         "search_fulltext",

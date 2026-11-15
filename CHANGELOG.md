@@ -4,6 +4,15 @@
 
 # Changelog
 
+## Unreleased
+
+- Add read-only MCP `get_index_status` with saved library identity, generation,
+  last successful update and extraction counts; report freshness as unverified.
+- Add explicit CLI retry selectors for citekey, attachment ID/path and saved state,
+  retaining normal incremental reuse, excluded media and transactional recovery.
+- Include saved source hashes and actual search scope in context JSON, and report
+  this-run diagnostics separately from resolved/new/remaining indexed issues.
+
 ## [0.6.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) — 2026-11-15
 
 - Add the English-only localhost search GUI with existing keyword scopes/filters,
@@ -140,6 +149,15 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## 未公開
+
+- 読み取り専用MCP `get_index_status` で、保存済みのライブラリ識別・索引世代・
+  最終成功日時・抽出状態別件数を公開。原本の鮮度は未確認と明示。
+- citekey・添付ID/パス・保存済み状態によるCLIの選択的再試行を追加。
+  通常の差分再利用、画像・動画の対象外扱い、トランザクション復旧を維持。
+- context JSONに保存済み原本ハッシュと実際の検索範囲を追加。
+  今回の診断と、解消・新規・残存する索引内の問題を分けて報告。
 
 ## [0.6.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) — 2026-11-15（日本語）
 

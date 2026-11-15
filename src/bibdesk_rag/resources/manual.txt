@@ -439,3 +439,45 @@ SEMANTIC SEARCH / 意味検索（任意）
   Model/signature changes require --index update. All normal retrieval is offline.
   Setup/model acquisition never uploads bibliography text.
   設定・モデル取得・統合索引・MCPの詳細: docs/semantic-search.md
+
+索引状態・選択的再試行 / INDEX STATUS AND SELECTIVE RETRY
+  bibdesk-rag --index status --format json
+  bibdesk-rag --index update --retry-citekey Example2025 --retry-status error
+  bibdesk-rag --index update --retry-attachment 12
+  bibdesk-rag --index update --retry-path "/absolute/path/to/supplement.csv"
+  bibdesk-rag --index update --retry-status error --retry-status partial --format json
+
+再試行指定はupdate専用で繰り返し可能です。citekey・ID・パスの対象を合わせ、
+--retry-statusで更新前の状態に絞ります。状態だけなら該当する全添付が対象です。
+excludedの画像・動画は再抽出せず、不明な識別子・リンクのないパスはエラーです。
+相対パスは実行ディレクトリ基準です。通常の差分更新も行い、正常な未変更添付は再利用します。
+--verify-hashesはhash確認であり、同じ内容の強制再抽出ではありません。
+JSONのerrorsは今回の抽出診断、new_issuesは新たに記録した問題数、resolved_issuesは
+以前の問題からokになった件数、remaining_issuesは再利用を含む残存問題の状態別件数です。
+retry.selected/attemptedは対象・試行数で、抽出成功数ではありません。
+
+Retry selectors are repeatable and update-only. Identity selectors form a union;
+--retry-status filters it using saved pre-update states. Status alone selects all
+linked attachments in those states. Excluded media are never re-extracted.
+Unknown identifiers/unlinked paths fail; relative paths use the working directory.
+Normal incremental maintenance still runs; unchanged healthy attachments are reused.
+--verify-hashes does not force re-extraction of identical content.
+JSON errors are this-run diagnostics, new_issues counts newly recorded problems,
+resolved_issues counts old problems now ok, and remaining_issues counts all saved
+problems by state, including reused attachments. Retry counts are attempts, not successes.
+
+MCP get_index_status()は原本を読まず、保存済みの識別・世代・最終成功日時・件数を返します。
+freshnessはunverifiedです。index_generationは成功更新ごとに変わり、古い索引ではnullです。
+last_successful_updateはUnix秒の文字列です。成功更新にも添付の失敗が残る場合があります。
+context JSONのindex/search_scopeは索引情報・実際の検索対象を示します。各出典の
+content_hash（書誌のみならnull）・indexed_bib_hash・index_generationは保存値です。
+原本の最新性・科学的主張の検証を保証しません。
+
+MCP get_index_status() returns saved identity, generation, last success and counts
+without reading current sources. Freshness is unverified. Generation changes on
+every successful update; legacy indexes return null. The last update is a string
+of Unix seconds. A successful update can retain extraction failures.
+Context JSON index/search_scope describes saved metadata and actual search scope.
+Citation content_hash (null for metadata), indexed_bib_hash and index_generation
+are saved values, not proof of current-source freshness or scientific validity.
+Full contract / 詳細: docs/index-status-retry.md

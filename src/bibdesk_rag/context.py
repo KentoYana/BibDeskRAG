@@ -29,8 +29,13 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
     check_top(top)
     if type(max_chars) is not int or not 256 <= max_chars <= 100000:
         raise ValueError("max_chars must be between 256 and 100000")
+    search_scope = {"fulltext_scope": "unknown"}
+    provenance = engine.index_state() if hasattr(engine, "index_state") else {
+        "index_generation": None, "freshness": "unverified"}
+    scope_argument = {"_scope": search_scope} if hasattr(engine, "index_state") else {}
     hits = engine.search(
-        query, top, per_paper=per_paper, citekeys=citekeys, metadata_query=metadata_query
+        query, top, per_paper=per_paper, citekeys=citekeys, metadata_query=metadata_query,
+        **scope_argument,
     )
     parts, results = [POLICY + "\n"], []
     remaining = max_chars - len(parts[0])
@@ -57,6 +62,7 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
                 "file_path",
                 "attachment_id",
                 "chunk_id",
+                "content_hash",
                 "page_start",
                 "page_end",
                 "sheet_name",
@@ -65,6 +71,8 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
                 "member_path",
             )
         }
+        citation["index_generation"] = provenance["index_generation"]
+        citation["indexed_bib_hash"] = provenance.get("library", {}).get("indexed_bib_hash")
         if hit.get("truncated_fields"):
             citation["metadata_truncated_fields"] = hit["truncated_fields"]
         if hit.get("extraction_status") == "partial":
@@ -114,6 +122,8 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
         unverified.append("Some source excerpts were already shortened before context assembly.")
     return {
         "query": query,
+        "index": provenance,
+        "search_scope": search_scope,
         "context": "".join(parts),
         "results": results,
         "returned": len(results),

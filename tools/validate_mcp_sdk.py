@@ -81,6 +81,7 @@ async def validate(app_python: Path):
                 "get_attachments",
                 "get_chunk",
                 "build_context",
+                "get_index_status",
                 "semantic_search_papers",
             }
             assert all(tool.annotations.read_only_hint for tool in listing.tools)
@@ -94,6 +95,9 @@ async def validate(app_python: Path):
                 checks.append(name)
                 return result["data"]
 
+            saved_status = await call("get_index_status", {})
+            assert saved_status["freshness"] == "unverified" and saved_status["index_generation"]
+            assert saved_status["counts"]["papers"] == 1
             papers = await call("search_papers", {"query": "10.1234/sdk"})
             assert papers[0]["citekey"] == "SDK2025"
             matches = await call("search_fulltext", {"query": "helicase"})
@@ -111,6 +115,11 @@ async def validate(app_python: Path):
             assert len(context["context"]) <= 2000
             assert context["results"][0]["file_path"] == str(supplement)
             assert "text" not in context["results"][0]
+            assert context["index"]["index_generation"] == saved_status["index_generation"]
+            assert context["search_scope"]["fulltext_citekeys"] is None
+            assert context["search_scope"]["fulltext_scope"] == "all_indexed_papers"
+            assert context["results"][0]["content_hash"] == before[supplement]
+            assert context["results"][0]["indexed_bib_hash"] == before[bib]
             rejected = await client.call_tool("get_chunk", {"chunk_id": 1, "max_chars": 20001})
             assert rejected.is_error
             optional = await client.call_tool("semantic_search_papers", {"query": "DNA repair"})

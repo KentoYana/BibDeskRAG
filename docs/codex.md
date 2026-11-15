@@ -120,6 +120,8 @@ args = []
 | `get_paper` | 1文献の書誌情報を確認 |
 | `get_attachments` | 索引にある添付情報・抽出状態を確認 |
 | `get_chunk` | chunk IDに対応する短い本文と出典を確認 |
+| `get_index_status` | 保存済み索引の識別・世代・件数を確認。原本の鮮度は未確認 |
+| `semantic_search_papers` | 任意のローカルモデルでTitle/Abstractの意味検索 |
 | `build_context` | 文字数を制限した本文・出典のまとまりを作成 |
 
 最初に `search_papers` で候補を選び、候補のcitekeyを `search_fulltext` に渡します。本文の説明にはcitekey、DOI（記録がある場合）、添付パス、chunk ID、PDFページまたは補足資料のシート・行・ZIP内の場所を付けます。科学的な主張は原本と照合し、本文未取得の文献は書誌情報だけの候補として扱います。
@@ -313,6 +315,8 @@ The old `--config` spelling is accepted only by `bibdesk-rag-mcp` for compatibil
 | `get_paper` | Inspect one paper's metadata |
 | `get_attachments` | Inspect indexed attachments and extraction states |
 | `get_chunk` | Retrieve short source text/citation by chunk ID |
+| `get_index_status` | Inspect saved index identity, generation and counts; source freshness is unverified |
+| `semantic_search_papers` | Optional local title/abstract semantic search |
 | `build_context` | Build a character-bounded bundle of evidence and citations |
 
 Select candidates with `search_papers`, then pass their citekeys to `search_fulltext`. Text-based explanations need citekey, DOI when recorded, attachment path, chunk ID and PDF pages or supplementary sheet/row/ZIP location. Verify scientific claims against original sources. Papers without retrieved text remain metadata-only candidates.
@@ -383,3 +387,7 @@ brew uninstall --cask codex
 ```
 
 For other installation methods, use their corresponding removal procedure. Preserve configuration, credentials and history shared with Codex and other projects; do not delete all of `~/.codex/`.
+
+索引状態・再試行とcontextの出典項目: [ガイド](index-status-retry.md)。
+
+Index status, retry and context provenance: [guide](index-status-retry.md).

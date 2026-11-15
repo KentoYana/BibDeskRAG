@@ -23,6 +23,11 @@ Update or inspect the index / 索引を更新・確認:
   bibdesk-rag --index update --verify-hashes
   bibdesk-rag --index status --format json
   bibdesk-rag --index check
+
+Retry selected attachments / 選択した添付を再抽出:
+  bibdesk-rag --index update --retry-citekey Example2025 --retry-status error
+  bibdesk-rag --index update --retry-attachment 12
+  bibdesk-rag --index update --retry-status error --retry-status partial --format json
   bibdesk-rag --index rebuild
 
 Search papers and retrieve evidence / 文献を検索して証拠を取得:

@@ -12,6 +12,8 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
+索引の状態確認と失敗添付の選択的再抽出は [索引状態・再試行ガイド](docs/index-status-retry.md) を参照してください。
+
 ## CLIの入口
 
 ```sh
@@ -166,7 +168,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-この操作でCodexのMCP設定に `bibdesk-rag` を追加します。同名の登録がある場合は、先に `codex mcp get bibdesk-rag` で内容を確認してください。Homebrewの版番号を含まない実行パスを使うため、通常のアップグレード後も登録を使えます。索引を作る操作はCLIで行い、Codexへ公開するのは検索・参照の7ツールだけです。
+この操作でCodexのMCP設定に `bibdesk-rag` を追加します。同名の登録がある場合は、先に `codex mcp get bibdesk-rag` で内容を確認してください。Homebrewの版番号を含まない実行パスを使うため、通常のアップグレード後も登録を使えます。索引を作る操作はCLIで行い、Codexへ公開するのは検索・参照の8ツールだけです。
 
 GUI・CLIのどちらで登録した場合も、登録内容の表示だけでは接続成功の確認にはなりません。MCP接続を再起動し、新しいチャットで次の検索を試してください。接続できない場合はCodexのアプリまたはCLIセッションも再起動します。MCPサーバーはCodexが起動するため、ターミナルで常時起動したり `brew services` に登録したりする必要はありません。[OpenAI公式MCP設定手順](https://learn.chatgpt.com/docs/extend/mcp)
 
@@ -470,7 +472,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives seven read-only retrieval tools.
+This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives eight read-only retrieval tools. See [index status and selective retry](docs/index-status-retry.md) for saved index metadata and targeted CLI re-extraction.
 
 With either registration method, a displayed entry alone does not verify connectivity. Restart the MCP connection and try the search in a new chat. If needed, restart the Codex application or CLI session too. Codex launches the server; it does not need a persistent terminal process or `brew services` registration. See the [official MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp).
 

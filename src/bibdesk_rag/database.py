@@ -223,21 +223,30 @@ def initialize(db: sqlite3.Connection, *, in_transaction: bool = False) -> None:
             create()
 
 
+def index_state(db: sqlite3.Connection) -> dict:
+    """Bounded index metadata only; never stat/hash/read the current sources."""
+    with read_snapshot(db):
+        settings = dict(db.execute("SELECT key,value FROM settings"))
+        return {
+            "library": {"bib_path": settings.get("bib_path"),
+                        "indexed_bib_hash": settings.get("bib_hash")},
+            "last_successful_update": settings.get("last_indexed"),
+            "index_generation": settings.get("index_generation"),
+            "freshness": "unverified",
+            "freshness_note": "Saved index metadata only; current sources have not been compared.",
+            "counts": {name: db.execute(f"SELECT count(*) FROM {name}").fetchone()[0]
+                       for name in ("papers", "attachments", "chunks")},
+            "extraction_status": dict(db.execute(
+                "SELECT extraction_status,count(*) FROM attachments GROUP BY extraction_status")),
+        }
+
+
 def status(db: sqlite3.Connection, config=None) -> dict:
     from .semantic import semantic_status
 
     return {
+        **index_state(db),
         "semantic": semantic_status(db, config),
-        "counts": {
-            t: db.execute(f"SELECT count(*) FROM {t}").fetchone()[0]
-            for t in ("papers", "attachments", "chunks")
-        },
-        "extraction_status": {
-            row[0]: row[1]
-            for row in db.execute(
-                "SELECT extraction_status,count(*) FROM attachments GROUP BY extraction_status"
-            )
-        },
         "settings": dict(db.execute("SELECT key,value FROM settings")),
         "duplicate_dois": [
             dict(row)

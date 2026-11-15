@@ -16,7 +16,7 @@ from typing import TextIO
 
 from . import __version__
 from .config import load_config
-from .database import LibraryIdentityError, connect
+from .database import LibraryIdentityError, connect, index_state
 from .search import SQLiteSearch
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
@@ -63,6 +63,12 @@ def _tool(name, description, properties, required):
 
 
 TOOLS = [
+    _tool(
+        "get_index_status",
+        "Read saved library identity, generation, last successful update and extraction counts. "
+        "Freshness is unverified: current sources are never read or compared.",
+        {}, [],
+    ),
     _tool(
         "semantic_search_papers",
         "Search title/abstract meaning with a local multilingual model. Scores are not "
@@ -237,7 +243,9 @@ class MCPServer:
                 return _tool_result([_bounded_paper(item, 8000) for item in data])
             with closing(connect(config.database, readonly=True, bib=config.bib)) as db:
                 engine = SQLiteSearch(db)
-                if name == "get_paper":
+                if name == "get_index_status":
+                    data = index_state(db)
+                elif name == "get_paper":
                     budget = arguments.pop("max_chars", 10000)
                     data = _bounded_paper(engine.get_paper(**arguments), budget)
                 elif name == "get_attachments":

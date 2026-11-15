@@ -58,6 +58,7 @@ def test_all_cli_paths_refuse_wrong_library_without_modification(collection, cap
 @pytest.mark.parametrize("name,args", [
     ("search_papers", {"query": "RecQ"}), ("search_fulltext", {"query": "RecQ"}),
     ("get_paper", {"citekey": "A"}), ("get_attachments", {"citekey": "A"}),
+    ("get_index_status", {}),
     ("get_chunk", {"chunk_id": 1}), ("build_context", {"query": "RecQ"}),
     ("semantic_search_papers", {"query": "RecQ"}),
 ])
@@ -137,6 +138,7 @@ def test_context_keeps_snapshot_across_actual_concurrent_commit(collection, monk
         writer.execute("UPDATE settings SET value=value WHERE key='last_indexed'")
         writer.commit()
         engine = SQLiteSearch(db)
+        old_generation = engine.index_state()["index_generation"]
         original = engine.get_chunk
 
         def commit_between_selects(*args, **kwargs):
@@ -150,7 +152,10 @@ def test_context_keeps_snapshot_across_actual_concurrent_commit(collection, monk
         assert result["results"][0]["title"] == "RecQ"
         assert "RecQ" in result["results"][0]["text"]
         assert "Changed" not in result["results"][0]["text"]
+        assert result["index"]["index_generation"] == old_generation
+        assert result["results"][0]["index_generation"] == old_generation
         assert not db.in_transaction
+        assert engine.index_state()["index_generation"] != old_generation
         assert engine.get_paper("A")["title"] == "Changed"
 
 

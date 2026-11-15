@@ -93,6 +93,17 @@ def parser() -> argparse.ArgumentParser:
     indexing = p.add_argument_group("Index update")
     indexing.add_argument("--verify-hashes", action="store_true",
                           help="Hash attachments even when size/mtime are unchanged")
+    indexing.add_argument("--retry-citekey", dest="retry_citekeys", action="append", metavar="KEY",
+                          help="Force re-extraction of a paper's linked attachments (repeatable)")
+    indexing.add_argument("--retry-attachment", dest="retry_attachment_ids", action="append",
+                          type=int, metavar="ID", help="Force re-extraction by attachment ID")
+    indexing.add_argument("--retry-path", dest="retry_paths", action="append", metavar="PATH",
+                          help="Force re-extraction of a linked path (repeatable)")
+    from .indexer import RETRY_STATUSES
+
+    indexing.add_argument("--retry-status", dest="retry_statuses", action="append",
+                          choices=sorted(RETRY_STATUSES),
+                          help="Filter retry targets by saved status; alone selects all in that status")
     return p
 
 
@@ -162,6 +173,8 @@ def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace |
         args.index_action = args.index
         if args.index in {"update", "rebuild"}:
             allowed |= {"verify_hashes", "verbose", "no_progress"}
+        if args.index == "update":
+            allowed |= {"retry_citekeys", "retry_attachment_ids", "retry_paths", "retry_statuses"}
     elif primary == "paper":
         tokens = args.paper
         valid = {"search": "QUERY", "show": "KEY", "attachments": "KEY", "context": "QUERY"}
@@ -203,12 +216,16 @@ def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace |
     for name, low, high in (("top", 1, 100), ("per_paper", 1, 10), ("max_chars", 256, 100000)):
         if name in supplied and not low <= supplied[name] <= high:
             p.error(f"--{name.replace('_', '-')} must be between {low} and {high}")
+    if any(i < 1 for i in supplied.get("retry_attachment_ids", [])):
+        p.error("--retry-attachment must be a positive integer")
     defaults = {
         "temp": None, "format": "text", "data_dir": None, "scope": "all",
         "top": 5 if getattr(args, "paper_action", None) == "context" else 10,
         "per_paper": 2, "citekeys": None, "metadata_query": None,
         "doi": None, "year": None, "author": None, "max_chars": 10000,
         "verify_hashes": False, "verbose": False, "no_progress": False,
+        "retry_citekeys": None, "retry_attachment_ids": None,
+        "retry_paths": None, "retry_statuses": None,
         "mode": "keyword",
         "port": None, "no_browser": False,
     }

@@ -93,6 +93,12 @@ def print_index_summary(result, label):
           f"{result['papers_deleted']} deleted, {result['papers_renamed']} renamed.")
     print(f"  Attachments:  {result['files_extracted']} extraction attempts, "
           f"{result['files_reused']} reused, {result['files_hashed']} hashed.")
+    if ("remaining_issues" in result and
+            (result["remaining_issues"] or result["resolved_issues"] or result["retry"]["selected"])):
+        print(f"  Issues:       {result['resolved_issues']} resolved, {result['new_issues']} newly "
+              f"recorded, {sum(result['remaining_issues'].values())} remaining in the index.")
+        if result["retry"]["selected"]:
+            print(f"  Retry:        {result['retry']['attempted']} selected attachments attempted.")
     if result["semantic"]["enabled"]:
         semantic = result["semantic"]
         print(f"  Semantic:     {semantic['embedded']} embedded, {semantic['reused']} reused, "

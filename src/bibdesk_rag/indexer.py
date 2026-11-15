@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import time
+import uuid
 
 from .bibdesk import read_library
 from .config import Config
@@ -20,6 +21,12 @@ from .extractors.formats import (
 )
 from .extractors.sources import is_iwork_directory, source_digest, source_stat
 from .normalization import NORMALIZATION_REVISION, normalize_search
+
+
+RETRY_STATUSES = frozenset({
+    "ok", "partial", "unsupported", "empty", "encrypted", "error", "image_only", "no_text",
+    "timeout", "resource-limit",
+})
 
 
 @dataclass(frozen=True)
@@ -67,7 +74,18 @@ def index_library(
     progress: Callable[[IndexProgress], None] | None = None,
     config_path: Path | None = None,
     backend=None,
+    retry_citekeys: list[str] | None = None,
+    retry_attachment_ids: list[int] | None = None,
+    retry_paths: list[str] | None = None,
+    retry_statuses: list[str] | None = None,
 ) -> dict:
+    retry_requested = any((retry_citekeys, retry_attachment_ids, retry_paths, retry_statuses))
+    if rebuild and retry_requested:
+        raise ValueError("Retry selectors require update, not rebuild")
+    if retry_statuses and not set(retry_statuses) <= RETRY_STATUSES:
+        raise ValueError("Invalid retry status; excluded media cannot be retried")
+    if retry_attachment_ids and any(type(i) is not int or i < 1 for i in retry_attachment_ids):
+        raise ValueError("Retry attachment IDs must be positive integers")
     papers_done = papers_total = files_done = files_total = 0
 
     def emit(phase: str) -> None:
@@ -106,6 +124,13 @@ def index_library(
         with db:
             initialize(db, in_transaction=True)
             previous = dict(db.execute("SELECT key,value FROM settings"))
+            before_issues = dict(db.execute(
+                "SELECT path,extraction_status FROM attachments "
+                "WHERE extraction_status NOT IN ('ok','excluded')"))
+            retry_targets = _retry_targets(db, papers, retry_citekeys, retry_attachment_ids,
+                                           retry_paths, retry_statuses) if retry_requested else set()
+            report["retry"] = {"selected": len(retry_targets), "attempted": 0}
+
             previous_vectors = {row[0] for row in db.execute(
                 "SELECT DISTINCT paper_id FROM embeddings WHERE paper_id IS NOT NULL")}
             reextract = rebuild or previous.get("extraction_options") != options_json
@@ -174,9 +199,12 @@ def index_library(
                     if path not in incoming_paths:
                         _index_attachment(
                             db, Path(path), ref.error, config,
-                            reextract or Path(path).suffix.lower() in changed_formats,
+                            reextract or Path(path).suffix.lower() in changed_formats
+                            or path in retry_targets,
                             verify_hashes, report,
                         )
+                        if path in retry_targets:
+                            report["retry"]["attempted"] += 1
                         incoming_paths.add(path)
                         files_done += 1
                         emit("indexing")
@@ -222,6 +250,7 @@ def index_library(
                 "bib_path": str(config.bib),
                 "bib_hash": bib_hash,
                 "last_indexed": str(time.time()),
+                "index_generation": uuid.uuid4().hex,
                 "extraction_options": options_json,
                 "extraction_revision": EXTRACTION_REVISION,
                 "extraction_versions": json.dumps(EXTRACTION_VERSIONS, sort_keys=True),
@@ -231,10 +260,49 @@ def index_library(
                     "INSERT INTO settings VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                     (key, value),
                 )
+            after_states = dict(db.execute("SELECT path,extraction_status FROM attachments"))
+            report["resolved_issues"] = sum(after_states.get(path) == "ok" for path in before_issues)
+            report["new_issues"] = sum(state not in {"ok", "excluded"} and path not in before_issues
+                                       for path, state in after_states.items())
+            report["remaining_issues"] = dict(Counter(
+                state for state in after_states.values() if state not in {"ok", "excluded"}))
     finally:
         db.close()
     emit("done")
     return report
+
+
+def _retry_targets(db, papers, citekeys, attachment_ids, paths, statuses):
+    """Identity selectors form a union, optionally filtered by saved extraction state.
+
+    Resolve only current library links. Unknown identities abort the transaction;
+    excluded images/videos are never force-extracted.
+    """
+    linked = {paper.citekey: {str(Path(ref.path).resolve()) for ref in paper.files}
+              for paper in papers}
+    current = set().union(*linked.values()) if linked else set()
+    selected = set()
+    for key in citekeys or []:
+        if key not in linked:
+            raise ValueError(f"Unknown retry citekey: {key}")
+        selected.update(linked[key])
+    for identifier in attachment_ids or []:
+        row = db.execute("SELECT path FROM attachments WHERE id=?", (identifier,)).fetchone()
+        if row is None or row[0] not in current:
+            raise ValueError(f"Unknown or unlinked retry attachment: {identifier}")
+        selected.add(row[0])
+    for value in paths or []:
+        path = str(Path(value).expanduser().resolve())
+        if path not in current:
+            raise ValueError(f"Retry path is not linked to this library: {path}")
+        selected.add(path)
+    if not any((citekeys, attachment_ids, paths)):
+        selected = current
+    saved = dict(db.execute("SELECT path,extraction_status FROM attachments"))
+    return {path for path in selected
+            if Path(path).suffix.lower() not in EXCLUDED_FORMATS
+            and saved.get(path) != "excluded"
+            and (not statuses or saved.get(path) in statuses)}
 
 
 def _index_attachment(db, path, resolution_error, config, reextract, verify_hashes, report):
