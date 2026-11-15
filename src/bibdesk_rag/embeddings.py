@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Protocol
 
-from .progress import model_loading_progress
+from .progress import model_loading_progress, suppress_macos_redirect_warning
 from .semantic_config import SemanticOptions
 
 INSTALL_HELP = "Install in a standard venv with: python -m pip install 'bibdesk-rag[semantic]'"
@@ -113,7 +113,7 @@ class SentenceTransformerBackend:
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
         os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
         try:
-            with model_loading_progress():
+            with suppress_macos_redirect_warning(), model_loading_progress():
                 from sentence_transformers import SentenceTransformer
                 from huggingface_hub import snapshot_download
 

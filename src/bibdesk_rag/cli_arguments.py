@@ -33,6 +33,15 @@ def parser() -> argparse.ArgumentParser:
                         help="Print an auxiliary resource to stdout")
     choice.add_argument("--setup", action=Once, nargs=0, const=True,
                         help="Interactively configure a library and local Codex connection")
+    choice.add_argument("--web", action=Once, nargs=0, const=True,
+                        help="Serve the read-only search GUI on localhost; Ctrl+C to stop")
+    choice.add_argument("--web-open", action=Once, metavar="QUERY",
+                        help="Open a new search GUI tab; start a local server if needed")
+    choice.add_argument("--web-stop", action=Once, nargs=0, const=True,
+                        help="Stop the selected configuration's search GUI server")
+    web = p.add_argument_group("Local search GUI")
+    web.add_argument("--port", type=int, help="Port for --web (1..65535; default: try 8765)")
+    web.add_argument("--no-browser", action="store_true", help="Print the --web URL without opening it")
     choice.add_argument("-c", "--config", dest="configuration", nargs="+", action=Once,
                         metavar=("ACTION", "PATH"), help=(
                             "show           Display effective settings\n"
@@ -95,8 +104,8 @@ LEGACY = {
 }
 
 
-def parse_args(argv: list[str]) -> argparse.Namespace | None:
-    p = parser()
+def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace | None:
+    p = argument_parser if argument_parser is not None else parser()
     if not argv:
         from .cli_resources import brief_help_text
 
@@ -111,7 +120,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
         p.error("unrecognized arguments: " + " ".join(unknown) + "\n" + hint)
     supplied = vars(args).copy()
     primary = next((key for key in (
-        "version", "example", "readme", "output", "setup", "configuration", "index", "semantic", "paper"
+        "version", "example", "readme", "output", "setup", "configuration", "index", "semantic", "paper",
+        "web", "web_open", "web_stop",
     ) if key in supplied), None)
     if primary is None:
         p.error("Choose --setup, --config ACTION, --index ACTION, or --paper ACTION VALUE")
@@ -121,6 +131,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
         allowed = set()
     elif primary == "setup":
         allowed = {"temp"}
+    elif primary in {"web", "web_open", "web_stop"}:
+        allowed = {"temp"}
+        if primary == "web":
+            allowed |= {"port", "no_browser"}
+            if "port" in supplied and not 1 <= args.port <= 65535:
+                p.error("--port must be between 1 and 65535")
+        if primary == "web_open" and len(args.web_open) > 2000:
+            p.error("--web-open query must contain at most 2000 characters")
     elif primary == "configuration":
         tokens = args.configuration
         action = tokens[0]
@@ -192,6 +210,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace | None:
         "doi": None, "year": None, "author": None, "max_chars": 10000,
         "verify_hashes": False, "verbose": False, "no_progress": False,
         "mode": "keyword",
+        "port": None, "no_browser": False,
     }
     args.semantic_limit = supplied.get("top")
     for key, value in defaults.items():

@@ -266,9 +266,100 @@ def main() -> None:
                for citation in chunk["citations"]), chunk
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
+    # Exercise installed web assets and API without a browser, Skim or personal data.
+    from http.client import HTTPConnection
+    import re
+    import time
+    from tempfile import TemporaryFile
+
+    # This script also runs under a host Python with no application installed.
+    # Discover only this generated fixture's runtime; never import the checkout.
+    key = hashlib.sha256(os.fsencode(selected.resolve())).hexdigest()
+    runtime_path = Path(configuration["database"]).parent / "web-runtime" / (key + ".json")
+
+    def read_state():
+        try:
+            return json.loads(runtime_path.read_text())
+        except (FileNotFoundError, ValueError):
+            return None
+
+    def owner_request(data, operation):
+        connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+        try:
+            connection.request("POST", "/internal/" + operation, "{}",
+                               {"Content-Type": "application/json",
+                                "Authorization": "Bearer " + data["token"]})
+            response = connection.getresponse()
+            assert response.status == 200
+            return json.loads(response.read())
+        finally:
+            connection.close()
+
+    def alive(data):
+        if not data:
+            return False
+        try:
+            return owner_request(data, "health") == {
+                "config": str(selected.resolve()), "instance": data["instance"]}
+        except (OSError, AssertionError, ValueError):
+            return False
+
+    startup_log = TemporaryFile(mode="w+t")
+    process = subprocess.Popen([args.command, "--temp", str(selected), "--web", "--no-browser"],
+                               env=env, stdout=startup_log, stderr=startup_log)
+    data = None
+    try:
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            data = read_state()
+            if alive(data):
+                break
+            if process.poll() is not None:
+                startup_log.seek(0)
+                raise AssertionError("Installed GUI startup failed: " + startup_log.read()[-3000:])
+            time.sleep(.05)
+        if not alive(data):
+            startup_log.seek(0)
+            raise AssertionError("Installed GUI did not become ready; runtime present="
+                                 + str(data is not None) + "; logs: " + startup_log.read()[-3000:])
+        connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+        connection.request("GET", "/")
+        response = connection.getresponse()
+        assert response.status == 200
+        html = response.read().decode()
+        connection.close()
+        for asset in ("/app.js", "/app.css"):
+            connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+            connection.request("GET", asset)
+            response = connection.getresponse()
+            assert response.status == 200 and response.read(), asset
+            connection.close()
+        token = re.search(r'name="csrf-token" content="([A-Za-z0-9_-]+)"', html)[1]
+        connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+        connection.request("POST", "/api/search", json.dumps({"query": "RecQ", "scope": "fulltext"}),
+                           {"Content-Type": "application/json", "X-CSRF-Token": token,
+                            "Origin": f"http://127.0.0.1:{data['port']}"})
+        response = connection.getresponse()
+        assert response.status == 200
+        result = json.loads(response.read())
+        connection.close()
+        assert result["hit_count"] > 0
+        assert any(hit["page_start"] == 2 for card in result["papers"] for hit in card["hits"]
+                   if hit["source_type"] == "pdf")
+    finally:
+        if alive(data):
+            owner_request(data, "stop")
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            process.wait(timeout=5)
+        startup_log.close()
+    assert hashes == source_hashes(), "GUI changed source files"
+    assert before_mcp == hashes_for(persisted), "GUI changed configuration or index"
     print("Installed option CLI, bundled documentation/resources, saved selection, "
           "setup help/non-TTY safety, PDF page citations, CFF fonts, AES-256, CSV, eight document formats, media exclusion, "
-          "source immutability, persisted index and read-only MCP passed")
+          "source immutability, persisted index, read-only MCP and localhost GUI/assets passed")
 
 
 if __name__ == "__main__":

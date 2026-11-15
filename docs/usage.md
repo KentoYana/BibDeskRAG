@@ -35,6 +35,16 @@ bibdesk-rag --output citation > bibdesk-rag.bib
 
 `-o/--output` は同梱資料の出力用です。`citation` は著者をKento Yanagisawa、文献タイプを `@manual` としたBibDeskRAG自体のBibTeX引用情報です。文献のBibTeXは `--paper show KEY --format bibtex` で取得します。ファイルの作成は利用者が指定するシェルのリダイレクトによるもので、出力操作自体はファイルを書きません。
 
+## ローカル検索GUI
+
+`--web`、`--web-open QUERY`、`--web-stop` を主操作として使用できます。
+`--web --port 8765 --no-browser`、`--temp PATH --web` に対応します。
+設定・索引がない場合は `--setup` と `--index update` で準備してください。
+GUIは索引を変更せず、PDFはSkimで開きます。`--web` はCtrl+Cで終了し、
+`--web-open` で起動したバックグラウンドサーバーは同じ設定の `--web-stop` で終了します。
+検索条件、ポート競合、ページ移動・Automation許可、欠損PDFについては
+[GUIガイド](web-gui.md#japanese)を参照してください。
+
 ## 対話型セットアップ
 
 ```sh
@@ -244,6 +254,16 @@ bibdesk-rag --output citation > bibdesk-rag.bib
 ```
 
 `-o/--output` prints bundled resources. `citation` is the software's BibTeX `@manual` entry attributed to Kento Yanagisawa. For a paper's BibTeX, use `--paper show KEY --format bibtex`. Output itself does not write files; shell redirection is the caller's choice.
+
+## Local search GUI
+
+Use `--web`, `--web-open QUERY` or `--web-stop` as a primary operation.
+`--web --port 8765 --no-browser` and `--temp PATH --web` are supported.
+Prepare missing configuration/indexes with `--setup` and `--index update` first.
+The GUI reads indexes without updating them and opens PDFs in Skim. Ctrl+C stops
+foreground `--web`; use the same configuration's `--web-stop` for a background
+server started by `--web-open`. See the [GUI guide](web-gui.md#english) for filters,
+port conflicts, missing PDFs and Skim page navigation/Automation permission.
 
 ## Interactive setup
 

@@ -38,8 +38,8 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/previous-release"
           "$RUNNER_TEMP/previous-release/bin/python" -m pip install -r tools/requirements-upgrade-baseline.txt
-          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.0 --app-python "$RUNNER_TEMP/wheel-test/bin/python"
-          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.0 --app-python "$RUNNER_TEMP/sdist-test/bin/python"
+          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.1 --app-python "$RUNNER_TEMP/wheel-test/bin/python"
+          python tools/validate_upgrade.py --old-python "$RUNNER_TEMP/previous-release/bin/python" --old-version 0.5.1 --app-python "$RUNNER_TEMP/sdist-test/bin/python"
       - uses: actions/upload-artifact@v4
         with:
           name: python-distributions

@@ -8,7 +8,7 @@ BibDeskで管理する文献を、Codexから検索・参照するためのロ�
 
 BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索用の索引を別の場所に作ります。対象は登録した1つのライブラリと、そのライブラリにリンクされたファイルです。ライブラリの書き換えや添付ファイルの移動は行いません。
 
-本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.5.1のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
+本体は [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG)、Homebrew Formulaは [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap) で管理しています。[v0.6.0のRelease](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) にはソース配布・wheel・Homebrew用ビルド依存bundleと `SHA256SUMS` を掲載しています。ソースから利用する場合は [開発とソースからの利用](#開発とソースからの利用) を参照してください。
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
@@ -237,6 +237,15 @@ bibdesk-rag --index status --format json
 
 索引は従来のSQLiteに統合し、`--index update/rebuild/status/check` で両検索方式を管理します。モデル取得だけが明示的にネットワークを使い、その後はCPUでオフライン実行します。MCPには `semantic_search_papers(query, limit=5)` を追加しました。対話型setup・統合SQLite・Homebrew・モデル変更・制約は [意味検索ガイド](docs/semantic-search.md) を参照してください。
 
+## ローカル検索GUI
+
+`bibdesk-rag --web` で英語の検索画面を開けます。
+既存索引を読み取り専用で検索し、PDFはSkimで開きます。Ctrl+Cで終了します。
+`--web-open='RecQ helicase'` はサーバーを起動・再利用して検索タブを開き、
+`--web-stop` は選択中の設定のサーバーを停止します。
+起動、検索条件、ポート、Skim・Automation許可と未検証点は
+[ローカル検索GUIガイド](docs/web-gui.md#japanese)を参照してください。
+
 ## 検索できるものとデータの扱い
 
 - 対応形式はPDF・CSV・TSV・XLSX・DOCX・PPTX・DOC・XLS・TeX・Keynote・Pages・Numbers・ZIPです。画像・動画は明示的に対象外です。[抽出範囲と制約](docs/file-formats.md)を参照してください。書誌情報と抽出できた本文をSQLite FTS5で検索します。オプションの意味検索はTitle・Abstractだけを対象とします。OCRは行いません。
@@ -302,7 +311,7 @@ A local tool for searching and consulting literature managed in BibDesk from Cod
 
 The `.bib` library and its attachments are read-only. A separate derived index covers one explicitly registered library and its linked files. The tool does not rewrite the library or move attachments.
 
-The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.5.1 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
+The application is maintained at [KentoYana/BibDeskRAG](https://github.com/KentoYana/BibDeskRAG) and the Homebrew Formula at [KentoYana/homebrew-tap](https://github.com/KentoYana/homebrew-tap). The [v0.6.0 release](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) provides an sdist, wheel, Homebrew build-dependency bundle and `SHA256SUMS`. For source installation, see [Development and source installation](#development-and-source-installation).
 
 These instructions apply to v0.3.0 and later. When upgrading from v0.2.x or earlier, review the CLI changes (for example, `update` → `--index update`, `--json` → `--format json`) and removal of automatic discovery of the old macOS storage location. Existing configuration and indexes are neither moved nor deleted; select them with `--config use PATH` as needed. See [Migration](docs/usage.md#migrating-from-older-commands).
 
@@ -531,6 +540,14 @@ bibdesk-rag --index status --format json
 ```
 
 Bibliography/text and vectors share the same SQLite and `--index` actions. Only explicit model download needs network. Indexing and search run offline on CPU. MCP adds `semantic_search_papers(query, limit=5)`. See the [semantic search guide](docs/semantic-search.md) for setup, unified SQLite/index actions, Homebrew, model changes and validation.
+
+## Local search GUI
+
+`bibdesk-rag --web` opens the English-only,
+read-only search GUI. PDFs open in Skim; Ctrl+C stops the server.
+`--web-open='RecQ helicase'` starts/reuses the configuration's server and opens a
+search tab; `--web-stop` stops it. See the [GUI guide](docs/web-gui.md#english)
+for filters, ports, Skim, Automation permissions and verification limits.
 
 ## Search coverage and data handling
 

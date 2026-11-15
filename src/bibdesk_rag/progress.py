@@ -24,6 +24,29 @@ _active_progress: ContextVar[IndexProgressBar | None] = ContextVar("index_progre
 
 
 @contextmanager
+def suppress_macos_redirect_warning():
+    """Hide only Torch's known macOS redirect notice during optional imports."""
+    if sys.platform != "darwin":
+        yield
+        return
+    logger = logging.getLogger("torch.distributed.elastic.multiprocessing.redirects")
+
+    class RedirectNoticeFilter(logging.Filter):
+        def filter(self, record):
+            return record.getMessage().strip() not in {
+                "NOTE: Redirects are currently not supported in Windows or MacOs.",
+                "NOTE: Redirects are currently not supported in MacOs.",
+            }
+
+    notice_filter = RedirectNoticeFilter()
+    logger.addFilter(notice_filter)
+    try:
+        yield
+    finally:
+        logger.removeFilter(notice_filter)
+
+
+@contextmanager
 def model_loading_progress():
     """Style the optional loader's real progress within a CLI indexing operation.
 
@@ -151,14 +174,18 @@ class IndexDiagnostics(logging.Handler):
     Store at most three short examples, regardless of the library size. Fatal
     exceptions and the indexer's attachment issues are handled separately.
     Verbose mode preserves the original dependency output instead.
+    Callers can defer the automatic report to group it with attachment issues;
+    failed operations still report captured diagnostics on context exit.
     """
 
     LOGGER_NAMES = ("pypdf", "bibtexparser", "bibdeskparser", "pylatexenc", "openpyxl")
     SAMPLE_LIMIT = 3
 
-    def __init__(self, *, verbose: bool = False, stream: TextIO | None = None):
+    def __init__(self, *, verbose: bool = False, stream: TextIO | None = None,
+                 auto_report: bool = True):
         super().__init__(level=logging.WARNING)
         self.verbose = verbose
+        self.auto_report = auto_report
         self.stream = stream if stream is not None else sys.stderr
         self.count = 0
         self.samples: list[str] = []
@@ -197,7 +224,7 @@ class IndexDiagnostics(logging.Handler):
                 logger.propagate = propagate
                 logger.setLevel(level)
             self._warnings.__exit__(exc_type, exc, traceback)
-            if self.count:
+            if self.count and (self.auto_report or exc_type is not None):
                 print(f"Parser diagnostics: {self.count} warning/error messages.", file=self.stream)
                 for sample in self.samples:
                     print(f"  {sample}", file=self.stream)

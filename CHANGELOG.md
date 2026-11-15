@@ -4,6 +4,18 @@
 
 # Changelog
 
+## [0.6.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) — 2026-11-15
+
+- Add the English-only localhost search GUI with existing keyword scopes/filters,
+  title/abstract semantic search, exact source excerpts and attachment states.
+- Open linked PDFs and physical PDF pages in Skim using fixed commands and
+  constant AppleScript with data arguments. Page opening was confirmed by the user.
+- Add configuration-pinned `--web`, `--web-open QUERY` and `--web-stop`, with
+  private authenticated discovery, bounded requests and no source/index writes.
+- Group index warnings under Warning with guidance and an explicit Summary;
+  color terminal output and suppress the known Torch macOS redirect notice.
+- Bundle GUI assets without new runtime dependencies. Alfred integration is not included.
+
 ## [0.5.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) — 2026-11-14
 
 - Pin development and local validation to pyenv Python 3.14.10, preserving the
@@ -128,6 +140,18 @@
 <a id="japanese"></a>
 
 # 変更履歴
+
+## [0.6.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.6.0) — 2026-11-15（日本語）
+
+- 英語のlocalhost検索GUIを追加。既存の検索対象・フィルター、Title・Abstractの
+  意味検索、出典付き抜粋と添付状態の表示を利用できます。
+- 固定コマンドと、パス・ページをデータとして受け取る固定AppleScriptでSkimを起動。
+  ページ指定オープンは利用者による動作確認済みです。
+- 起動時設定を固定する `--web`、`--web-open QUERY`、`--web-stop` を追加。
+  認証付きサーバー検出、リクエスト上限、原本・索引の読み取り専用を維持します。
+- 索引作成後の警告を説明付きWarningとSummaryへ整理し、端末の色分けと
+  macOSで自明なTorchのリダイレクト警告の抑制を追加しました。
+- 依存追加なしでGUIアセットを同梱。Alfred連携は含みません。
 
 ## [0.5.1](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.5.1) — 2026-11-14（日本語）
 

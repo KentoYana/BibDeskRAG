@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="__CSRF__">
+  <title>BibDesk RAG · Search papers</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<header><span class="brand">BIBDESK RAG</span><span class="local">LOCAL LIBRARY · READ ONLY</span></header>
+<main>
+  <form id="search-form">
+    <label for="query">Search papers</label>
+    <div class="search-row"><input id="query" name="query" type="search" maxlength="2000" placeholder="A topic, phrase, DOI or citekey" autofocus><button type="submit">Search <span aria-hidden="true">↗</span></button></div>
+    <div class="controls">
+      <label>Search mode<select id="mode"><option value="keyword">Keyword</option><option value="semantic">Semantic</option></select></label>
+      <label>Search in<select id="scope"><option value="all">Both</option><option value="metadata">Metadata</option><option value="fulltext">Full text</option></select></label>
+    </div>
+    <p id="mode-note" class="hint">Both searches metadata first, then selected papers’ indexed text.</p>
+    <details id="advanced"><summary>Advanced filters</summary><div class="filter-grid">
+      <label id="author-field">Author<input id="author" maxlength="2000"></label>
+      <label id="year-field">Year<input id="year" maxlength="2000" placeholder="e.g. 2026"></label>
+      <label id="doi-field">DOI<input id="doi" maxlength="2000" placeholder="10.…"></label>
+      <label id="citekeys-field">Citekey<textarea id="citekeys" rows="2" placeholder="One citekey per line"></textarea></label>
+      <label id="metadata-query-field">Metadata query<input id="metadata-query" maxlength="2000"></label>
+      <label>Results<input id="top" type="number" min="1" max="100" value="10" required></label>
+      <label id="per-paper-field">Excerpts per paper<input id="per-paper" type="number" min="1" max="10" value="2" required></label>
+    </div><p class="hint">Author, Year and DOI apply to Metadata. Metadata query applies to Both. Choose Citekey or Metadata query.</p></details>
+  </form>
+  <section aria-label="Search results"><div id="search-state" role="status" aria-live="polite">Enter a query to explore your library.</div><div id="results"></div></section>
+  <aside><details><summary>Library &amp; index</summary><div id="library-state">Loading library status…</div><p>To refresh the index, run <code>bibdesk-rag --index update</code> with the same configuration. This GUI never updates it.</p></details></aside>
+  <footer>Excerpts are extracted source text, not verified claims. Check the original PDF.<br>PDF page numbers count from the first page of the file; printed labels may differ.</footer>
+</main>
+<div id="notice" role="status" aria-live="polite"></div>
+</body></html>

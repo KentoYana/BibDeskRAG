@@ -17,7 +17,9 @@ from bibdesk_rag import cli
 from bibdesk_rag.config import init_config
 from bibdesk_rag.embeddings import SentenceTransformerBackend
 from bibdesk_rag.indexer import IndexProgress
-from bibdesk_rag.progress import IndexProgressBar, model_loading_progress
+from bibdesk_rag.progress import (
+    IndexProgressBar, model_loading_progress, suppress_macos_redirect_warning,
+)
 from bibdesk_rag.semantic_config import SemanticOptions
 
 
@@ -101,13 +103,18 @@ def progress_library(tmp_path):
     return config, bib, pdf
 
 
-def invoke(monkeypatch, config, *args, stdout_tty=True, stderr_tty=True, term="xterm"):
+def invoke(monkeypatch, config, *args, stdout_tty=True, stderr_tty=True, term="xterm",
+           color=False):
     stdout = TerminalStream(tty=stdout_tty)
     stderr = TerminalStream(tty=stderr_tty)
     with monkeypatch.context() as patch:
         patch.setattr(sys, "stdout", stdout)
         patch.setattr(sys, "stderr", stderr)
         patch.setenv("TERM", term)
+        if color:
+            patch.delenv("NO_COLOR", raising=False)
+        else:
+            patch.setenv("NO_COLOR", "1")
         code = cli.main(["--temp", str(config), "--index", *args])
     return code, stdout.getvalue(), stderr.getvalue()
 
@@ -120,11 +127,11 @@ def test_terminal_index_and_update_show_progress_and_compact_summary(
     before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in (bib, pdf)}
     code, stdout, stderr = invoke(monkeypatch, config, command)
     assert code == 0
-    assert stdout.startswith(f"{command.capitalize()} complete:")
-    assert "Attachment issues: 0" in stdout
+    assert stdout.startswith(f"\nSummary\n{command.capitalize()} complete.")
+    assert "Warning" not in stderr
     assert "\r" in stderr
     assert stderr.endswith("\n")
-    assert len(stdout.splitlines()) <= 5
+    assert len(stdout.splitlines()) <= 6
     assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in before} == before
 
 
@@ -152,8 +159,9 @@ def test_redirected_default_output_stays_text_without_progress(progress_library,
     config, _, _ = progress_library
     code, stdout, stderr = invoke(monkeypatch, config, "update", stdout_tty=False)
     assert code == 0
-    assert stdout.startswith("Update complete:")
-    assert "Attachment issues: 0" in stdout
+    assert stdout.startswith("\nSummary\nUpdate complete.")
+    assert "Warning" not in stderr
+    assert "\x1b" not in stdout + stderr
     assert "\r" not in stderr
 
 
@@ -169,7 +177,7 @@ def test_progress_can_be_disabled_without_losing_human_summary(
         monkeypatch, config, "rebuild", *arguments, stderr_tty=stderr_tty, term=term
     )
     assert code == 0
-    assert stdout.startswith("Rebuild complete:")
+    assert stdout.startswith("\nSummary\nRebuild complete.")
     assert "\r" not in stderr
 
 
@@ -207,7 +215,7 @@ def test_verbose_keeps_dependency_warnings_and_disables_bar(
     with caplog.at_level(logging.WARNING, logger="pypdf"):
         code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--verbose")
     assert code == 0
-    assert stdout.startswith("Rebuild complete:")
+    assert stdout.startswith("\nSummary\nRebuild complete.")
     assert "incorrect startxref pointer" in caplog.text
     assert "Parser diagnostics:" not in stderr
     assert "\r" not in stderr
@@ -231,7 +239,7 @@ def test_many_diagnostics_are_bounded_and_logging_warning_state_is_restored(
     monkeypatch.setattr(cli, "index_library", noisy_index)
     code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--no-progress")
     assert code == 0
-    assert stdout.startswith("Rebuild complete:")
+    assert stdout.startswith("\nSummary\nRebuild complete.")
     assert "Parser diagnostics: 1001" in stderr
     assert "--verbose" in stderr
     assert len(stderr) < 2000
@@ -257,7 +265,7 @@ def test_attachment_issue_previews_are_bounded_but_json_keeps_all_details(
     monkeypatch.setattr(cli, "index_library", index_with_issues)
     code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--no-progress")
     assert code == 0
-    assert "Attachment issues: 100" in stdout
+    assert "Attachment issues: 100" in stderr
     assert len(stderr) < 2500
     assert "\x1b[31m" not in stderr
     code, stdout, stderr = invoke(monkeypatch, config, "rebuild", "--format", "json")
@@ -268,6 +276,89 @@ def test_attachment_issue_previews_are_bounded_but_json_keeps_all_details(
     assert code == 0
     assert "file-99" in stderr
     assert "\r" not in stderr
+
+
+@pytest.mark.parametrize(
+    "color,stdout_tty,stderr_tty,term,expected",
+    [(True, True, True, "xterm", True), (False, True, True, "xterm", False),
+     (True, False, True, "xterm", False), (True, True, False, "xterm", False),
+     (True, True, True, "dumb", False)],
+)
+def test_warning_layout_explanations_and_terminal_color_policy(
+    progress_library, monkeypatch, color, stdout_tty, stderr_tty, term, expected,
+):
+    config, _, _ = progress_library
+    original_index = cli.index_library
+
+    def index_with_issues(*args, **kwargs):
+        logging.getLogger("pypdf.synthetic").warning(
+            "Exceeded 5000 form XObject invocations while extracting text; "
+            "further form content is skipped.")
+        result = original_index(*args, **kwargs)
+        result["errors"] = [
+            {"path": "font.pdf", "error": "Page 1: PdfReadError: More than one /FontFile found in {}"},
+            {"path": "complex.pdf", "error": "Page 7: LimitReachedError: "
+             "Reached maximum number of tokens per stream."},
+            {"path": "images.pdf", "error": "; ".join(
+                f"Page {n}: no extractable text (possibly image-only; OCR not enabled)"
+                for n in range(43, 48))},
+        ]
+        return result
+
+    monkeypatch.setattr(cli, "index_library", index_with_issues)
+    code, stdout, stderr = invoke(
+        monkeypatch, config, "update", color=color,
+        stdout_tty=stdout_tty, stderr_tty=stderr_tty, term=term,
+    )
+    assert code == 0
+    assert ("\x1b[1;33mWarning\x1b[0m" in stderr) is expected
+    assert ("\x1b[1;36mSummary\x1b[0m" in stdout) is expected
+    if expected:
+        assert "\x1b[33mfont.pdf\x1b[0m" in stderr
+        assert "\x1b[32mUpdate complete.\x1b[0m" in stdout
+    else:
+        assert "\x1b" not in stdout + stderr
+    if "Indexed" in stderr:
+        assert "\n\n" + ("\x1b[1;33m" if expected else "") + "Warning" in stderr
+    else:
+        assert stderr.startswith("\nWarning")
+    assert "you can ignore these warnings" in stderr
+    assert "will not appear in full-text search results" in stderr
+    assert "Showing 3 of 3" in stderr
+    assert "conflicting font definitions" in stderr
+    assert "PDF parser reached its processing limit" in stderr
+    assert "the page may contain only images or figures" in stderr
+    assert "Additional details omitted" in stderr
+    assert "Page 46" not in stderr
+    assert "Form XObject processing limit reached" in stderr
+    assert "Parser diagnostics: 1" in stderr
+
+
+@pytest.mark.parametrize("platform", ["darwin", "linux"])
+@pytest.mark.parametrize("fail", [False, True])
+def test_only_known_torch_macos_notice_is_suppressed_and_filters_restored(
+    monkeypatch, platform, fail,
+):
+    logger = logging.getLogger("torch.distributed.elastic.multiprocessing.redirects")
+    output = StringIO()
+    handler = logging.StreamHandler(output)
+    monkeypatch.setattr(sys, "platform", platform)
+    monkeypatch.setattr(logger, "handlers", [handler])
+    monkeypatch.setattr(logger, "propagate", False)
+    monkeypatch.setattr(logger, "level", logging.WARNING)
+    previous = logger.filters[:]
+    try:
+        with suppress_macos_redirect_warning():
+            logger.warning("NOTE: Redirects are currently not supported in MacOs.")
+            logger.warning("NOTE: Redirects are currently not supported in Windows or MacOs.")
+            logger.warning("Another Torch warning")
+            if fail:
+                raise RuntimeError("load failed")
+    except RuntimeError:
+        assert fail
+    assert ("Redirects are currently" in output.getvalue()) is (platform != "darwin")
+    assert "Another Torch warning" in output.getvalue()
+    assert logger.filters == previous
 
 
 @pytest.mark.parametrize("exception,expected_code", [(RuntimeError("failed"), 1), (KeyboardInterrupt(), 130)])
