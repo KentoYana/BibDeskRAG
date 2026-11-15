@@ -372,8 +372,8 @@ def test_simultaneous_launches_have_one_owned_server(web_library):
     runtime = web_runtime.Runtime(path, config)
 
     def launch():
-        with runtime.lock() as fd:
-            return web_runtime.launch(runtime, fd)
+        with runtime.lock():
+            return web_runtime.launch(runtime)
 
     try:
         with ThreadPoolExecutor(max_workers=3) as pool:
@@ -396,10 +396,32 @@ def test_busy_owned_server_cannot_cause_duplicate_startup(web_library, monkeypat
             pytest.fail("A busy owned server must not trigger another process")
 
         monkeypatch.setattr(web_runtime.subprocess, "Popen", unexpected)
-        with runtime.lock() as fd, pytest.raises(ValueError, match="busy"):
-            web_runtime.launch(runtime, fd)
+        with runtime.lock(), pytest.raises(ValueError, match="busy"):
+            web_runtime.launch(runtime)
     finally:
         os.close(lease)
+
+
+def test_background_start_survives_python_launcher_closing_inherited_descriptors(
+    web_library, monkeypatch,
+):
+    path, config = web_library
+    runtime = web_runtime.Runtime(path, config)
+    real_python = sys.executable
+    launcher = path.parent / "python-launcher"
+    launcher.write_text(
+        f"#!{real_python}\nimport os, sys\nos.closerange(3, 256)\n"
+        f"os.execv({real_python!r}, [{real_python!r}, *sys.argv[1:]])\n")
+    launcher.chmod(0o700)
+    monkeypatch.setattr(sys, "executable", str(launcher))
+    try:
+        with runtime.lock():
+            state = web_runtime.launch(runtime)
+        assert web_runtime.alive(state)
+    finally:
+        state = runtime.read()
+        if web_runtime.alive(state):
+            web_runtime.call(state, "stop", {})
 
 
 def test_stale_unrelated_server_never_receives_queries_or_stop(web_library):
@@ -425,15 +447,15 @@ def test_startup_failure_timeout_and_browser_failure(web_library, monkeypatch, c
     runtime = web_runtime.Runtime(path, config)
     child = type("FailedChild", (), {"poll": lambda self: 1})()
     monkeypatch.setattr(web_runtime.subprocess, "Popen", lambda *a, **kw: child)
-    with runtime.lock() as fd, pytest.raises(ValueError, match="Could not start"):
-        web_runtime.launch(runtime, fd)
+    with runtime.lock(), pytest.raises(ValueError, match="Could not start"):
+        web_runtime.launch(runtime)
     terminated = []
     child.poll = lambda: None
     child.terminate = lambda: terminated.append(True)
     child.wait = lambda **kw: 0
     monkeypatch.setattr(web_runtime, "START_TIMEOUT", 0)
-    with runtime.lock() as fd, pytest.raises(ValueError, match="timed out"):
-        web_runtime.launch(runtime, fd)
+    with runtime.lock(), pytest.raises(ValueError, match="timed out"):
+        web_runtime.launch(runtime)
     assert terminated == [True]
     monkeypatch.setattr(web_runtime.webbrowser, "open", lambda *a, **kw: False)
     web_runtime.open_browser("http://127.0.0.1:8765/")

@@ -68,7 +68,6 @@ class Runtime:
                     time.sleep(0.05)
             yield fd
         finally:
-            # Closing (rather than LOCK_UN) lets a starting child retain the same lock.
             os.close(fd)
 
     @staticmethod
@@ -179,13 +178,14 @@ def open_browser(url):
           file=sys.stderr)
 
 
-def serve(config_path, *, port=None, no_browser=False, inherited_lock=None):
+def serve(config_path, *, port=None, no_browser=False, background=False):
     config_path = config_path.resolve()
     config = load_config(config_path)  # Pin all settings for this process.
     app = WebApp(config, config_path)
     runtime = Runtime(config_path, config)
     server = None
     lease_fd = None
+    registered = False
     try:
         def register():
             nonlocal server, lease_fd
@@ -195,17 +195,16 @@ def serve(config_path, *, port=None, no_browser=False, inherited_lock=None):
             server = bind_server(app, port)
             runtime.write(app, server)
 
-        if inherited_lock is None:
+        if not background:
             with runtime.lock():
                 register()
         else:
-            try:
-                info, expected = os.fstat(inherited_lock), runtime.lock_path.stat()
-                if (info.st_dev, info.st_ino) != (expected.st_dev, expected.st_ino):
-                    raise ValueError("Invalid inherited GUI startup lock.")
-                register()
-            finally:
-                os.close(inherited_lock)
+            # The launcher holds the command lock while waiting for readiness.
+            # The child independently acquires the lifetime lease before binding;
+            # a dead launcher or two contenders still cannot create two servers.
+            # No descriptor/lock inheritance across Python launchers is required.
+            register()
+        registered = True
         url = f"http://127.0.0.1:{server.server_port}/"
         print(f"Search GUI: {url}\nPress Ctrl+C to stop.", flush=True)
         if not no_browser:
@@ -218,14 +217,15 @@ def serve(config_path, *, port=None, no_browser=False, inherited_lock=None):
         try:
             if server is not None:
                 server.server_close()  # Wait for bounded request workers to finish.
-                with runtime.lock():
-                    runtime.remove(app.instance)
+                if registered:
+                    with runtime.lock():
+                        runtime.remove(app.instance)
         finally:
             if lease_fd is not None:
                 os.close(lease_fd)
 
 
-def launch(runtime, lock_fd):
+def launch(runtime):
     data = runtime.read()
     if alive(data):
         return data
@@ -233,9 +233,9 @@ def launch(runtime, lock_fd):
         raise ValueError("The GUI server is busy or shutting down. Please retry shortly.")
     runtime.remove()
     child = subprocess.Popen(
-        [sys.executable, "-m", "bibdesk_rag.web_runtime", str(runtime.config_path), str(lock_fd)],
+        [sys.executable, "-m", "bibdesk_rag.web_runtime", str(runtime.config_path)],
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-        start_new_session=True, pass_fds=(lock_fd,),
+        start_new_session=True,
     )
     deadline = time.monotonic() + START_TIMEOUT
     while time.monotonic() < deadline:
@@ -281,8 +281,8 @@ def web_command(args):
             time.sleep(.05)
         print("Search GUI shutdown requested." if runtime.lease_held() else "Search GUI stopped.")
         return 0
-    with runtime.lock() as lock_fd:
-        data = launch(runtime, lock_fd)
+    with runtime.lock():
+        data = launch(runtime)
         request = call(data, "initial", {"query": args.web_open})
     url = f"http://127.0.0.1:{data['port']}/#request={request['request_id']}"
     # Print only the bare URL: the one-shot request ID is transient browser data.
@@ -293,4 +293,4 @@ def web_command(args):
 
 if __name__ == "__main__":
     # Private child entry point. Public CLI validates ports; children use an OS-assigned port.
-    serve(Path(sys.argv[1]), port=0, no_browser=True, inherited_lock=int(sys.argv[2]))
+    serve(Path(sys.argv[1]), port=0, no_browser=True, background=True)
