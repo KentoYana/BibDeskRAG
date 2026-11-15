@@ -158,10 +158,39 @@ settings trigger re-extraction. Writes are transactional; a fatal failure retain
 the previous committed index. Missing/unreadable attachments are recorded as
 errors while other files continue. Update after BibDesk changes or source moves.
 
+Text update/rebuild output groups attachment issues and bounded parser diagnostics
+under Warning, followed by Summary. If searches work as expected, warnings can be
+ignored; text that could not be extracted is absent from full-text search results.
+Use --verbose for full diagnostics or --format json for all attachment issues.
+Colors appear only on terminals; NO_COLOR or TERM=dumb disables them. Redirected
+output and JSON contain no color codes. The known Torch macOS redirect notice is
+suppressed while loading the optional semantic model.
+
 Supported text inputs: PDF, CSV/TSV, XLSX and safe ZIP members. Spreadsheet formulas
 are never executed. Archive traversal, symlinks, encryption and excessive sizes
 are rejected. No automatic network requests, downloads or OCR occur. Semantic inference is opt-in.
 Configuration, index and SQLite sidecars must not overlap source files.
+
+LOCAL SEARCH GUI
+  --web [--port 8765] [--no-browser]
+      Read-only English GUI at 127.0.0.1. Ctrl+C stops the server. Try port 8765
+      then a free port by default; an explicitly occupied port is an error.
+  --web-open QUERY
+      Start/reuse this config's background server and open an independent search
+      tab. Use --web-open='-query' for leading hyphens; an empty query opens a form.
+  --web-stop
+      Request graceful shutdown of this config's authenticated server only.
+  --temp PATH applies to all three operations. Settings are pinned at startup.
+  Configure/index first using --setup and --index update; the GUI never does so.
+  Keyword scopes and filters match the CLI; semantic search uses title/abstract
+  only, with Results (1..100). Full-text Results limits hits, not unique papers.
+  Skim on macOS is required to open PDFs. Physical pages start at 1. Page jumps
+  use fixed AppleScript with data arguments and may require Automation permission.
+  Missing PDFs must be fixed in BibDesk, then reindexed. PDFs are never served
+  over HTTP. No model downloads, OCR, source editing or answer generation occurs.
+  Runtime files live in web-runtime/ next to the index (0700 directory, 0600 files).
+  No launchd/login-item/brew service is registered.
+  See docs/web-gui.md in the source distribution.
 
 EXAMPLES
   bibdesk-rag --setup

@@ -266,9 +266,60 @@ def main() -> None:
                for citation in chunk["citations"]), chunk
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
+    # Exercise installed web assets and API without a browser, Skim or personal data.
+    from http.client import HTTPConnection
+    from importlib.resources import files
+    import re
+    import time
+    from bibdesk_rag.config import load_config
+    from bibdesk_rag.web_runtime import Runtime, alive, call
+
+    for asset in ("index.html", "app.js", "app.css", "skim-page.applescript"):
+        assert files("bibdesk_rag").joinpath("resources/web", asset).is_file(), asset
+    runtime = Runtime(selected, load_config(selected))
+    process = subprocess.Popen([args.command, "--temp", str(selected), "--web", "--no-browser"],
+                               env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    data = None
+    try:
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            data = runtime.read()
+            if alive(data):
+                break
+            assert process.poll() is None, "Installed GUI startup failed"
+            time.sleep(.05)
+        assert alive(data), "Installed GUI did not become ready"
+        connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+        connection.request("GET", "/")
+        response = connection.getresponse()
+        assert response.status == 200
+        html = response.read().decode()
+        connection.close()
+        token = re.search(r'name="csrf-token" content="([A-Za-z0-9_-]+)"', html)[1]
+        connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
+        connection.request("POST", "/api/search", json.dumps({"query": "RecQ", "scope": "fulltext"}),
+                           {"Content-Type": "application/json", "X-CSRF-Token": token,
+                            "Origin": f"http://127.0.0.1:{data['port']}"})
+        response = connection.getresponse()
+        assert response.status == 200
+        result = json.loads(response.read())
+        connection.close()
+        assert result["hit_count"] > 0
+        assert any(hit["page_start"] == 2 for card in result["papers"] for hit in card["hits"]
+                   if hit["source_type"] == "pdf")
+    finally:
+        if alive(data):
+            call(data, "stop", {})
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            process.wait(timeout=5)
+    assert hashes == source_hashes(), "GUI changed source files"
+    assert before_mcp == hashes_for(persisted), "GUI changed configuration or index"
     print("Installed option CLI, bundled documentation/resources, saved selection, "
           "setup help/non-TTY safety, PDF page citations, CFF fonts, AES-256, CSV, eight document formats, media exclusion, "
-          "source immutability, persisted index and read-only MCP passed")
+          "source immutability, persisted index, read-only MCP and localhost GUI/assets passed")
 
 
 if __name__ == "__main__":

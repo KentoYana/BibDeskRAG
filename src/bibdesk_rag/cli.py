@@ -16,6 +16,7 @@ from .config import activate_config, config_directory, config_selection, init_co
 from .context import build_context
 from .database import connect, doctor, status
 from .indexer import index_library
+from .index_output import print_index_summary, print_index_warnings
 from .progress import IndexDiagnostics, IndexProgressBar, single_line
 from .search import SQLiteSearch
 
@@ -77,37 +78,25 @@ def update_index(config, args: argparse.Namespace) -> None:
         human_output and sys.stdout.isatty() and sys.stderr.isatty()
         and os.environ.get("TERM") != "dumb" and not args.no_progress and not args.verbose
     )
-    with IndexDiagnostics(verbose=args.verbose), IndexProgressBar(enabled=show_progress) as progress:
+    with (
+        IndexDiagnostics(verbose=args.verbose, auto_report=not human_output) as diagnostics,
+        IndexProgressBar(enabled=show_progress) as progress,
+    ):
         result = index_library(
             config, rebuild=args.index_action == "rebuild", verify_hashes=args.verify_hashes,
             progress=progress.update if show_progress else None,
             config_path=config_selection(args.temp)[0],
         )
-    issues = result["errors"] if args.verbose else result["errors"][:3]
-    if human_output or args.verbose:
-        for issue in issues:
-            message = f"{issue['path']}: {issue['error']}"
-            print(message if args.verbose else single_line(message), file=sys.stderr)
     if not human_output:
+        if args.verbose:
+            for issue in result["errors"]:
+                message = f"{issue['path']}: {issue['error']}"
+                print(single_line(message, len(message)), file=sys.stderr)
         print_result(result, args.format)
         return
+    print_index_warnings(result, diagnostics, verbose=args.verbose)
     label = "Rebuild" if args.index_action == "rebuild" else "Update"
-    print(f"{label} complete: {result['papers_added']} papers added, "
-          f"{result['papers_changed']} changed, {result['papers_deleted']} deleted, "
-          f"{result['papers_renamed']} renamed.")
-    print(f"Attachments: {result['files_extracted']} extraction attempts, "
-          f"{result['files_reused']} reused, {result['files_hashed']} hashed.")
-    print(f"Attachment issues: {len(result['errors'])} "
-          "(this run; including partial/unsupported).")
-    if result["semantic"]["enabled"]:
-        semantic = result["semantic"]
-        print(f"Semantic: {semantic['embedded']} embedded, {semantic['reused']} reused, "
-              f"{semantic['skipped']} skipped, {semantic['title_only']} title-only.")
-    else:
-        print("Semantic search: disabled (no model loaded).")
-    if result["errors"]:
-        print("Use --format json for all issue details, or --paper attachments KEY "
-              "--format json with the same configuration to inspect a paper.")
+    print_index_summary(result, label)
 
 
 def paper_result(engine: SQLiteSearch, args: argparse.Namespace):
@@ -158,6 +147,10 @@ def main(argv: list[str] | None = None) -> int:
             from .setup import run_setup
 
             return run_setup(args.temp, remember=args.temp is None)
+        if args.command in {"web", "web_open", "web_stop"}:
+            from .web_runtime import web_command
+
+            return web_command(args)
         config = load_config(args.temp)
         if args.command == "semantic":
             from .semantic import protect, require_enabled
