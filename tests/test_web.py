@@ -321,6 +321,18 @@ def test_port_conflicts_and_default_fallback(web_library, monkeypatch):
         server.server_close()
 
 
+def test_loopback_binding_does_not_do_reverse_dns(web_library, monkeypatch):
+    path, config = web_library
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("Fixed loopback binding must not perform DNS lookups")
+
+    monkeypatch.setattr(socket, "getfqdn", unexpected)
+    server = web.bind_server(web.WebApp(config, path), 0)
+    assert server.server_name == "127.0.0.1" and server.server_port > 0
+    server.server_close()
+
+
 def test_runtime_private_discovery_stale_information_and_real_lifecycle(web_library, monkeypatch):
     path, config = web_library
     runtime = web_runtime.Runtime(path, config)

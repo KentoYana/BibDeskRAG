@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 import secrets
+import socketserver
 import sqlite3
 import threading
 import time
@@ -189,6 +190,13 @@ class LocalServer(ThreadingHTTPServer):
     def __init__(self, address, handler):
         self.slots = threading.BoundedSemaphore(4)
         super().__init__(address, handler)
+
+    def server_bind(self):
+        # HTTPServer normally reverse-resolves the bound address with getfqdn.
+        # This is a fixed IPv4 loopback service: no DNS is necessary or desired.
+        socketserver.TCPServer.server_bind(self)
+        self.server_name = "127.0.0.1"
+        self.server_port = self.server_address[1]
 
     def get_request(self):
         request, address = super().get_request()

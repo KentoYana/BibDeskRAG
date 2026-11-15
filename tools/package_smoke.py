@@ -270,6 +270,7 @@ def main() -> None:
     from http.client import HTTPConnection
     import re
     import time
+    from tempfile import TemporaryFile
 
     # This script also runs under a host Python with no application installed.
     # Discover only this generated fixture's runtime; never import the checkout.
@@ -303,8 +304,9 @@ def main() -> None:
         except (OSError, AssertionError, ValueError):
             return False
 
+    startup_log = TemporaryFile(mode="w+t")
     process = subprocess.Popen([args.command, "--temp", str(selected), "--web", "--no-browser"],
-                               env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                               env=env, stdout=startup_log, stderr=startup_log)
     data = None
     try:
         deadline = time.monotonic() + 15
@@ -312,9 +314,14 @@ def main() -> None:
             data = read_state()
             if alive(data):
                 break
-            assert process.poll() is None, "Installed GUI startup failed"
+            if process.poll() is not None:
+                startup_log.seek(0)
+                raise AssertionError("Installed GUI startup failed: " + startup_log.read()[-3000:])
             time.sleep(.05)
-        assert alive(data), "Installed GUI did not become ready"
+        if not alive(data):
+            startup_log.seek(0)
+            raise AssertionError("Installed GUI did not become ready; runtime present="
+                                 + str(data is not None) + "; logs: " + startup_log.read()[-3000:])
         connection = HTTPConnection("127.0.0.1", data["port"], timeout=5)
         connection.request("GET", "/")
         response = connection.getresponse()
@@ -347,6 +354,7 @@ def main() -> None:
         except subprocess.TimeoutExpired:
             process.terminate()
             process.wait(timeout=5)
+        startup_log.close()
     assert hashes == source_hashes(), "GUI changed source files"
     assert before_mcp == hashes_for(persisted), "GUI changed configuration or index"
     print("Installed option CLI, bundled documentation/resources, saved selection, "
