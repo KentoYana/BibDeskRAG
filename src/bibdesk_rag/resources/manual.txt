@@ -481,3 +481,38 @@ Context JSON index/search_scope describes saved metadata and actual search scope
 Citation content_hash (null for metadata), indexed_bib_hash and index_generation
 are saved values, not proof of current-source freshness or scientific validity.
 Full contract / 詳細: docs/index-status-retry.md
+
+表セル出典 / TABLE CELL PROVENANCE
+  [extraction]
+  table_header_start = 1
+  table_header_rows = 1
+
+見出し位置・行数は明示的な仮定です。rows=0は見出しなしで先頭レコードもデータです。
+開始位置1..1000000、行数0..100。全ファイル・シートに共通で、自動判定はしません。
+CSV/TSVの行は改行数ではなくレコード番号です。セル内の空白・改行を保持します。
+table_provenance.cellsは1始まりのrow/column、0始まり終端を含まない
+cell_start/cell_end/cell_lengthと、返した抜粋内のtext_start/text_endを示します。
+complete=falseはセル断片で、完全な数値として扱いません。Unicode文字位置です。
+検索snippet・get_chunk・contextの短縮後も範囲を調整します。セルは32件/チャンク以下、
+本文はchunk_size以下で、既存の件数・MCP応答上限を守ります。
+
+Header start/count are explicit assumptions, not automatic detection. rows=0 means
+no header and retains the first record as data. Start accepts 1..1000000, count
+0..100; the policy applies to all files/sheets. CSV/TSV positions count records,
+not physical newline characters. Cell whitespace/newlines are retained.
+table_provenance.cells contains one-based row/column, half-open Unicode
+cell_start/cell_end and cell_length, plus text_start/text_end in the returned
+excerpt. complete=false marks fragments, not complete numeric values. Ranges
+follow snippet/get_chunk/context clipping. Each chunk has at most 32 cell spans
+and chunk_size text characters; existing chunk/MCP response bounds remain.
+
+明示的な索引更新でschema 1/2を3へ移行し、表・ZIPを一度再抽出します。
+読み取りでは索引を変更しません。旧チャンクにはセル出典がない場合があります。
+原本・設定は保持し、予期しない失敗では移行もロールバックします。
+schema 3に未対応の旧版は更新後の索引を開けません。旧版では別の派生索引を使ってください。
+Explicit updates migrate schema 1/2 to 3 and refresh table/ZIP extraction once.
+Reads leave the index unchanged; legacy chunks may lack cell provenance. Sources
+and configurations stay unchanged; unexpected failure rolls back migration.
+Older applications without schema 3 support cannot read the upgraded index;
+use a separate derived index when returning to an older application.
+Full contract / 詳細: docs/table-provenance.md

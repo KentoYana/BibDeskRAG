@@ -6,6 +6,11 @@
 
 ## Unreleased
 
+- Preserve table-cell row/column and character ranges through long-cell splitting,
+  search snippets and bounded context, including explicit incomplete-value flags.
+- Add configured header start/count (including no headers), transactional schema 3
+  storage and a one-time table/ZIP extraction refresh; reuse unaffected formats.
+
 - Add read-only MCP `get_index_status` with saved library identity, generation,
   last successful update and extraction counts; report freshness as unverified.
 - Add explicit CLI retry selectors for citekey, attachment ID/path and saved state,
@@ -151,6 +156,11 @@
 # 変更履歴
 
 ## 未公開
+
+- 長いセルの分割、検索抜粋、文字数制限付きcontextでも行・列・文字位置を保持。
+  完全な値を含まないセル断片を明示し、見出し行位置・行数・見出しなしを設定可能に。
+- schema 3へトランザクション内で移行し、表・ZIPを一度再抽出。
+  影響のない形式は再利用し、原本・設定を保持。
 
 - 読み取り専用MCP `get_index_status` で、保存済みのライブラリ識別・索引世代・
   最終成功日時・抽出状態別件数を公開。原本の鮮度は未確認と明示。

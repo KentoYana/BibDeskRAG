@@ -103,6 +103,7 @@ async def validate(app_python: Path):
             matches = await call("search_fulltext", {"query": "helicase"})
             assert matches[0]["file_path"] == str(supplement)
             assert matches[0]["row_start"] == 2
+            assert matches[0]["table_provenance"]["cells"]
             paper = await call("get_paper", {"citekey": "SDK2025"})
             assert paper["doi"] == "10.1234/sdk"
             attachments = await call("get_attachments", {"citekey": "SDK2025"})
@@ -110,11 +111,13 @@ async def validate(app_python: Path):
             chunk = await call("get_chunk", {"chunk_id": matches[0]["chunk_id"]})
             assert "helicase" in chunk["text"]
             assert chunk["citations"][0]["citekey"] == "SDK2025"
+            assert all(c["complete"] for c in chunk["table_provenance"]["cells"])
             context = await call("build_context", {"query": "helicase", "max_chars": 2000})
             assert "helicase" in context["context"]
             assert len(context["context"]) <= 2000
             assert context["results"][0]["file_path"] == str(supplement)
             assert "text" not in context["results"][0]
+            assert context["results"][0]["table_provenance"]["cells"]
             assert context["index"]["index_generation"] == saved_status["index_generation"]
             assert context["search_scope"]["fulltext_citekeys"] is None
             assert context["search_scope"]["fulltext_scope"] == "all_indexed_papers"

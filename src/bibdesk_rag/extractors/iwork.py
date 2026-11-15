@@ -299,8 +299,6 @@ def _tables(objects, suffix, options, chunks):
         if remaining <= 0:
             raise ValueError("Chunk limit exceeded")
         title = one(table, 8, b'').decode('utf-8')
-        if rows and 0 not in rows:
-            rows[0] = []  # retain physical row 1 as the header, even if it is blank
         table_chunks_result = table_chunks(
             ((number + 1, values) for number, values in sorted(rows.items())),
             replace(options, max_chunks=remaining), suffix[1:], title,

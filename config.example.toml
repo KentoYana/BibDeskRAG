@@ -12,6 +12,10 @@ database = "~/.local/share/bibdesk-rag/index.sqlite3"
 [extraction]
 chunk_size = 1500
 chunk_overlap = 200
+# Assumed physical header rows; 0 rows means no header. No automatic detection.
+# 見出しと仮定する物理行。rows=0は見出しなし。自動推定はしません。
+table_header_start = 1
+table_header_rows = 1
 max_file_bytes = 209715200
 max_archive_members = 1000
 max_archive_bytes = 209715200

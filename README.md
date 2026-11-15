@@ -12,7 +12,7 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 以下はv0.3.0以降の使い方です。v0.2.x以前から更新する場合は、CLIの構文変更（例：`update` → `--index update`、`--json` → `--format json`）と旧macOS保存先の自動検出廃止を確認してください。既存の設定・索引は移動・削除せず、必要に応じて `--config use PATH` で選択できます。[旧コマンドからの移行](docs/usage.md#旧コマンドからの移行)
 
-索引の状態確認と失敗添付の選択的再抽出は [索引状態・再試行ガイド](docs/index-status-retry.md) を参照してください。
+索引の状態確認と失敗添付の選択的再抽出は [索引状態・再試行ガイド](docs/index-status-retry.md)、表の分割セル・見出し設定は [表セルの出典](docs/table-provenance.md) を参照してください。
 
 ## CLIの入口
 
@@ -472,7 +472,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives eight read-only retrieval tools. See [index status and selective retry](docs/index-status-retry.md) for saved index metadata and targeted CLI re-extraction.
+This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives eight read-only retrieval tools. See [index status and selective retry](docs/index-status-retry.md) for saved index metadata and targeted CLI re-extraction; [table cell provenance](docs/table-provenance.md) describes split cells and header settings.
 
 With either registration method, a displayed entry alone does not verify connectivity. Restart the MCP connection and try the search in a new chat. If needed, restart the Codex application or CLI session too. Codex launches the server; it does not need a persistent terminal process or `brew services` registration. See the [official MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp).
 

@@ -10,6 +10,7 @@ from typing import Protocol
 from .bibdesk import normalize_doi
 from .database import index_state, paper_dict, read_snapshot
 from .normalization import match_query, normalize_search
+from .extractors.common import clip_table_provenance
 
 MAX_RESULTS = 100
 METADATA_TEXT_LIMITS = {
@@ -45,7 +46,7 @@ def _bound_metadata(result: dict) -> None:
     result["abstract_truncated"] = "abstract" in truncated
 
 
-def _verbatim_snippet(text: str, query: str, max_chars: int = 600) -> tuple[str, bool]:
+def _verbatim_snippet(text: str, query: str, max_chars: int = 600, *, location=None) -> tuple[str, bool]:
     """Locate normalized terms but quote only unchanged source characters.
 
     FTS indexes intentionally normalize identifiers. Its own snippet function
@@ -61,6 +62,8 @@ def _verbatim_snippet(text: str, query: str, max_chars: int = 600) -> tuple[str,
     start = max(0, anchor - max_chars // 3)
     end = min(len(text), start + max_chars)
     start = max(0, end - max_chars)
+    if location is not None:
+        location.extend((start, end))
     return text[start:end], start > 0 or end < len(text)
 
 
@@ -177,6 +180,9 @@ class SQLiteSearch:
         value = dict(row)
         value["chunk_id"] = value.pop("id")
         value.pop("search_text", None)
+        table = json.loads(value.pop("table_json", "{}"))
+        if table:
+            value["table_provenance"] = table
         value["untrusted_source"] = True
         if value.get("extraction_warning"):
             warning = value["extraction_warning"]
@@ -201,6 +207,8 @@ class SQLiteSearch:
         value = self._chunk(row)
         value["truncated"] = len(value["text"]) > max_chars
         value["text"] = value["text"][:max_chars]
+        if "table_provenance" in value:
+            value["table_provenance"] = clip_table_provenance(value["table_provenance"], 0, max_chars)
         value["citations"] = [
             dict(r)
             for r in self.db.execute(
@@ -246,9 +254,12 @@ class SQLiteSearch:
                 continue
             value = self._chunk(row)
             _bound_metadata(value)
+            location = []
             value["snippet"], value["snippet_truncated"] = _verbatim_snippet(
-                value.pop("text"), query
+                value.pop("text"), query, location=location
             )
+            if "table_provenance" in value:
+                value["table_provenance"] = clip_table_provenance(value["table_provenance"], *location)
             counts[row["citekey"]] += 1
             results.append(value)
             if len(results) >= top:

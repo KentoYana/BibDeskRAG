@@ -24,3 +24,7 @@ LEGACY_EXTRACTION_VERSIONS = dict.fromkeys(
 EXTRACTION_VERSIONS = dict(LEGACY_EXTRACTION_VERSIONS)
 # fontTools enables CFF decoding and cryptography enables empty-password AES PDFs.
 EXTRACTION_VERSIONS[".pdf"] = "2"
+# Cell offsets and configured header policy affect all shared table-parser callers.
+TABLE_FORMATS = frozenset({".csv", ".tsv", ".xlsx", ".xls", ".numbers", ".pages", ".key"})
+for _suffix in TABLE_FORMATS:
+    EXTRACTION_VERSIONS[_suffix] = "2"

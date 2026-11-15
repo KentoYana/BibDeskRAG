@@ -187,6 +187,9 @@ def main() -> None:
                            "--format", "json"))
     assert "Test2026" in json.dumps(found), found
     assert "supplement.csv" in json.dumps(found), found
+    table_hit = next(h for h in found if h["source_type"] == "csv")
+    assert all(c["row"] >= 1 and c["column"] >= 1
+               for c in table_hit["table_provenance"]["cells"]), table_hit
     pdf_hits = [hit for hit in found if hit["source_type"] == "pdf"]
     assert pdf_hits and all(hit["page_start"] == hit["page_end"] == 2
                             for hit in pdf_hits), found

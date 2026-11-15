@@ -63,3 +63,9 @@ These describe format structures; no upstream parser code or generated schemas a
 - [SheetJS iWork format notes](https://github.com/SheetJS/notes/blob/main/iwa/README.md): IWA framing and table storage.
 - [Numbers parser schemas](https://github.com/masaccio/numbers-parser/blob/main/src/protos/TSTArchives.proto) and [cell representation](https://github.com/masaccio/numbers-parser/blob/main/src/numbers_parser/cell.py): V5 cell flags, values and wide offsets.
 - [Snappy raw format](https://github.com/google/snappy/blob/main/format_description.txt): bounded literal and copy decoding.
+
+## 表セルの継続位置 / Continuing table cells
+
+長いセル・幅広い見出しの出典と見出し設定は [表セルの出典](table-provenance.md) を参照してください。
+
+See [table cell provenance](table-provenance.md) for continuation ranges, bounds and configured headers.

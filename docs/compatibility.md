@@ -153,3 +153,14 @@ successful update. Selective retry is CLI-only. See [the contract](index-status-
 既存ツールの引数を保ち、読み取り専用の `get_index_status()` を追加した8ツール構成です。
 contextに保存済みハッシュ・索引世代・実際の検索範囲を追加します。古い索引の世代は
 明示的な更新成功までnullです。選択的再試行はCLI専用です。[仕様](index-status-retry.md)を参照してください。
+
+## Table provenance storage / 表セル出典の保存
+
+Schema 3 adds cell spans without changing existing MCP arguments. Explicit updates
+migrate schema 1/2 transactionally and refresh table/ZIP extraction once. Legacy
+reads do not migrate the index; schema-3-incompatible older applications cannot
+open it after update. See [table provenance](table-provenance.md).
+
+schema 3でセル範囲を追加し、既存MCP引数を維持します。明示的な更新でschema 1/2を
+移行し、表・ZIPを一度再抽出します。読み取りでは移行しません。更新後はschema 3に
+未対応の旧版では開けません。[表セル出典の仕様](table-provenance.md)を参照してください。

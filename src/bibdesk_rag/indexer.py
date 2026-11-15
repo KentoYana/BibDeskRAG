@@ -14,10 +14,10 @@ import uuid
 from .bibdesk import read_library
 from .config import Config
 from .database import connect, initialize
-from .extractors import extract_file
+from .extractors import ExtractionOptions, extract_file
 from .extractors.formats import (
     EXCLUDED_FORMATS, EXTRACTION_REVISION, EXTRACTION_VERSIONS,
-    LEGACY_EXTRACTION_VERSIONS, NEW_FORMATS,
+    LEGACY_EXTRACTION_VERSIONS, NEW_FORMATS, TABLE_FORMATS,
 )
 from .extractors.sources import is_iwork_directory, source_digest, source_stat
 from .normalization import NORMALIZATION_REVISION, normalize_search
@@ -133,7 +133,19 @@ def index_library(
 
             previous_vectors = {row[0] for row in db.execute(
                 "SELECT DISTINCT paper_id FROM embeddings WHERE paper_id IS NOT NULL")}
-            reextract = rebuild or previous.get("extraction_options") != options_json
+            previous_options = json.loads(previous.get("extraction_options", "null"))
+            if isinstance(previous_options, dict):
+                # New default header settings do not invalidate non-table parsers.
+                defaults = ExtractionOptions()
+                for name in ("table_header_start", "table_header_rows"):
+                    previous_options.setdefault(name, getattr(defaults, name))
+            header_keys = {"table_header_start", "table_header_rows"}
+            current_options = asdict(config.extraction)
+            header_policy_changed = isinstance(previous_options, dict) and any(
+                previous_options[k] != current_options[k] for k in header_keys)
+            reextract = rebuild or not isinstance(previous_options, dict) or (
+                {k: v for k, v in previous_options.items() if k not in header_keys}
+                != {k: v for k, v in current_options.items() if k not in header_keys})
             policy_changed = previous.get("extraction_revision") != EXTRACTION_REVISION
             old_versions = json.loads(previous.get("extraction_versions", "null"))
             if old_versions is None:
@@ -146,6 +158,8 @@ def index_library(
                 suffix for suffix in old_versions.keys() | EXTRACTION_VERSIONS.keys()
                 if old_versions.get(suffix) != EXTRACTION_VERSIONS.get(suffix)
             }
+            if header_policy_changed:
+                changed_formats |= TABLE_FORMATS
             if policy_changed:
                 changed_formats |= NEW_FORMATS | {".zip"}
             if changed_formats:

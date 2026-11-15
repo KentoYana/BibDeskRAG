@@ -58,7 +58,7 @@ def test_v1_readonly_and_successful_migration_preserve_legacy_and_fts(legacy):
     result = indexer.index_library(cfg, backend=backend)
     assert result['semantic']['embedded'] == 4
     with closing(database.connect(cfg.database)) as db:
-        assert db.execute('PRAGMA user_version').fetchone()[0] == 2
+        assert db.execute('PRAGMA user_version').fetchone()[0] == database.SCHEMA_VERSION
         row = db.execute('SELECT * FROM embeddings WHERE chunk_id IS NOT NULL').fetchone()
         assert row['content_hash'] == 'original-chunk-hash'
         assert row['vector'] == struct.pack('<4f', 1, 0, 0, 0)

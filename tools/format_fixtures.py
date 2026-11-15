@@ -119,12 +119,12 @@ def binary_doc(text='RecQ 日本語\rSecond paragraph\r'):
     return bytes(header) + struct.pack('<128I', *fat) + directory + word + table
 
 
-def binary_xls():
+def binary_xls(value="RecQ"):
     def record(kind, payload=b''):
         return struct.pack('<HH', kind, len(payload)) + payload
     def bof(kind):
         return record(0x809, struct.pack('<HHHHII', 0x600, kind, 0xDBB, 0x7CC, 0, 6))
-    strings = ['gene', 'value', 'RecQ']
+    strings = ['gene', 'value', value]
     sst = struct.pack('<II', 3, 3)
     for value in strings:
         sst += struct.pack('<HB', len(value), 1) + value.encode('utf-16le')
@@ -144,11 +144,11 @@ def binary_xls():
     return prefix + sheet
 
 
-def numbers():
+def numbers(value="RecQ"):
     def reference(value):
         return pb((1, value))
     entries = b''.join(pb((3, pb((1, key), (3, text.encode()))))
-                       for key, text in enumerate(['gene', 'value', 'RecQ']))
+                       for key, text in enumerate(['gene', 'value', value]))
     def cell(index=None, number=None):
         if index is not None:
             return bytes([5, 3]) + b'\0' * 6 + struct.pack('<II', 8, index)

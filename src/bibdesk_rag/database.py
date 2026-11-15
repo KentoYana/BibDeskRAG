@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 # SQLite application identifier: ASCII "BRAG". Never adopt an unrelated DB.
 APPLICATION_ID = 0x42524147
 SCHEMA = """
@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS chunks (
  attachment_id INTEGER NOT NULL REFERENCES attachments(id) ON DELETE CASCADE,
  source_type TEXT NOT NULL, page_start INTEGER, page_end INTEGER,
  sheet_name TEXT, row_start INTEGER, row_end INTEGER, member_path TEXT,
- text TEXT NOT NULL, search_text TEXT NOT NULL, chunk_order INTEGER NOT NULL
+ text TEXT NOT NULL, search_text TEXT NOT NULL, chunk_order INTEGER NOT NULL,
+ table_json TEXT NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS chunks_attachment ON chunks(attachment_id);
 CREATE VIRTUAL TABLE IF NOT EXISTS papers_fts USING fts5(
@@ -81,7 +82,7 @@ def _check_identity(db: sqlite3.Connection, *, allow_empty: bool) -> None:
         raise ValueError(
             "Refusing database without the bibdesk-rag application identifier; choose a separate index path"
         )
-    if version not in (0, 1, SCHEMA_VERSION) or (version == 0 and not allow_empty):
+    if version not in (0, 1, 2, SCHEMA_VERSION) or (version == 0 and not allow_empty):
         raise ValueError(
             f"Unsupported or uninitialized index schema {version}; use a compatible application"
         )
@@ -202,6 +203,8 @@ def initialize(db: sqlite3.Connection, *, in_transaction: bool = False) -> None:
         if old_columns and "paper_id" not in old_columns:
             db.execute("ALTER TABLE embeddings RENAME TO embeddings_v1")
         execute_script(SCHEMA + "\n" + "\n".join(triggers))
+        if "table_json" not in {row[1] for row in db.execute("PRAGMA table_info(chunks)")}:
+            db.execute("ALTER TABLE chunks ADD COLUMN table_json TEXT NOT NULL DEFAULT '{}'")
         if old_columns and "paper_id" not in old_columns:
             db.execute("INSERT INTO embeddings(chunk_id,model_id,content_hash,vector) "
                        "SELECT chunk_id,model_id,content_hash,vector FROM embeddings_v1")

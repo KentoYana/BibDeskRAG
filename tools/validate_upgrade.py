@@ -73,9 +73,15 @@ def validate(old_python: Path, app_python: Path, old_version: str) -> dict:
         assert persisted == hashes([index])
 
         report = data(app_python, "--index", "update")
-        assert report["files_extracted"] == 0 and report["files_reused"] == 1
+        # The new table revision intentionally refreshes the generated CSV once.
+        assert report["files_extracted"] == 1 and report["files_reused"] == 0
+        assert data(app_python, "--index", "update")["files_extracted"] == 0
         assert data(app_python, "--paper", "show", "Upgrade") == old_paper
-        assert data(app_python, "--paper", "search", "RecQ", "--scope", "fulltext") == old_hits
+        refreshed = data(app_python, "--paper", "search", "RecQ", "--scope", "fulltext")
+        unchanged = ("citekey", "doi", "file_path", "source_type", "row_start", "row_end", "snippet")
+        assert [{k: h[k] for k in unchanged} for h in refreshed] == [
+            {k: h[k] for k in unchanged} for h in old_hits]
+        assert refreshed[0]["table_provenance"]["cells"]
         assert data(app_python, "--index", "check")["ok"]
         assert sources == hashes([bib, csv, config, selection])
 
@@ -92,7 +98,7 @@ def validate(old_python: Path, app_python: Path, old_version: str) -> dict:
             "candidate": cli(app_python, "--version").splitlines()[0],
             "old_index_read_before_update": True,
             "legacy_mcp_arguments_and_protocol": True,
-            "unchanged_attachments_reused": True,
+            "table_revision_refreshed_once_then_reused": True,
             "logical_data_preserved": True,
             "sources_configuration_selection_unchanged": True,
             "subsequent_incremental_update": True,
