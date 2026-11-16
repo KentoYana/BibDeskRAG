@@ -1,0 +1,228 @@
+{
+  "date": "2026-11-16",
+  "dataset_sha256": "2b65b97d6ad8a1158f3f23c2889461b29673f57b0443414c2b613299e0a3f98c",
+  "baseline_commit": "f28088c",
+  "baseline_verified_files": 43,
+  "corpus_papers": 175,
+  "queries": 40,
+  "scope": "Synthetic lexical retrieval only; not real-library or semantic-model quality.",
+  "relevance_policy": "Grade 2: designated synthetic attachment contains the complete query marker after existing normalization; exact-identifier cases designate the metadata identity. Grade 0: every other paper. No scientific relevance judgments or real library records.",
+  "modes": {
+    "baseline": {
+      "overall": {
+        "queries": 40,
+        "positive_queries": 35,
+        "negative_queries": 5,
+        "recall_at_10": 0.5428571428571428,
+        "mrr_at_10": 0.5428571428571428,
+        "correct_empty_queries": 5
+      },
+      "by_category": {
+        "body_only": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "correct_empty_queries": 0
+        },
+        "beyond_candidate_20": {
+          "queries": 5,
+          "positive_queries": 5,
+          "negative_queries": 0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "correct_empty_queries": 0
+        },
+        "gene_variants": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "supplementary_tables": {
+          "queries": 6,
+          "positive_queries": 6,
+          "negative_queries": 0,
+          "recall_at_10": 0.5,
+          "mrr_at_10": 0.5,
+          "correct_empty_queries": 0
+        },
+        "no_match": {
+          "queries": 5,
+          "positive_queries": 0,
+          "negative_queries": 5,
+          "recall_at_10": null,
+          "mrr_at_10": null,
+          "correct_empty_queries": 5
+        },
+        "exact_identifiers": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "multiple_relevant": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        }
+      },
+      "citation_checks": {
+        "fulltext": 23,
+        "metadata_only": 65
+      }
+    },
+    "current_default": {
+      "overall": {
+        "queries": 40,
+        "positive_queries": 35,
+        "negative_queries": 5,
+        "recall_at_10": 0.5428571428571428,
+        "mrr_at_10": 0.5428571428571428,
+        "correct_empty_queries": 5
+      },
+      "by_category": {
+        "body_only": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "correct_empty_queries": 0
+        },
+        "beyond_candidate_20": {
+          "queries": 5,
+          "positive_queries": 5,
+          "negative_queries": 0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "correct_empty_queries": 0
+        },
+        "gene_variants": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "supplementary_tables": {
+          "queries": 6,
+          "positive_queries": 6,
+          "negative_queries": 0,
+          "recall_at_10": 0.5,
+          "mrr_at_10": 0.5,
+          "correct_empty_queries": 0
+        },
+        "no_match": {
+          "queries": 5,
+          "positive_queries": 0,
+          "negative_queries": 5,
+          "recall_at_10": null,
+          "mrr_at_10": null,
+          "correct_empty_queries": 5
+        },
+        "exact_identifiers": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "multiple_relevant": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        }
+      },
+      "citation_checks": {
+        "fulltext": 23,
+        "metadata_only": 65
+      }
+    },
+    "current_fulltext": {
+      "overall": {
+        "queries": 40,
+        "positive_queries": 35,
+        "negative_queries": 5,
+        "recall_at_10": 0.8857142857142857,
+        "mrr_at_10": 0.8857142857142857,
+        "correct_empty_queries": 5
+      },
+      "by_category": {
+        "body_only": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "beyond_candidate_20": {
+          "queries": 5,
+          "positive_queries": 5,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "gene_variants": {
+          "queries": 8,
+          "positive_queries": 8,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "supplementary_tables": {
+          "queries": 6,
+          "positive_queries": 6,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        },
+        "no_match": {
+          "queries": 5,
+          "positive_queries": 0,
+          "negative_queries": 5,
+          "recall_at_10": null,
+          "mrr_at_10": null,
+          "correct_empty_queries": 5
+        },
+        "exact_identifiers": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "correct_empty_queries": 0
+        },
+        "multiple_relevant": {
+          "queries": 4,
+          "positive_queries": 4,
+          "negative_queries": 0,
+          "recall_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "correct_empty_queries": 0
+        }
+      },
+      "citation_checks": {
+        "fulltext": 39,
+        "metadata_only": 0
+      }
+    }
+  }
+}

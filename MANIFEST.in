@@ -5,7 +5,8 @@ recursive-include tools *.py
 include tools/requirements-mcp-sdk.txt
 include tools/requirements-upgrade-baseline.txt
 recursive-include tests *.py
-recursive-include docs *.md
+recursive-include tests/fixtures *.json
+recursive-include docs *.md *.json
 recursive-include src/bibdesk_rag/resources *.txt *.toml
 recursive-include src/bibdesk_rag/resources/web *.html *.css *.js *.applescript
 prune .local

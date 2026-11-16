@@ -1,0 +1,1558 @@
+{
+  "version": 1,
+  "license": "CC0-1.0; project-authored synthetic strings only",
+  "relevance_policy": "Grade 2: designated synthetic attachment contains the complete query marker after existing normalization; exact-identifier cases designate the metadata identity. Grade 0: every other paper. No scientific relevance judgments or real library records.",
+  "notes": [
+    "Twenty-five equally ranked metadata decoys precede each crowd target; identical titles make ID order deterministic.",
+    "Exact-identifier positives have no attachments: fulltext-only mode is deliberately evaluated on this limitation.",
+    "Five no-match queries are excluded from positive-query Recall/MRR denominators and scored separately.",
+    "Gene spelling variants are deliberate paired queries, not independent scientific observations."
+  ],
+  "papers": [
+    {
+      "citekey": "BodyDecoy0",
+      "title": "bodyprobe0 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy0"
+    },
+    {
+      "citekey": "BodyEvidence0",
+      "title": "Generated evidence record 0",
+      "body": "bodyprobe0 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence0"
+    },
+    {
+      "citekey": "BodyDecoy1",
+      "title": "bodyprobe1 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy1"
+    },
+    {
+      "citekey": "BodyEvidence1",
+      "title": "Generated evidence record 1",
+      "body": "bodyprobe1 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence1"
+    },
+    {
+      "citekey": "BodyDecoy2",
+      "title": "bodyprobe2 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy2"
+    },
+    {
+      "citekey": "BodyEvidence2",
+      "title": "Generated evidence record 2",
+      "body": "bodyprobe2 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence2"
+    },
+    {
+      "citekey": "BodyDecoy3",
+      "title": "bodyprobe3 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy3"
+    },
+    {
+      "citekey": "BodyEvidence3",
+      "title": "Generated evidence record 3",
+      "body": "bodyprobe3 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence3"
+    },
+    {
+      "citekey": "BodyDecoy4",
+      "title": "bodyprobe4 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy4"
+    },
+    {
+      "citekey": "BodyEvidence4",
+      "title": "Generated evidence record 4",
+      "body": "bodyprobe4 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence4"
+    },
+    {
+      "citekey": "BodyDecoy5",
+      "title": "bodyprobe5 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy5"
+    },
+    {
+      "citekey": "BodyEvidence5",
+      "title": "Generated evidence record 5",
+      "body": "bodyprobe5 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence5"
+    },
+    {
+      "citekey": "BodyDecoy6",
+      "title": "bodyprobe6 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy6"
+    },
+    {
+      "citekey": "BodyEvidence6",
+      "title": "Generated evidence record 6",
+      "body": "bodyprobe6 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence6"
+    },
+    {
+      "citekey": "BodyDecoy7",
+      "title": "bodyprobe7 bibliography marker",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodydecoy7"
+    },
+    {
+      "citekey": "BodyEvidence7",
+      "title": "Generated evidence record 7",
+      "body": "bodyprobe7 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.bodyevidence7"
+    },
+    {
+      "citekey": "Crowd0Decoy00",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy00"
+    },
+    {
+      "citekey": "Crowd0Decoy01",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy01"
+    },
+    {
+      "citekey": "Crowd0Decoy02",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy02"
+    },
+    {
+      "citekey": "Crowd0Decoy03",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy03"
+    },
+    {
+      "citekey": "Crowd0Decoy04",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy04"
+    },
+    {
+      "citekey": "Crowd0Decoy05",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy05"
+    },
+    {
+      "citekey": "Crowd0Decoy06",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy06"
+    },
+    {
+      "citekey": "Crowd0Decoy07",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy07"
+    },
+    {
+      "citekey": "Crowd0Decoy08",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy08"
+    },
+    {
+      "citekey": "Crowd0Decoy09",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy09"
+    },
+    {
+      "citekey": "Crowd0Decoy10",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy10"
+    },
+    {
+      "citekey": "Crowd0Decoy11",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy11"
+    },
+    {
+      "citekey": "Crowd0Decoy12",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy12"
+    },
+    {
+      "citekey": "Crowd0Decoy13",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy13"
+    },
+    {
+      "citekey": "Crowd0Decoy14",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy14"
+    },
+    {
+      "citekey": "Crowd0Decoy15",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy15"
+    },
+    {
+      "citekey": "Crowd0Decoy16",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy16"
+    },
+    {
+      "citekey": "Crowd0Decoy17",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy17"
+    },
+    {
+      "citekey": "Crowd0Decoy18",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy18"
+    },
+    {
+      "citekey": "Crowd0Decoy19",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy19"
+    },
+    {
+      "citekey": "Crowd0Decoy20",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy20"
+    },
+    {
+      "citekey": "Crowd0Decoy21",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy21"
+    },
+    {
+      "citekey": "Crowd0Decoy22",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy22"
+    },
+    {
+      "citekey": "Crowd0Decoy23",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy23"
+    },
+    {
+      "citekey": "Crowd0Decoy24",
+      "title": "crowdprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0decoy24"
+    },
+    {
+      "citekey": "Crowd0Evidence",
+      "title": "crowdprobe0",
+      "body": "crowdprobe0 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd0evidence"
+    },
+    {
+      "citekey": "Crowd1Decoy00",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy00"
+    },
+    {
+      "citekey": "Crowd1Decoy01",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy01"
+    },
+    {
+      "citekey": "Crowd1Decoy02",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy02"
+    },
+    {
+      "citekey": "Crowd1Decoy03",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy03"
+    },
+    {
+      "citekey": "Crowd1Decoy04",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy04"
+    },
+    {
+      "citekey": "Crowd1Decoy05",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy05"
+    },
+    {
+      "citekey": "Crowd1Decoy06",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy06"
+    },
+    {
+      "citekey": "Crowd1Decoy07",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy07"
+    },
+    {
+      "citekey": "Crowd1Decoy08",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy08"
+    },
+    {
+      "citekey": "Crowd1Decoy09",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy09"
+    },
+    {
+      "citekey": "Crowd1Decoy10",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy10"
+    },
+    {
+      "citekey": "Crowd1Decoy11",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy11"
+    },
+    {
+      "citekey": "Crowd1Decoy12",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy12"
+    },
+    {
+      "citekey": "Crowd1Decoy13",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy13"
+    },
+    {
+      "citekey": "Crowd1Decoy14",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy14"
+    },
+    {
+      "citekey": "Crowd1Decoy15",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy15"
+    },
+    {
+      "citekey": "Crowd1Decoy16",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy16"
+    },
+    {
+      "citekey": "Crowd1Decoy17",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy17"
+    },
+    {
+      "citekey": "Crowd1Decoy18",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy18"
+    },
+    {
+      "citekey": "Crowd1Decoy19",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy19"
+    },
+    {
+      "citekey": "Crowd1Decoy20",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy20"
+    },
+    {
+      "citekey": "Crowd1Decoy21",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy21"
+    },
+    {
+      "citekey": "Crowd1Decoy22",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy22"
+    },
+    {
+      "citekey": "Crowd1Decoy23",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy23"
+    },
+    {
+      "citekey": "Crowd1Decoy24",
+      "title": "crowdprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1decoy24"
+    },
+    {
+      "citekey": "Crowd1Evidence",
+      "title": "crowdprobe1",
+      "body": "crowdprobe1 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd1evidence"
+    },
+    {
+      "citekey": "Crowd2Decoy00",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy00"
+    },
+    {
+      "citekey": "Crowd2Decoy01",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy01"
+    },
+    {
+      "citekey": "Crowd2Decoy02",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy02"
+    },
+    {
+      "citekey": "Crowd2Decoy03",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy03"
+    },
+    {
+      "citekey": "Crowd2Decoy04",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy04"
+    },
+    {
+      "citekey": "Crowd2Decoy05",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy05"
+    },
+    {
+      "citekey": "Crowd2Decoy06",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy06"
+    },
+    {
+      "citekey": "Crowd2Decoy07",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy07"
+    },
+    {
+      "citekey": "Crowd2Decoy08",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy08"
+    },
+    {
+      "citekey": "Crowd2Decoy09",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy09"
+    },
+    {
+      "citekey": "Crowd2Decoy10",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy10"
+    },
+    {
+      "citekey": "Crowd2Decoy11",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy11"
+    },
+    {
+      "citekey": "Crowd2Decoy12",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy12"
+    },
+    {
+      "citekey": "Crowd2Decoy13",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy13"
+    },
+    {
+      "citekey": "Crowd2Decoy14",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy14"
+    },
+    {
+      "citekey": "Crowd2Decoy15",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy15"
+    },
+    {
+      "citekey": "Crowd2Decoy16",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy16"
+    },
+    {
+      "citekey": "Crowd2Decoy17",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy17"
+    },
+    {
+      "citekey": "Crowd2Decoy18",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy18"
+    },
+    {
+      "citekey": "Crowd2Decoy19",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy19"
+    },
+    {
+      "citekey": "Crowd2Decoy20",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy20"
+    },
+    {
+      "citekey": "Crowd2Decoy21",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy21"
+    },
+    {
+      "citekey": "Crowd2Decoy22",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy22"
+    },
+    {
+      "citekey": "Crowd2Decoy23",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy23"
+    },
+    {
+      "citekey": "Crowd2Decoy24",
+      "title": "crowdprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2decoy24"
+    },
+    {
+      "citekey": "Crowd2Evidence",
+      "title": "crowdprobe2",
+      "body": "crowdprobe2 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd2evidence"
+    },
+    {
+      "citekey": "Crowd3Decoy00",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy00"
+    },
+    {
+      "citekey": "Crowd3Decoy01",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy01"
+    },
+    {
+      "citekey": "Crowd3Decoy02",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy02"
+    },
+    {
+      "citekey": "Crowd3Decoy03",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy03"
+    },
+    {
+      "citekey": "Crowd3Decoy04",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy04"
+    },
+    {
+      "citekey": "Crowd3Decoy05",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy05"
+    },
+    {
+      "citekey": "Crowd3Decoy06",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy06"
+    },
+    {
+      "citekey": "Crowd3Decoy07",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy07"
+    },
+    {
+      "citekey": "Crowd3Decoy08",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy08"
+    },
+    {
+      "citekey": "Crowd3Decoy09",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy09"
+    },
+    {
+      "citekey": "Crowd3Decoy10",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy10"
+    },
+    {
+      "citekey": "Crowd3Decoy11",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy11"
+    },
+    {
+      "citekey": "Crowd3Decoy12",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy12"
+    },
+    {
+      "citekey": "Crowd3Decoy13",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy13"
+    },
+    {
+      "citekey": "Crowd3Decoy14",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy14"
+    },
+    {
+      "citekey": "Crowd3Decoy15",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy15"
+    },
+    {
+      "citekey": "Crowd3Decoy16",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy16"
+    },
+    {
+      "citekey": "Crowd3Decoy17",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy17"
+    },
+    {
+      "citekey": "Crowd3Decoy18",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy18"
+    },
+    {
+      "citekey": "Crowd3Decoy19",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy19"
+    },
+    {
+      "citekey": "Crowd3Decoy20",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy20"
+    },
+    {
+      "citekey": "Crowd3Decoy21",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy21"
+    },
+    {
+      "citekey": "Crowd3Decoy22",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy22"
+    },
+    {
+      "citekey": "Crowd3Decoy23",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy23"
+    },
+    {
+      "citekey": "Crowd3Decoy24",
+      "title": "crowdprobe3",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3decoy24"
+    },
+    {
+      "citekey": "Crowd3Evidence",
+      "title": "crowdprobe3",
+      "body": "crowdprobe3 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd3evidence"
+    },
+    {
+      "citekey": "Crowd4Decoy00",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy00"
+    },
+    {
+      "citekey": "Crowd4Decoy01",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy01"
+    },
+    {
+      "citekey": "Crowd4Decoy02",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy02"
+    },
+    {
+      "citekey": "Crowd4Decoy03",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy03"
+    },
+    {
+      "citekey": "Crowd4Decoy04",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy04"
+    },
+    {
+      "citekey": "Crowd4Decoy05",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy05"
+    },
+    {
+      "citekey": "Crowd4Decoy06",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy06"
+    },
+    {
+      "citekey": "Crowd4Decoy07",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy07"
+    },
+    {
+      "citekey": "Crowd4Decoy08",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy08"
+    },
+    {
+      "citekey": "Crowd4Decoy09",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy09"
+    },
+    {
+      "citekey": "Crowd4Decoy10",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy10"
+    },
+    {
+      "citekey": "Crowd4Decoy11",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy11"
+    },
+    {
+      "citekey": "Crowd4Decoy12",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy12"
+    },
+    {
+      "citekey": "Crowd4Decoy13",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy13"
+    },
+    {
+      "citekey": "Crowd4Decoy14",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy14"
+    },
+    {
+      "citekey": "Crowd4Decoy15",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy15"
+    },
+    {
+      "citekey": "Crowd4Decoy16",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy16"
+    },
+    {
+      "citekey": "Crowd4Decoy17",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy17"
+    },
+    {
+      "citekey": "Crowd4Decoy18",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy18"
+    },
+    {
+      "citekey": "Crowd4Decoy19",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy19"
+    },
+    {
+      "citekey": "Crowd4Decoy20",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy20"
+    },
+    {
+      "citekey": "Crowd4Decoy21",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy21"
+    },
+    {
+      "citekey": "Crowd4Decoy22",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy22"
+    },
+    {
+      "citekey": "Crowd4Decoy23",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy23"
+    },
+    {
+      "citekey": "Crowd4Decoy24",
+      "title": "crowdprobe4",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4decoy24"
+    },
+    {
+      "citekey": "Crowd4Evidence",
+      "title": "crowdprobe4",
+      "body": "crowdprobe4 synthetic attachment observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.crowd4evidence"
+    },
+    {
+      "citekey": "Gene0",
+      "title": "hH3-K4R",
+      "body": "hH3-K4R synthetic table observation.",
+      "format": "csv",
+      "doi": "10.9999/eval.gene0"
+    },
+    {
+      "citekey": "Gene1",
+      "title": "Δset-1",
+      "body": "Δset-1 synthetic table observation.",
+      "format": "csv",
+      "doi": "10.9999/eval.gene1"
+    },
+    {
+      "citekey": "Gene2",
+      "title": "mus-9",
+      "body": "mus-9 synthetic table observation.",
+      "format": "csv",
+      "doi": "10.9999/eval.gene2"
+    },
+    {
+      "citekey": "Gene3",
+      "title": "FANCD2",
+      "body": "FANCD2 synthetic table observation.",
+      "format": "csv",
+      "doi": "10.9999/eval.gene3"
+    },
+    {
+      "citekey": "SupplementDecoy0",
+      "title": "supplementprobe0",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.supplementdecoy0"
+    },
+    {
+      "citekey": "Supplement0",
+      "title": "Generated supplementary table 0",
+      "body": "supplementprobe0 value0",
+      "format": "csv",
+      "doi": "10.9999/eval.supplement0"
+    },
+    {
+      "citekey": "SupplementDecoy1",
+      "title": "supplementprobe1",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.supplementdecoy1"
+    },
+    {
+      "citekey": "Supplement1",
+      "title": "Generated supplementary table 1",
+      "body": "supplementprobe1 value1",
+      "format": "zip_csv",
+      "doi": "10.9999/eval.supplement1"
+    },
+    {
+      "citekey": "SupplementDecoy2",
+      "title": "supplementprobe2",
+      "body": "Unrelated generated background.",
+      "format": "pdf",
+      "doi": "10.9999/eval.supplementdecoy2"
+    },
+    {
+      "citekey": "Supplement2",
+      "title": "Generated supplementary table 2",
+      "body": "supplementprobe2 value2",
+      "format": "csv",
+      "doi": "10.9999/eval.supplement2"
+    },
+    {
+      "citekey": "Supplement3",
+      "title": "Generated supplementary table 3",
+      "body": "supplementprobe3 value3",
+      "format": "zip_csv",
+      "doi": "10.9999/eval.supplement3"
+    },
+    {
+      "citekey": "Supplement4",
+      "title": "Generated supplementary table 4",
+      "body": "supplementprobe4 value4",
+      "format": "csv",
+      "doi": "10.9999/eval.supplement4"
+    },
+    {
+      "citekey": "Supplement5",
+      "title": "Generated supplementary table 5",
+      "body": "supplementprobe5 value5",
+      "format": "zip_csv",
+      "doi": "10.9999/eval.supplement5"
+    },
+    {
+      "citekey": "ExactLookup0",
+      "title": "Metadata only identity record 0",
+      "body": null,
+      "format": null,
+      "doi": "10.9999/eval.exactlookup0"
+    },
+    {
+      "citekey": "ExactLookup1",
+      "title": "Metadata only identity record 1",
+      "body": null,
+      "format": null,
+      "doi": "10.9999/eval.exactlookup1"
+    },
+    {
+      "citekey": "ExactLookup2",
+      "title": "Metadata only identity record 2",
+      "body": null,
+      "format": null,
+      "doi": "10.9999/eval.exactlookup2"
+    },
+    {
+      "citekey": "ExactLookup3",
+      "title": "Metadata only identity record 3",
+      "body": null,
+      "format": null,
+      "doi": "10.9999/eval.exactlookup3"
+    },
+    {
+      "citekey": "Shared0Paper0",
+      "title": "sharedprobe0",
+      "body": "sharedprobe0 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared0paper0"
+    },
+    {
+      "citekey": "Shared0Paper1",
+      "title": "sharedprobe0",
+      "body": "sharedprobe0 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared0paper1"
+    },
+    {
+      "citekey": "Shared0Paper2",
+      "title": "sharedprobe0",
+      "body": "sharedprobe0 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared0paper2"
+    },
+    {
+      "citekey": "Shared1Paper0",
+      "title": "sharedprobe1",
+      "body": "sharedprobe1 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared1paper0"
+    },
+    {
+      "citekey": "Shared1Paper1",
+      "title": "sharedprobe1",
+      "body": "sharedprobe1 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared1paper1"
+    },
+    {
+      "citekey": "Shared1Paper2",
+      "title": "sharedprobe1",
+      "body": "sharedprobe1 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared1paper2"
+    },
+    {
+      "citekey": "Shared2Paper0",
+      "title": "sharedprobe2",
+      "body": "sharedprobe2 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared2paper0"
+    },
+    {
+      "citekey": "Shared2Paper1",
+      "title": "sharedprobe2",
+      "body": "sharedprobe2 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared2paper1"
+    },
+    {
+      "citekey": "Shared2Paper2",
+      "title": "sharedprobe2",
+      "body": "sharedprobe2 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared2paper2"
+    },
+    {
+      "citekey": "Shared3Paper0",
+      "title": "sharedprobe3",
+      "body": "sharedprobe3 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared3paper0"
+    },
+    {
+      "citekey": "Shared3Paper1",
+      "title": "sharedprobe3",
+      "body": "sharedprobe3 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared3paper1"
+    },
+    {
+      "citekey": "Shared3Paper2",
+      "title": "sharedprobe3",
+      "body": "sharedprobe3 generated multi-document observation.",
+      "format": "pdf",
+      "doi": "10.9999/eval.shared3paper2"
+    }
+  ],
+  "queries": [
+    {
+      "id": "body-0",
+      "category": "body_only",
+      "query": "bodyprobe0",
+      "relevance": {
+        "BodyEvidence0": 2
+      }
+    },
+    {
+      "id": "body-1",
+      "category": "body_only",
+      "query": "bodyprobe1",
+      "relevance": {
+        "BodyEvidence1": 2
+      }
+    },
+    {
+      "id": "body-2",
+      "category": "body_only",
+      "query": "bodyprobe2",
+      "relevance": {
+        "BodyEvidence2": 2
+      }
+    },
+    {
+      "id": "body-3",
+      "category": "body_only",
+      "query": "bodyprobe3",
+      "relevance": {
+        "BodyEvidence3": 2
+      }
+    },
+    {
+      "id": "body-4",
+      "category": "body_only",
+      "query": "bodyprobe4",
+      "relevance": {
+        "BodyEvidence4": 2
+      }
+    },
+    {
+      "id": "body-5",
+      "category": "body_only",
+      "query": "bodyprobe5",
+      "relevance": {
+        "BodyEvidence5": 2
+      }
+    },
+    {
+      "id": "body-6",
+      "category": "body_only",
+      "query": "bodyprobe6",
+      "relevance": {
+        "BodyEvidence6": 2
+      }
+    },
+    {
+      "id": "body-7",
+      "category": "body_only",
+      "query": "bodyprobe7",
+      "relevance": {
+        "BodyEvidence7": 2
+      }
+    },
+    {
+      "id": "crowd-0",
+      "category": "beyond_candidate_20",
+      "query": "crowdprobe0",
+      "relevance": {
+        "Crowd0Evidence": 2
+      }
+    },
+    {
+      "id": "crowd-1",
+      "category": "beyond_candidate_20",
+      "query": "crowdprobe1",
+      "relevance": {
+        "Crowd1Evidence": 2
+      }
+    },
+    {
+      "id": "crowd-2",
+      "category": "beyond_candidate_20",
+      "query": "crowdprobe2",
+      "relevance": {
+        "Crowd2Evidence": 2
+      }
+    },
+    {
+      "id": "crowd-3",
+      "category": "beyond_candidate_20",
+      "query": "crowdprobe3",
+      "relevance": {
+        "Crowd3Evidence": 2
+      }
+    },
+    {
+      "id": "crowd-4",
+      "category": "beyond_candidate_20",
+      "query": "crowdprobe4",
+      "relevance": {
+        "Crowd4Evidence": 2
+      }
+    },
+    {
+      "id": "gene-0-0",
+      "category": "gene_variants",
+      "query": "hH3-K4R",
+      "relevance": {
+        "Gene0": 2
+      }
+    },
+    {
+      "id": "gene-0-1",
+      "category": "gene_variants",
+      "query": "hh3k4r",
+      "relevance": {
+        "Gene0": 2
+      }
+    },
+    {
+      "id": "gene-1-0",
+      "category": "gene_variants",
+      "query": "Δset-1",
+      "relevance": {
+        "Gene1": 2
+      }
+    },
+    {
+      "id": "gene-1-1",
+      "category": "gene_variants",
+      "query": "deltaset1",
+      "relevance": {
+        "Gene1": 2
+      }
+    },
+    {
+      "id": "gene-2-0",
+      "category": "gene_variants",
+      "query": "mus-9",
+      "relevance": {
+        "Gene2": 2
+      }
+    },
+    {
+      "id": "gene-2-1",
+      "category": "gene_variants",
+      "query": "mus9",
+      "relevance": {
+        "Gene2": 2
+      }
+    },
+    {
+      "id": "gene-3-0",
+      "category": "gene_variants",
+      "query": "FANCD2",
+      "relevance": {
+        "Gene3": 2
+      }
+    },
+    {
+      "id": "gene-3-1",
+      "category": "gene_variants",
+      "query": "fancd2",
+      "relevance": {
+        "Gene3": 2
+      }
+    },
+    {
+      "id": "supplement-0",
+      "category": "supplementary_tables",
+      "query": "supplementprobe0",
+      "relevance": {
+        "Supplement0": 2
+      }
+    },
+    {
+      "id": "supplement-1",
+      "category": "supplementary_tables",
+      "query": "supplementprobe1",
+      "relevance": {
+        "Supplement1": 2
+      }
+    },
+    {
+      "id": "supplement-2",
+      "category": "supplementary_tables",
+      "query": "supplementprobe2",
+      "relevance": {
+        "Supplement2": 2
+      }
+    },
+    {
+      "id": "supplement-3",
+      "category": "supplementary_tables",
+      "query": "supplementprobe3",
+      "relevance": {
+        "Supplement3": 2
+      }
+    },
+    {
+      "id": "supplement-4",
+      "category": "supplementary_tables",
+      "query": "supplementprobe4",
+      "relevance": {
+        "Supplement4": 2
+      }
+    },
+    {
+      "id": "supplement-5",
+      "category": "supplementary_tables",
+      "query": "supplementprobe5",
+      "relevance": {
+        "Supplement5": 2
+      }
+    },
+    {
+      "id": "absent-0",
+      "category": "no_match",
+      "query": "absentprobe0",
+      "relevance": {}
+    },
+    {
+      "id": "absent-1",
+      "category": "no_match",
+      "query": "absentprobe1",
+      "relevance": {}
+    },
+    {
+      "id": "absent-2",
+      "category": "no_match",
+      "query": "absentprobe2",
+      "relevance": {}
+    },
+    {
+      "id": "absent-3",
+      "category": "no_match",
+      "query": "absentprobe3",
+      "relevance": {}
+    },
+    {
+      "id": "absent-4",
+      "category": "no_match",
+      "query": "absentprobe4",
+      "relevance": {}
+    },
+    {
+      "id": "exact-0",
+      "category": "exact_identifiers",
+      "query": "ExactLookup0",
+      "relevance": {
+        "ExactLookup0": 2
+      }
+    },
+    {
+      "id": "exact-1",
+      "category": "exact_identifiers",
+      "query": "10.9999/eval.exactlookup1",
+      "relevance": {
+        "ExactLookup1": 2
+      }
+    },
+    {
+      "id": "exact-2",
+      "category": "exact_identifiers",
+      "query": "ExactLookup2",
+      "relevance": {
+        "ExactLookup2": 2
+      }
+    },
+    {
+      "id": "exact-3",
+      "category": "exact_identifiers",
+      "query": "10.9999/eval.exactlookup3",
+      "relevance": {
+        "ExactLookup3": 2
+      }
+    },
+    {
+      "id": "multi-0",
+      "category": "multiple_relevant",
+      "query": "sharedprobe0",
+      "relevance": {
+        "Shared0Paper0": 2,
+        "Shared0Paper1": 2,
+        "Shared0Paper2": 2
+      }
+    },
+    {
+      "id": "multi-1",
+      "category": "multiple_relevant",
+      "query": "sharedprobe1",
+      "relevance": {
+        "Shared1Paper0": 2,
+        "Shared1Paper1": 2,
+        "Shared1Paper2": 2
+      }
+    },
+    {
+      "id": "multi-2",
+      "category": "multiple_relevant",
+      "query": "sharedprobe2",
+      "relevance": {
+        "Shared2Paper0": 2,
+        "Shared2Paper1": 2,
+        "Shared2Paper2": 2
+      }
+    },
+    {
+      "id": "multi-3",
+      "category": "multiple_relevant",
+      "query": "sharedprobe3",
+      "relevance": {
+        "Shared3Paper0": 2,
+        "Shared3Paper1": 2,
+        "Shared3Paper2": 2
+      }
+    }
+  ]
+}

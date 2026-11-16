@@ -126,6 +126,7 @@ TOOLS = [
             "query": QUERY,
             "top": _integer(1, 100, 5),
             "max_chars": _integer(256, 100000, 10000),
+            "scope": {"type": "string", "maxLength": 8, "enum": ["all", "fulltext"], "default": "all"},
             "per_paper": PER_PAPER,
             "citekeys": KEYS,
             "metadata_query": QUERY,
@@ -137,6 +138,8 @@ TOOL_BY_NAME = {tool["name"]: tool for tool in TOOLS}
 
 
 def _validate(value, schema, location="arguments"):
+    if "enum" in schema and value not in schema["enum"]:
+        raise ValueError(f"{location} must be one of {schema['enum']}")
     kind = schema["type"]
     if kind == "object":
         if not isinstance(value, dict):

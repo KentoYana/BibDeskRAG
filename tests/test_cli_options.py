@@ -121,7 +121,7 @@ def test_help_examples_and_resources_describe_current_public_grammar(
     ("--paper", "attachments", "key", "--format", "bibtex"),
     ("--paper", "search", "query", "--format", "bibtex"),
     ("--paper", "search", "query", "--max-chars", "1000"),
-    ("--paper", "context", "query", "--scope", "fulltext"),
+    ("--paper", "context", "query", "--scope", "metadata"),
     ("--paper", "search", "query", "--doi", "10.1234/x"),
     ("--paper", "search", "query", "--scope", "metadata", "--per-paper", "1"),
     ("--paper", "search", "query", "--scope", "metadata", "--metadata-query", "extra"),

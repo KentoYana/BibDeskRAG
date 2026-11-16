@@ -444,3 +444,12 @@ Use `--setup` for the semantic/model choice, `--semantic download` for explicit 
 
 Use `--index update --retry-status error` to re-extract unchanged failed attachments.
 See the [guide](index-status-retry.md) for target selection, remaining issues and unverified freshness.
+
+## Contextの検索範囲 / Context scopes
+
+`--paper context QUERY --scope fulltext` で索引の全添付本文を明示的に検索します。
+省略時は従来の二段階検索です。[範囲と制約](context-search.md)・[固定評価](search-evaluation.md)。
+
+Use `--paper context QUERY --scope fulltext` for all indexed attachment text.
+The default retains two-stage search. See [scope/filters](context-search.md) and
+[the fixed evaluation](search-evaluation.md).

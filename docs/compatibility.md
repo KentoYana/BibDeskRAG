@@ -164,3 +164,16 @@ open it after update. See [table provenance](table-provenance.md).
 schema 3でセル範囲を追加し、既存MCP引数を維持します。明示的な更新でschema 1/2を
 移行し、表・ZIPを一度再抽出します。読み取りでは移行しません。更新後はschema 3に
 未対応の旧版では開けません。[表セル出典の仕様](table-provenance.md)を参照してください。
+
+## Context scopes / Contextの検索範囲
+
+The new optional build_context scope defaults to all, preserving two-stage paper
+rankings. Fulltext is explicit and respects selectors. MCP callers passing both
+citekeys and metadata_query now receive their intersection instead of silently
+ignoring metadata_query. The CLI retains its previous rejection of that combination.
+Scope diagnostics are additive. See [the scope contract](context-search.md).
+
+build_contextの任意引数scopeは既定allで、従来の文献順位を維持します。fulltextは
+明示的に指定し、対象条件を尊重します。MCPでcitekeysとmetadata_queryを併用した場合、
+metadata_queryを無視せず共通部分を使います。CLIの併用拒否は維持します。
+範囲診断は追加フィールドです。[仕様](context-search.md)を参照してください。

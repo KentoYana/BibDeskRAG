@@ -14,6 +14,8 @@ BibDeskの `.bib` と添付ファイルを読み取り専用で扱い、検索�
 
 索引の状態確認と失敗添付の選択的再抽出は [索引状態・再試行ガイド](docs/index-status-retry.md)、表の分割セル・見出し設定は [表セルの出典](docs/table-provenance.md) を参照してください。
 
+contextの既定の二段階検索と明示的な全添付本文検索は [検索範囲](docs/context-search.md)、固定40問の評価は [検索評価](docs/search-evaluation.md) を参照してください。
+
 ## CLIの入口
 
 ```sh
@@ -472,7 +474,7 @@ codex mcp add bibdesk-rag -- "$(brew --prefix)/bin/bibdesk-rag-mcp"
 codex mcp get bibdesk-rag
 ```
 
-This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives eight read-only retrieval tools. See [index status and selective retry](docs/index-status-retry.md) for saved index metadata and targeted CLI re-extraction; [table cell provenance](docs/table-provenance.md) describes split cells and header settings.
+This adds `bibdesk-rag` to Codex's MCP settings. If that name is already registered, inspect it with `codex mcp get bibdesk-rag` first. The executable path does not include a Homebrew version number and normally survives upgrades. Index maintenance uses the CLI; Codex receives eight read-only retrieval tools. See [index status and selective retry](docs/index-status-retry.md) for saved index metadata and targeted CLI re-extraction; [table cell provenance](docs/table-provenance.md) describes split cells and header settings. See [context scopes](docs/context-search.md) and the [fixed 40-query evaluation](docs/search-evaluation.md) for explicit whole-index context retrieval and its limits.
 
 With either registration method, a displayed entry alone does not verify connectivity. Restart the MCP connection and try the search in a new chat. If needed, restart the Codex application or CLI session too. Codex launches the server; it does not need a persistent terminal process or `brew services` registration. See the [official MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp).
 

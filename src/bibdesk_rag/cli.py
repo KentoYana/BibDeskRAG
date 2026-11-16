@@ -118,7 +118,7 @@ def paper_result(engine: SQLiteSearch, args: argparse.Namespace):
         return engine.get_attachments(args.value)
     return build_context(engine, args.value, args.top, args.max_chars,
                          citekeys=args.citekeys, per_paper=args.per_paper,
-                         metadata_query=args.metadata_query)
+                         metadata_query=args.metadata_query, scope=args.scope)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -184,6 +184,11 @@ def main(argv: list[str] | None = None) -> int:
                 if args.paper_action == "context" and args.format == "text":
                     print("\n".join(text_value(line) for line in result["context"].split("\n")),
                           end="")
+                    scope = result["search_scope"]
+                    print(f"Full-text scope: {scope['fulltext_scope']} ({scope['fulltext_status']}); "
+                          f"metadata candidates {scope['metadata_candidate_count']}/"
+                          f"{scope['metadata_match_count']} (limit {scope['metadata_candidate_limit']}).",
+                          file=sys.stderr)
                     for note in result["unverified"]:
                         print(text_value(note), file=sys.stderr)
                     return 0

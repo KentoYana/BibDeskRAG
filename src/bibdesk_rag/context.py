@@ -20,14 +20,17 @@ def build_context(
     per_paper: int = 2,
     citekeys: list[str] | None = None,
     metadata_query: str | None = None,
+    scope: str = "all",
 ) -> dict:
     with engine.snapshot() if hasattr(engine, "snapshot") else nullcontext():
         return _build_context(engine, query, top, max_chars, per_paper=per_paper,
-                              citekeys=citekeys, metadata_query=metadata_query)
+                              citekeys=citekeys, metadata_query=metadata_query, scope=scope)
 
 
-def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metadata_query):
+def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metadata_query, scope):
     check_top(top)
+    if scope not in ("all", "fulltext"):
+        raise ValueError("Context scope must be all or fulltext")
     if type(max_chars) is not int or not 256 <= max_chars <= 100000:
         raise ValueError("max_chars must be between 256 and 100000")
     search_scope = {"fulltext_scope": "unknown"}
@@ -36,7 +39,7 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
     scope_argument = {"_scope": search_scope} if hasattr(engine, "index_state") else {}
     hits = engine.search(
         query, top, per_paper=per_paper, citekeys=citekeys, metadata_query=metadata_query,
-        **scope_argument,
+        scope=scope, **scope_argument,
     )
     parts, results = [POLICY + "\n"], []
     remaining = max_chars - len(parts[0])
@@ -122,6 +125,12 @@ def _build_context(engine, query, top, max_chars, *, per_paper, citekeys, metada
     unverified = [
         "Results are retrieved excerpts; completeness and scientific claims have not been verified."
     ]
+    if search_scope.get("metadata_candidates_omitted"):
+        unverified.append("The metadata candidate list was capped; full-text scope is reported separately.")
+    if search_scope.get("fulltext_status") == "not_searched":
+        unverified.append("Full text was not searched: the explicit selection is empty or the query has no searchable terms.")
+    elif search_scope.get("fulltext_status") == "no_matches":
+        unverified.append("No full-text matches were found within the searched scope; other evidence may exist.")
     if len(results) < top:
         unverified.append(
             "Fewer excerpts returned than requested; this does not establish that other evidence is absent."

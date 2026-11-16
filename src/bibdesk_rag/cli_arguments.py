@@ -203,7 +203,9 @@ def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace |
             if "metadata_query" in supplied and supplied.get("scope", "all") != "all":
                 p.error("--metadata-query requires --scope all")
         elif args.paper_action == "context":
-            allowed |= {"max_chars"}
+            allowed |= {"max_chars", "scope"}
+            if supplied.get("scope") == "metadata":
+                p.error("Context --scope accepts all (two-stage) or fulltext (all attachments)")
     irrelevant = supplied.keys() - allowed - {primary}
     if irrelevant:
         names = ", ".join("--" + ("citekey" if key == "citekeys" else key.replace("_", "-"))

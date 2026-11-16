@@ -36,6 +36,8 @@ Search papers and retrieve evidence / 文献を検索して証拠を取得:
   bibdesk-rag --paper show Example2025 --format bibtex
   bibdesk-rag --paper attachments Example2025 --format json
   bibdesk-rag --paper context "RecQ helicase" --max-chars 5000
+  bibdesk-rag --paper context "RecQ helicase" --scope fulltext --format json
+  bibdesk-rag --paper context "RecQ helicase" --scope fulltext --metadata-query "Neurospora"
 
 Use another configuration for this invocation only / 今回だけ別の設定を使用:
   bibdesk-rag --temp "/path/to/other/config.toml" --index update

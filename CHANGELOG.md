@@ -6,6 +6,11 @@
 
 ## Unreleased
 
+- Add explicit fulltext context scope while preserving default two-stage rankings,
+  strict selections, candidate omission diagnostics and bounded source provenance.
+- Add a fixed 175-paper/40-query generated evaluation, baseline comparisons and
+  recorded Recall@10/MRR with separate metadata-only and no-match limitations.
+
 - Preserve table-cell row/column and character ranges through long-cell splitting,
   search snippets and bounded context, including explicit incomplete-value flags.
 - Add configured header start/count (including no headers), transactional schema 3
@@ -156,6 +161,11 @@
 # 変更履歴
 
 ## 未公開
+
+- contextに明示的な全添付本文検索を追加。既定の二段階検索、厳格な対象指定、
+  応答・出典の上限を保ち、候補省略と未検索・該当なしを区別して返す。
+- 生成175文献・固定40問でbaselineと比較し、Recall@10/MRRと出典対応を記録。
+  書誌だけの候補・該当なし・実ライブラリ未評価の限界を明記。
 
 - 長いセルの分割、検索抜粋、文字数制限付きcontextでも行・列・文字位置を保持。
   完全な値を含まないセル断片を明示し、見出し行位置・行数・見出しなしを設定可能に。

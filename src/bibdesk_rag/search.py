@@ -133,6 +133,18 @@ class SQLiteSearch:
         )
         return [self._metadata(row) for row in rows]
 
+    def _metadata_match_count(self, query: str) -> int:
+        """Count the same exact-identifier-or-FTS population as search_papers."""
+        expr = match_query(query)
+        exact = self.db.execute(
+            "SELECT count(*) FROM papers WHERE citekey=? OR (doi<>'' AND doi=?)",
+            (query.strip(), normalize_doi(query)),
+        ).fetchone()[0]
+        if exact or not expr:
+            return exact
+        return self.db.execute("SELECT count(*) FROM papers_fts WHERE papers_fts MATCH ?",
+                               (expr,)).fetchone()[0]
+
     @staticmethod
     def _metadata(row):
         result = paper_dict(row)
@@ -280,31 +292,47 @@ class SQLiteSearch:
         check_top(top)
         if scope == "metadata":
             return self.search_papers(query, top)
-        if scope == "fulltext":
-            return self.search_fulltext(query, top, citekeys=citekeys, per_paper=per_paper)
-        if scope != "all":
+        if scope not in ("all", "fulltext"):
             raise ValueError("scope must be all, metadata or fulltext")
-        candidates = (
-            self.search_papers(metadata_query or query, min(100, max(20, top)))
-            if citekeys is None
-            else []
-        )
-        selected = (
-            citekeys if citekeys is not None else ([p["citekey"] for p in candidates] or None)
-        )
+        if scope == "fulltext" and _scope is None and metadata_query is None:
+            return self.search_fulltext(query, top, citekeys=citekeys, per_paper=per_paper)
+        limit = min(100, max(20, top))
+        use_metadata = citekeys is None or metadata_query is not None
+        candidate_query = (metadata_query or query) if use_metadata else None
+        candidates = self.search_papers(candidate_query, limit) if use_metadata else []
+        candidate_keys = [p["citekey"] for p in candidates]
+        total = self._metadata_match_count(candidate_query) if use_metadata and _scope is not None else len(candidates)
+        if metadata_query is not None:
+            selected = [key for key in candidate_keys if citekeys is None or key in citekeys]
+        elif citekeys is not None:
+            selected = citekeys
+        elif scope == "fulltext":
+            selected = None
+        else:
+            selected = candidate_keys or None
+        searched = selected != [] and bool(match_query(query))
+        fulltext = self.search_fulltext(query, top, citekeys=selected, per_paper=per_paper)
         if _scope is not None:
             _scope.update(
-                metadata_query=(metadata_query or query) if citekeys is None else None,
-                metadata_candidate_limit=min(100, max(20, top)) if citekeys is None else 0,
-                metadata_candidate_citekeys=[p["citekey"] for p in candidates],
+                requested_scope=scope,
+                strategy="metadata_then_fulltext" if scope == "all" else "fulltext",
+                metadata_query=candidate_query,
+                metadata_candidate_limit=limit if use_metadata else 0,
+                metadata_candidate_count=len(candidates),
+                metadata_match_count=total,
+                metadata_candidates_omitted=total > len(candidates),
+                metadata_omitted_count=total - len(candidates),
+                metadata_candidate_citekeys=candidate_keys,
+                metadata_limits_fulltext=(scope == "all" and bool(candidate_keys)) or metadata_query is not None,
                 fulltext_citekeys=selected,
-                fulltext_scope="selected_papers" if selected is not None else "all_indexed_papers",
+                fulltext_scope=("not_searched" if not searched else
+                                "selected_papers" if selected is not None else "all_indexed_papers"),
+                fulltext_status=("not_searched" if not searched else
+                                 "matched" if fulltext else "no_matches"),
+                fulltext_result_count=len(fulltext),
                 per_paper=per_paper,
             )
-        if metadata_query is not None and not candidates and citekeys is None:
-            if _scope is not None:
-                _scope.update(fulltext_citekeys=[], fulltext_scope="not_searched")
-            return []
-        fulltext = self.search_fulltext(query, top, citekeys=selected, per_paper=per_paper)
+        if scope == "fulltext" or citekeys is not None or (metadata_query is not None and not candidates):
+            return fulltext
         seen = {hit["citekey"] for hit in fulltext}
         return (fulltext + [p for p in candidates if p["citekey"] not in seen])[:top]

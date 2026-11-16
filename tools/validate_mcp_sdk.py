@@ -123,6 +123,15 @@ async def validate(app_python: Path):
             assert context["search_scope"]["fulltext_scope"] == "all_indexed_papers"
             assert context["results"][0]["content_hash"] == before[supplement]
             assert context["results"][0]["indexed_bib_hash"] == before[bib]
+            broad = await call("build_context", {"query": "helicase", "scope": "fulltext", "max_chars": 2000})
+            assert broad["search_scope"]["requested_scope"] == "fulltext"
+            assert broad["search_scope"]["fulltext_status"] == "matched"
+            assert broad["results"][0]["citekey"] == "SDK2025"
+            strict = await call("build_context", {"query": "helicase", "scope": "fulltext",
+                                                   "metadata_query": "NoSuchSyntheticPaper"})
+            assert strict["returned"] == 0 and strict["search_scope"]["fulltext_status"] == "not_searched"
+            invalid_scope = await client.call_tool("build_context", {"query": "x", "scope": "metadata"})
+            assert invalid_scope.is_error
             rejected = await client.call_tool("get_chunk", {"chunk_id": 1, "max_chars": 20001})
             assert rejected.is_error
             optional = await client.call_tool("semantic_search_papers", {"query": "DNA repair"})

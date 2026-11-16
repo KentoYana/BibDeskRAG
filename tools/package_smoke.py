@@ -13,10 +13,11 @@ import subprocess
 import tomllib
 
 
-def synthetic_pdf() -> bytes:
+def synthetic_pdf(evidence_text: str = "RecQ helicase synthetic evidence on page two.") -> bytes:
     """Make two valid text pages without adding a PDF-generation dependency."""
     first = b"BT /F1 12 Tf 72 720 Td (Synthetic introductory page.) Tj ET\n"
-    second = b"BT /F1 12 Tf 72 720 Td (RecQ helicase synthetic evidence on page two.) Tj ET\n"
+    literal = evidence_text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    second = b"BT /F1 12 Tf 72 720 Td (" + literal.encode("ascii") + b") Tj ET\n"
     page = (b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
             b"/Resources << /Font << /F1 3 0 R >> >> /Contents %d 0 R >>")
     objects = [
@@ -283,6 +284,14 @@ def main() -> None:
     assert context["index"]["index_generation"] == saved_status["index_generation"]
     assert context["search_scope"]["fulltext_citekeys"] == ["Test2026"]
     assert context["results"][0]["indexed_bib_hash"] == hashes[str(bib)]
+    broad = mcp_tool("build_context", {"query": "RecQ", "scope": "fulltext", "max_chars": 10000})
+    assert broad["search_scope"]["fulltext_scope"] == "all_indexed_papers"
+    assert broad["search_scope"]["fulltext_status"] == "matched"
+    cli_broad = json.loads(cli("--paper", "context", "RecQ", "--scope", "fulltext", "--format", "json"))
+    assert cli_broad["search_scope"] == broad["search_scope"]
+    strict = mcp_tool("build_context", {"query": "RecQ", "scope": "fulltext",
+                                        "metadata_query": "NoSuchSyntheticPaper"})
+    assert strict["returned"] == 0 and strict["search_scope"]["fulltext_status"] == "not_searched"
     assert hashes == source_hashes(), "MCP changed synthetic source files"
     assert before_mcp == hashes_for(persisted), "MCP changed configuration or index"
     # Exercise installed web assets and API without a browser, Skim or personal data.

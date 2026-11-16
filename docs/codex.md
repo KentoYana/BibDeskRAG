@@ -391,3 +391,12 @@ For other installation methods, use their corresponding removal procedure. Prese
 索引状態・再試行とcontextの出典項目: [ガイド](index-status-retry.md)。
 
 Index status, retry and context provenance: [guide](index-status-retry.md).
+
+`build_context` は `scope="all"`（既定の二段階検索）と `scope="fulltext"` に対応します。
+明示的なcitekeys・strict metadata_queryを尊重し、候補省略・実際の範囲・未検索を返します。
+[検索範囲](context-search.md)と[評価結果](search-evaluation.md)を参照してください。
+
+`build_context` accepts `scope="all"` (existing default) and `scope="fulltext"`.
+Explicit citekeys/strict metadata_query remain restrictive; results report candidate
+omission, actual scope and unsearched states. See [scopes](context-search.md) and
+[evaluation](search-evaluation.md).

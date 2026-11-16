@@ -516,3 +516,46 @@ and configurations stay unchanged; unexpected failure rolls back migration.
 Older applications without schema 3 support cannot read the upgraded index;
 use a separate derived index when returning to an older application.
 Full contract / 詳細: docs/table-provenance.md
+
+Contextの検索範囲 / CONTEXT SCOPES
+  bibdesk-rag --paper context "RecQ helicase" --scope all --format json
+  bibdesk-rag --paper context "RecQ helicase" --scope fulltext --format json
+  bibdesk-rag --paper context "RecQ helicase" --scope fulltext --citekey Example2025
+  bibdesk-rag --paper context "RecQ helicase" --scope fulltext --metadata-query "Neurospora"
+
+all（既定）は従来の書誌候補→本文検索を維持します。候補の上限はmin(100,max(20,top))。
+fulltextは通常の書誌候補で絞らず、全添付の索引本文を明示的に検索します。
+どちらもcitekeysとstrict metadata_queryを尊重し、候補0件時に勝手に広げません。
+MCPで両方指定すると共通部分を使います。CLIは従来どおり両方の併用を拒否します。
+添付のないDOI/citekeyの確認はsearch_papersまたは既定contextを使います。
+
+all (default) preserves metadata-first retrieval with candidate limit
+min(100,max(20,top)). Explicit fulltext searches all indexed attachment text,
+without narrowing to the ordinary metadata candidate window. Both honor explicit
+citekeys and strict metadata_query; an empty strict selection never broadens.
+MCP combines both selectors by intersection; the CLI retains its rejection of
+that combination. Use metadata search/default context for identifiers without text.
+
+search_scopeのmetadata_match_count/candidate_count/candidate_limitと
+metadata_candidates_omitted/metadata_omitted_countは候補打切りを示します。
+fulltext_citekeysはnullなら索引全体、配列なら選択文献、空配列なら対象なしです。
+fulltext_statusはmatched/no_matches/not_searchedを区別します。
+fulltext_result_countはcontext文字数制限前の本文結果数です。
+候補を省略してもmetadata_limits_fulltext=falseなら、その上限で本文を狭めた意味ではありません。
+text出力は範囲・状態・件数をstderrに表示します。鮮度は未確認で、該当なしは根拠の不在を証明しません。
+
+search_scope reports metadata match/candidate/limit counts, omission flags/counts,
+actual fulltext_citekeys (null=whole index, array=selection, empty=no targets),
+and fulltext_status (matched/no_matches/not_searched). fulltext_result_count is
+before the context character budget. An omitted candidate list does not restrict
+full text when metadata_limits_fulltext=false. Text output prints scope/status/
+counts to stderr. No-match does not prove absence; freshness remains unverified.
+
+固定評価は生成175文献・40問です。baselineと改修後の既定順位が一致し、正例35問の
+Recall@10/MRRは0.542857、fulltextは0.885714、該当なし5問は両方式とも空結果でした。
+fulltextは添付のない識別子4問を取得しません。実ライブラリや実モデルの品質実測ではありません。
+The fixed evaluation uses 175 generated papers and 40 queries. Default paper
+rankings match baseline; positive-query Recall@10/MRR are 0.542857 for default
+and 0.885714 for fulltext. Both return empty for five no-match controls. Fulltext
+misses four attachment-free identifier cases. This is not real-library/model quality.
+Details / 詳細: docs/context-search.md, docs/search-evaluation.md
