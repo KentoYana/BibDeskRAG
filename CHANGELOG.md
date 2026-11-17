@@ -6,6 +6,19 @@
 
 ## Unreleased
 
+- Address Similar Papers boilerplate, title-only ranking and unsupported recommendations
+  with saved title anchors, lexical fusion and an explicitly scoped abstention profile.
+  Pass all seven preregistered holdout gates using offline E5; require an explicit
+  index update for title-anchor-v2, preserving original sources.
+
+- Freeze a 52-paper/40-seed graded Similar Papers evaluation and run cached E5
+  offline against lexical/centroid baselines. Record reproducibility, source
+  preservation and failures from boilerplate, title-only and no-related cases.
+
+- Add saved-vector Similar Papers through CLI, read-only MCP and the Web GUI,
+  with source exclusion, deterministic paper ranking, shared filters and explicit
+  missing/stale/model states. No model loading or inference dependency is needed.
+
 - Add explicit fulltext context scope while preserving default two-stage rankings,
   strict selections, candidate omission diagnostics and bounded source provenance.
 - Add a fixed 175-paper/40-query generated evaluation, baseline comparisons and
@@ -161,6 +174,14 @@
 # 変更履歴
 
 ## 未公開
+
+- 類似論文検索の52文献・40起点の段階的関連度評価を固定し、キャッシュ済みE5で
+  オフライン評価。語彙・平均ベクトルとの比較、再現性、原本保持、長文定型文・
+  Titleのみ・正例なしの失敗例を記録。
+
+- 保存済みベクトルによる類似論文検索をCLI・読み取り専用MCP・Web GUIに追加。
+  起点除外、文献単位の決定的な順位、共通フィルタ、欠損・古い索引・モデル不一致を扱い、
+  モデル読み込み・推論依存なしで検索。
 
 - contextに明示的な全添付本文検索を追加。既定の二段階検索、厳格な対象指定、
   応答・出典の上限を保ち、候補省略と未検索・該当なしを区別して返す。

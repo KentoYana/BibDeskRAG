@@ -121,6 +121,7 @@ args = []
 | `get_attachments` | 索引にある添付情報・抽出状態を確認 |
 | `get_chunk` | chunk IDに対応する短い本文と出典を確認 |
 | `get_index_status` | 保存済み索引の識別・世代・件数を確認。原本の鮮度は未確認 |
+| `similar_papers` | 保存済みベクトルで起点以外の類似文献を取得。モデル読み込み不要 |
 | `semantic_search_papers` | 任意のローカルモデルでTitle/Abstractの意味検索 |
 | `build_context` | 文字数を制限した本文・出典のまとまりを作成 |
 
@@ -316,6 +317,7 @@ The old `--config` spelling is accepted only by `bibdesk-rag-mcp` for compatibil
 | `get_attachments` | Inspect indexed attachments and extraction states |
 | `get_chunk` | Retrieve short source text/citation by chunk ID |
 | `get_index_status` | Inspect saved index identity, generation and counts; source freshness is unverified |
+| `similar_papers` | Find related papers from stored vectors without loading a model |
 | `semantic_search_papers` | Optional local title/abstract semantic search |
 | `build_context` | Build a character-bounded bundle of evidence and citations |
 

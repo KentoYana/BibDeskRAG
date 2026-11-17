@@ -58,7 +58,7 @@ class ModelInfo:
     query_prefix: str
     max_tokens: int
     backend: str
-    preprocessing: str = "unicode-fields-whitespace-nfc-v1;character-split-v1;max-pooling"
+    preprocessing: str = "unicode-fields-whitespace-nfc-v1;character-split-v1;title-anchor-v2"
 
     def as_dict(self):
         return asdict(self)
@@ -104,6 +104,15 @@ def split_passages(title: str, abstract: str, backend: EmbeddingBackend) -> list
         pieces.append(piece)
         remaining = remaining[low:]
     return pieces
+
+
+def embedding_passages(title: str, abstract: str, backend: EmbeddingBackend) -> list[str]:
+    """Put title-only passages first, then retain every abstract character.
+
+    An overlong title is split losslessly; its first passage is the anchor.
+    """
+    parts = split_passages(title, abstract, backend)
+    return [*split_passages(title, "", backend), *parts] if title and abstract else parts
 
 
 class SentenceTransformerBackend:

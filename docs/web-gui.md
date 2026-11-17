@@ -175,3 +175,13 @@ multiple attachment display and basic Skim opening were observed on a Mac.
 The user confirmed that opening a specified page works after the script correction.
 This is distinct from exhaustive acceptance testing of every state, including
 another PDF in front and denied Automation permission.
+
+## Similar Papers
+
+各カードのSimilar Papersで保存済みベクトルによる関連文献を表示します。
+起点を除外し、Titleのみの起点・候補、保存ベクトルのない候補数を表示します。
+有効なAuthor/Year/DOI/CitekeyとResultsの指定を使います。[仕様](similar-papers.md)。
+
+Each card offers Similar Papers using saved vectors. The source is excluded;
+title-only source/candidates and missing-vector counts are explicit. It uses the
+current Results limit and enabled Author/Year/DOI/Citekey filters. See [details](similar-papers.md).

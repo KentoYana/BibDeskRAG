@@ -86,13 +86,17 @@ function renderCard(card, mode) {
     const link = element("a", "Open DOI", "doi-link"); link.href = card.doi_url;
     link.target = "_blank"; link.rel = "noopener noreferrer"; actions.append(link);
   }
+  const similar = button("Similar Papers", () => findSimilar(p.citekey));
+  similar.title = "Find related Title/Abstract records using saved similarities.";
+  actions.append(similar);
   node.append(actions);
   for (const hit of card.hits) {
-    const kind = mode === "semantic" ? "Semantic match" : hit.source_type === "metadata" ? "Metadata match" : "Full-text match";
+    const kind = (mode === "semantic" || mode === "similar") ? "Metadata similarity" : hit.source_type === "metadata" ? "Metadata match" : "Full-text match";
     const excerpt = element("div", undefined, "excerpt");
     excerpt.append(element("span", kind, "badge"));
-    if (mode === "semantic") {
+    if (mode === "semantic" || mode === "similar") {
       excerpt.append(element("span", `Similarity ${Number(hit.similarity_score).toFixed(3)}`, "badge"));
+      if (mode === "similar" && hit.ranking_score !== undefined) excerpt.append(element("span", `Rank score ${Number(hit.ranking_score).toFixed(4)}`, "badge"));
       if (hit.title_only) excerpt.append(element("span", "Title only · no abstract", "badge"));
     } else if (hit.chunk_id) {
       excerpt.append(element("p", hit.snippet || ""));
@@ -123,6 +127,35 @@ function renderCard(card, mode) {
     attachments.append(row);
   }
   node.append(attachments); return node;
+}
+async function findSimilar(citekey) {
+  const current = ++generation;
+  const body = {citekey, top: Number($("top").value)};
+  for (const key of ["author", "year", "doi"]) {
+    if (!$(key).disabled && $(key).value.trim()) body[key] = $(key).value.trim();
+  }
+  if (!$("citekeys").disabled && $("citekeys").value.trim()) {
+    body.citekeys = $("citekeys").value.split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+  }
+  $("search-state").textContent = `Finding papers similar to ${citekey}…`;
+  $("results").setAttribute("aria-busy", "true");
+  try {
+    const result = await api("/api/similar", body);
+    if (current !== generation) return;
+    $("results").replaceChildren();
+    $("search-state").textContent = `Similar to ${result.source.citekey}: ${result.paper_count} papers. `
+      + (result.assessment?.decision === "insufficient_evidence" ? "Insufficient evidence to recommend related papers. " : "")
+      + (result.assessment?.calibrated === false ? "This model has no evaluated rejection profile; candidates are uncalibrated. " : "")
+      + "Title/Abstract similarity is not verified evidence. "
+      + (result.source.title_only ? "Source has no abstract; using Title only. " : "")
+      + (result.candidates.missing_vectors ? `${result.candidates.missing_vectors} ${result.candidates.missing_vectors === 1 ? "candidate has" : "candidates have"} no saved vectors. ` : "")
+      + "Results use the current Results limit and enabled Author, Year, DOI and Citekey filters.";
+    for (const card of result.papers) $("results").append(renderCard(card, "similar"));
+  } catch (error) {
+    if (current === generation) { notice(error.message); $("search-state").textContent = `Similar Papers failed. ${error.message}`; }
+  } finally {
+    if (current === generation) $("results").setAttribute("aria-busy", "false");
+  }
 }
 async function search(event) {
   if (event) event.preventDefault();

@@ -252,7 +252,7 @@ def main() -> None:
     tools = mcp_request("tools/list", {})["tools"]
     names = {tool["name"] for tool in tools}
     assert names == {"search_papers", "search_fulltext", "get_paper", "get_attachments",
-                     "get_chunk", "build_context", "semantic_search_papers", "get_index_status"}, names
+                     "get_chunk", "build_context", "semantic_search_papers", "get_index_status", "similar_papers"}, names
     assert all(tool["annotations"]["readOnlyHint"] for tool in tools), tools
     saved_status = mcp_tool("get_index_status", {})
     assert saved_status["freshness"] == "unverified" and saved_status["index_generation"]
@@ -385,6 +385,27 @@ def main() -> None:
         startup_log.close()
     assert hashes == source_hashes(), "GUI changed source files"
     assert before_mcp == hashes_for(persisted), "GUI changed configuration or index"
+    from tempfile import TemporaryDirectory
+    try:
+        from .similarity_fixture import create_saved_fixture
+    except ImportError:
+        from similarity_fixture import create_saved_fixture
+
+    with TemporaryDirectory(prefix="saved-similarity-", dir=workdir) as saved_directory:
+        saved_config, saved_index, saved_env = create_saved_fixture([args.command], Path(saved_directory) / "fixture", env)
+        saved_paths = [p for p in saved_config.parent.rglob("*") if p.is_file()]
+        saved_before = hashes_for(saved_paths)
+        related = json.loads(subprocess.run(
+            [args.command, "--temp", str(saved_config), "--paper", "similar", "SavedSeed", "--top", "2", "--format", "json"],
+            env=saved_env, check=True, text=True, capture_output=True, timeout=30).stdout)
+        assert [p["citekey"] for p in related["results"]] == ["SavedRelated", "SavedOther"]
+        assert related["results"][0]["title_only"] and related["candidates"]["missing_vectors"] == 1
+        assert related["assessment"]["calibrated"] and "ranking_score" in related["results"][0]
+        rejected = json.loads(subprocess.run(
+            [args.command, "--temp", str(saved_config), "--paper", "similar", "SavedUnrelatedControl", "--format", "json"],
+            env=saved_env, check=True, text=True, capture_output=True, timeout=30).stdout)
+        assert rejected["results"] == [] and rejected["assessment"]["decision"] == "insufficient_evidence"
+        assert saved_before == hashes_for(saved_paths), "Saved-vector similarity changed fixture data"
     print("Installed option CLI, bundled documentation/resources, saved selection, "
           "setup help/non-TTY safety, PDF page citations, CFF fonts, AES-256, CSV, eight document formats, media exclusion, "
           "source immutability, persisted index, read-only MCP and localhost GUI/assets passed")

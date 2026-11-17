@@ -18,6 +18,7 @@ from . import __version__
 from .config import load_config
 from .database import LibraryIdentityError, connect, index_state
 from .search import SQLiteSearch
+from .similarity import SimilarPapersError
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 MAX_INPUT_CHARS = 65536
@@ -63,6 +64,13 @@ def _tool(name, description, properties, required):
 
 
 TOOLS = [
+    _tool(
+        "similar_papers",
+        "Find related papers from saved title/abstract vectors; no inference or model download. "
+        "Source paper is excluded; similarity is unverified metadata, not scientific evidence.",
+        {"citekey": KEY, "top": TOP, "year": _string(32), "author": _string(512), "doi": KEY, "citekeys": KEYS},
+        ["citekey"],
+    ),
     _tool(
         "get_index_status",
         "Read saved library identity, generation, last successful update and extraction counts. "
@@ -192,11 +200,11 @@ def _bounded_paper(paper: dict, budget: int) -> dict:
         return value
 
     priority = ("id", "citekey", "doi", "title", "author", "year", "journal",
-                "embedding_model", "abstract")
+                "embedding_model", "evidence_status", "indexed_fields", "abstract")
     for name in (*priority, *(key for key in paper if key not in priority)):
         if name not in paper:
             continue
-        if name in {"id", "citekey", "doi", "embedding_model", "source_bib", "indexed_bib_hash"}:
+        if name in {"id", "citekey", "doi", "embedding_model", "source_bib", "indexed_bib_hash", "evidence_status", "indexed_fields"}:
             result[name] = paper[name]
         else:
             result[name] = trim(paper[name], name)
@@ -232,6 +240,14 @@ class MCPServer:
             _validate(arguments, TOOL_BY_NAME[name]["inputSchema"])
             arguments = dict(arguments)
             config = load_config(self.config_path)
+            if name == "similar_papers":
+                from .similarity import similar_papers
+
+                data = similar_papers(config, **arguments)
+                budget = max(500, min(8000, 60000 // max(1, len(data["results"]))))
+                data["source"] = _bounded_paper(data["source"], 8000)
+                data["results"] = [_bounded_paper(item, budget) for item in data["results"]]
+                return _tool_result(data)
             if name == "semantic_search_papers":
                 from dataclasses import asdict
                 from .semantic import SentenceTransformerBackend, require_enabled, semantic_search
@@ -285,7 +301,7 @@ class MCPServer:
                 else:
                     data = getattr(engine, name)(**arguments)
                 return _tool_result(data)
-        except LibraryIdentityError as exc:
+        except (LibraryIdentityError, SimilarPapersError) as exc:
             result = _tool_result(error=str(exc))
             payload = json.loads(result["content"][0]["text"])
             payload["error_code"] = exc.code

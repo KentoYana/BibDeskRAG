@@ -60,6 +60,7 @@ def parser() -> argparse.ArgumentParser:
     choice.add_argument("-p", "--paper", nargs="+", action=Once, metavar=("ACTION", "VALUE"),
                         help=("search QUERY     Search bibliography metadata and indexed text\n"
                               "show KEY         Retrieve a paper by citekey\n"
+                              "similar KEY      Find papers using saved title/abstract vectors\n"
                               "attachments KEY  List a paper's linked attachments\n"
                               "context QUERY    Retrieve excerpts with source citations"))
     settings = p.add_argument_group("Configuration")
@@ -177,7 +178,7 @@ def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace |
             allowed |= {"retry_citekeys", "retry_attachment_ids", "retry_paths", "retry_statuses"}
     elif primary == "paper":
         tokens = args.paper
-        valid = {"search": "QUERY", "show": "KEY", "attachments": "KEY", "context": "QUERY"}
+        valid = {"search": "QUERY", "show": "KEY", "attachments": "KEY", "context": "QUERY", "similar": "KEY"}
         if tokens[0] not in valid:
             p.error("--paper expects search QUERY, show KEY, attachments KEY, or context QUERY")
         if len(tokens) != 2:
@@ -202,6 +203,15 @@ def parse_args(argv: list[str], *, argument_parser=None) -> argparse.Namespace |
                 p.error("--doi, --year, --author require --scope metadata")
             if "metadata_query" in supplied and supplied.get("scope", "all") != "all":
                 p.error("--metadata-query requires --scope all")
+        elif args.paper_action == "similar":
+            allowed |= {"top", "year", "author", "doi", "citekeys"}
+            from .similarity import validate_arguments
+
+            try:
+                validate_arguments(args.value, supplied.get("top", 10), supplied.get("year"),
+                                   supplied.get("author"), supplied.get("citekeys"), supplied.get("doi"))
+            except ValueError as exc:
+                p.error(str(exc))
         elif args.paper_action == "context":
             allowed |= {"max_chars", "scope"}
             if supplied.get("scope") == "metadata":

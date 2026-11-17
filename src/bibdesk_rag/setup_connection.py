@@ -22,7 +22,7 @@ EXPECTED_TOOLS = {
     "search_papers", "search_fulltext", "get_paper", "get_attachments",
     "get_chunk", "build_context",
     "get_index_status",
-    "semantic_search_papers",
+    "semantic_search_papers", "similar_papers",
 }
 
 

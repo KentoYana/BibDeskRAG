@@ -164,6 +164,12 @@ def main(argv: list[str] | None = None) -> int:
             result = download_model(config.semantic)
             print_result(result, args.format)
             return 0
+        if args.command == "paper" and args.paper_action == "similar":
+            from .similarity import similar_papers
+
+            print_result(similar_papers(config, args.value, args.top, year=args.year,
+                                        author=args.author, doi=args.doi, citekeys=args.citekeys), args.format)
+            return 0
         if args.command == "paper" and args.paper_action == "search" and args.mode == "semantic":
             from .semantic import semantic_search
 

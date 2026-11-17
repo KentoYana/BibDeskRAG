@@ -160,7 +160,7 @@ def test_incremental_metadata_changes_removal_model_and_rollback(collection):
     assert semantic.semantic_search(config, "repair", backend=backend)[0]["author"] == "New, Author"
     config.bib.write_text(config.bib.read_text().replace("DNA damage repair mechanisms", "New repair"))
     assert update(collection)["embedded"] == 1
-    assert len(backend.calls) == 1
+    assert len(backend.calls) == 2
     config.bib.write_text(config.bib.read_text() + "\n@article{Added,title={New entry}}")
     assert update(collection)["embedded"] == 1
     config.bib.write_text(config.bib.read_text().split("@article{Plant")[0])
@@ -386,3 +386,19 @@ def test_real_multilingual_model_offline(tmp_path, monkeypatch):
     assert len(hits) == 5 and len({item["citekey"] for item in hits}) == 5
     with pytest.raises(ValueError, match="token limit"):
         semantic.semantic_search(config, "修復" * 700, backend=backend)
+
+
+def test_title_anchor_preprocessing_refreshes_vectors_without_touching_source(collection):
+    config, _, backend = collection
+    source = config.bib.read_bytes()
+    current = backend.info
+    backend.info = replace(current, preprocessing='unicode-fields-whitespace-nfc-v1;character-split-v1;max-pooling')
+    update(collection)
+    backend.info = current
+    backend.calls.clear()
+    result = update(collection)
+    assert result['embedded'] == 4 and result['reused'] == 0
+    assert len(backend.calls) == 8
+    assert backend.calls[0].endswith('Abstract: ')
+    assert config.bib.read_bytes() == source
+    assert update(collection)['reused'] == 4

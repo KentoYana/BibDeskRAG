@@ -62,11 +62,11 @@ def test_v1_readonly_and_successful_migration_preserve_legacy_and_fts(legacy):
         row = db.execute('SELECT * FROM embeddings WHERE chunk_id IS NOT NULL').fetchone()
         assert row['content_hash'] == 'original-chunk-hash'
         assert row['vector'] == struct.pack('<4f', 1, 0, 0, 0)
-        assert db.execute('SELECT count(*) FROM embeddings').fetchone()[0] == 5
+        assert db.execute('SELECT count(*) FROM embeddings').fetchone()[0] == 9
         assert SQLiteSearch(db).search_fulltext('RecQ')
         assert database.doctor(db, cfg)['ok']
         database.initialize(db)
-        assert db.execute('SELECT count(*) FROM embeddings').fetchone()[0] == 5
+        assert db.execute('SELECT count(*) FROM embeddings').fetchone()[0] == 9
     assert semantic.semantic_search(cfg, 'repair', 1, backend=backend)[0]['citekey'] == 'Repair'
 
 
@@ -115,7 +115,7 @@ def test_disabled_update_status_check_require_no_inference_dependencies(legacy, 
     ('UPDATE embeddings SET vector=? WHERE paper_id IS NOT NULL', b'bad', 'dimensions'),
     ('UPDATE embeddings SET vector=? WHERE paper_id IS NOT NULL', b'\0' * 16, 'unnormalized'),
     ('UPDATE embeddings SET content_hash=? WHERE paper_id IS NOT NULL', 'wrong', 'hash'),
-    ('UPDATE embeddings SET part=? WHERE paper_id IS NOT NULL', 8, 'contiguous'),
+    ('UPDATE embeddings SET part=part+? WHERE paper_id IS NOT NULL', 8, 'contiguous'),
     ('UPDATE embedding_models SET dimensions=? WHERE id=2', 8, 'inconsistent'),
 ])
 def test_check_detects_vector_integrity_without_loading_model(legacy, statement, value, expected):

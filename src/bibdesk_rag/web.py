@@ -21,6 +21,7 @@ from .cli_arguments import parse_args, parser
 from .config import Config
 from .database import connect, status
 from .search import SQLiteSearch
+from .similarity import SimilarPapersError, similar_papers
 from . import skim
 
 MAX_BODY = 32768
@@ -123,6 +124,20 @@ class WebApp:
                 cards[key]["hits"].append(hit)
         return {"papers": list(cards.values()), "paper_count": len(cards),
                 "hit_count": len(hits), "mode": args.mode}
+
+    def similar(self, body):
+        if body.keys() - {"citekey", "top", "year", "author", "doi", "citekeys"} or "citekey" not in body:
+            raise ValueError("Similar Papers requires a citekey and optional top/year/author/doi/citekeys.")
+        with self.database() as db:
+            result = similar_papers(self.config, **body, _db=db)
+            engine = SQLiteSearch(db)
+            cards = []
+            for hit in result["results"]:
+                paper = engine.get_paper(hit["citekey"])
+                cards.append({"paper": paper, "doi_url": doi_url(paper["doi"]),
+                              "attachments": self.attachments(engine, paper["citekey"]), "hits": [hit]})
+            return {**{k: v for k, v in result.items() if k != "results"}, "papers": cards, "paper_count": len(cards),
+                    "hit_count": len(result["results"]), "mode": "similar"}
 
     @staticmethod
     def attachments(engine, key):
@@ -306,6 +321,8 @@ def handler_for(app: WebApp):
                     result = self.internal(body)
                 elif self.path == "/api/search":
                     result = app.search(body)
+                elif self.path == "/api/similar":
+                    result = app.similar(body)
                 elif self.path == "/api/status" and not body:
                     result = app.info()
                 elif self.path == "/api/initial" and body.keys() == {"request_id"}:
@@ -322,6 +339,8 @@ def handler_for(app: WebApp):
                     self.reply(404, {"error": "Unknown API operation."})
                     return
                 self.reply(200, result)
+            except SimilarPapersError as exc:
+                self.reply(400, {"error": str(exc), "error_code": exc.code})
             except (ValueError, UnicodeError) as exc:
                 self.reply(400, {"error": str(exc)})
             except KeyError:

@@ -61,3 +61,7 @@ Optional semantic search / 任意の意味検索（--setupで選択）:
   bibdesk-rag --index status --format json
   bibdesk-rag --index rebuild
   Interactive setup, unified index and Homebrew: docs/semantic-search.md
+
+Related papers from saved vectors / 保存済みベクトルから関連文献を取得:
+  bibdesk-rag --paper similar Example2025 --top 10 --format json
+  bibdesk-rag --paper similar Example2025 --author Smith --year 2026

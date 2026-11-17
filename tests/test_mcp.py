@@ -71,7 +71,7 @@ def test_all_tools_preserve_sources_and_index(mcp_fixture):
     assert response["result"]["capabilities"] == {"tools": {"listChanged": False}}
     assert "untrusted" in response["result"]["instructions"]
     listing = server.handle({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
-    assert len(listing["result"]["tools"]) == 8
+    assert len(listing["result"]["tools"]) == 9
     assert all(item["annotations"]["readOnlyHint"] for item in listing["result"]["tools"])
     status = tool(server, "get_index_status")
     assert status["freshness"] == "unverified" and status["index_generation"]
@@ -310,6 +310,7 @@ def test_mcp_rejects_both_selection_spellings(tmp_path, capsys):
 def test_tool_names_are_exact():
     assert {tool["name"] for tool in TOOLS} == {
         "get_index_status",
+        "similar_papers",
         "semantic_search_papers",
         "search_papers",
         "search_fulltext",

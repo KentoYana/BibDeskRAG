@@ -226,3 +226,11 @@ not benchmark a real library or Mac mini M1/16-GB performance. See the [validati
 
 Primary references: [E5 model card](https://huggingface.co/intfloat/multilingual-e5-small/blob/fd1525a9fd15316a2d503bf26ab031a61d056e98/README.md),
 [SentenceTransformer API](https://sbert.net/docs/package_reference/sentence_transformer/SentenceTransformer.html).
+
+## 保存済み文献どうしの比較 / Comparing saved papers
+
+`--paper similar CITEKEY` は索引にあるTitle/Abstractベクトルを比較します。
+モデル・キャッシュの読み込みは不要です。[類似論文検索](similar-papers.md)。
+
+`--paper similar CITEKEY` compares stored Title/Abstract vectors without model
+loading or a cache. See [Similar Papers](similar-papers.md).

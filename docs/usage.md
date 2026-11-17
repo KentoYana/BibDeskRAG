@@ -453,3 +453,11 @@ See the [guide](index-status-retry.md) for target selection, remaining issues an
 Use `--paper context QUERY --scope fulltext` for all indexed attachment text.
 The default retains two-stage search. See [scope/filters](context-search.md) and
 [the fixed evaluation](search-evaluation.md).
+
+## 類似論文 / Similar papers
+
+`--paper similar CITEKEY --top N`、MCP `similar_papers`、GUIのSimilar Papersで
+保存ベクトルから関連文献を検索できます。[仕様・制約](similar-papers.md)。
+
+Use `--paper similar CITEKEY --top N`, MCP `similar_papers` or Similar Papers in
+the GUI to compare saved vectors. See [the guide](similar-papers.md).

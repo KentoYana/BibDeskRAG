@@ -13,7 +13,7 @@ import unicodedata
 
 from .config import Config, check_output_locations
 from .database import connect
-from .embeddings import SentenceTransformerBackend, normalize_vectors, numpy, split_passages
+from .embeddings import SentenceTransformerBackend, normalize_vectors, numpy, embedding_passages, ModelInfo
 
 
 def normalized_fields(title: str, abstract: str) -> tuple[str, str]:
@@ -105,7 +105,7 @@ def update_vectors(db, config, backend, *, rebuild=False, previous_papers=()):
             report["reused"] += 1
             continue
         db.execute("DELETE FROM embeddings WHERE paper_id=?", (paper_id,))
-        texts = split_passages(title, abstract, backend)
+        texts = embedding_passages(title, abstract, backend)
         for start in range(0, len(texts), config.semantic.batch_size):
             batch = texts[start:start + config.semantic.batch_size]
             vectors = normalize_vectors(backend.embed_documents(batch), info["dimensions"])
@@ -151,7 +151,7 @@ def semantic_status(db, config=None):
     configured = None if config is None or info is None else all(
         info.get(key) == getattr(config.semantic, key)
         for key in ("model", "revision", "dimensions", "passage_prefix", "query_prefix", "max_tokens")
-    )
+    ) and info.get("preprocessing") == ModelInfo.__dataclass_fields__["preprocessing"].default
     return dict(enabled=None if config is None else config.semantic.enabled,
                 total=len(fields), eligible=eligible, indexed=indexed, vectors=count[1],
                 missing=max(0, eligible - indexed), stale=len(stale),

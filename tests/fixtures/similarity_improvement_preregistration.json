@@ -1,0 +1,33 @@
+{
+  "holdout_sha256": "cc11e32422b4d63ef8d8afc1f3c4ebee52373240e72c9d83e5cb555f5d94902f",
+  "development_sha256": "47fed5670f3a59a13707945413994c4962e1637dd895ef41e1a6fa62c9b1e68d",
+  "criteria": {
+    "long_top1_wrong_max": 2,
+    "positive_query_coverage_min": 0.9,
+    "no_related_abstention_required": 4,
+    "ndcg_ge_legacy": true,
+    "title_only_ndcg_ge_lexical": true,
+    "recall_drop_vs_legacy_max": 0.05,
+    "japanese_ndcg_drop_vs_legacy_max": 0.05
+  },
+  "proposed_grid": {
+    "opening_weight": [
+      0.5,
+      0.8,
+      1.0
+    ],
+    "lexical_weight": [
+      0.3,
+      0.5,
+      0.7
+    ],
+    "title_only_lexical_weight": [
+      0.5,
+      0.7,
+      1.0
+    ],
+    "rrf_k": 10,
+    "abstract_lexical_chars": 600
+  },
+  "calibration": "Select rejection gates only on the development set; report coverage/false acceptance on heldout. Fixed model-signature-scoped profile, not universal confidence."
+}

@@ -92,7 +92,7 @@ BibDesk. This application never rewrites the bibliography.
 
 The package workflow runs on PRs and tags. It builds/installs wheel and sdist,
 executes package smoke, and runs the pinned validation-only MCP SDK against both
-installed packages. All eight tools are exercised; semantic search is tested
+installed packages. All nine tools are exercised; semantic search is tested
 through its disabled error without downloading a model. Fake-backend semantic
 success and model-unavailable cases remain in the unit tests. This is not a
 claim of real-model SDK interoperability in hosted CI.
@@ -177,3 +177,13 @@ build_contextの任意引数scopeは既定allで、従来の文献順位を維�
 明示的に指定し、対象条件を尊重します。MCPでcitekeysとmetadata_queryを併用した場合、
 metadata_queryを無視せず共通部分を使います。CLIの併用拒否は維持します。
 範囲診断は追加フィールドです。[仕様](context-search.md)を参照してください。
+
+## Saved-paper similarity / 保存済み文献の類似検索
+
+The ninth read-only MCP tool, similar_papers, shares CLI/GUI ranking and filters.
+It uses only saved compatible paper vectors; no model/NumPy is loaded and no
+schema migration or dependency change is introduced. See [the contract](similar-papers.md).
+
+9つ目の読み取り専用MCP similar_papersはCLI/GUIと順位・フィルタを共有します。
+保存済みの互換ベクトルだけを使い、モデル・NumPyの読み込みやスキーマ移行・依存変更は
+行いません。[仕様](similar-papers.md)を参照してください。

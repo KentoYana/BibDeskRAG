@@ -1,0 +1,926 @@
+{
+  "version": 1,
+  "license": "CC0-1.0; project-authored synthetic metadata only",
+  "judgment_policy": {
+    "2": "Same primary mechanism/subtopic as seed; paraphrases and translations are intentional.",
+    "1": "Same declared broad domain, different primary mechanism/subtopic.",
+    "0": "Every other candidate, including isolated controls. Cross-domain biological connections are outside this controlled task.",
+    "method": "Labels fixed by authored domain/subtopic definitions before any embeddings or scores; not independent expert judgments."
+  },
+  "predeclared_analysis": {
+    "primary": "Macro nDCG@10 on the 36 positive seeds, with gain=2**grade-1; Recall@10 and MRR@10 treat grades 1/2 as relevant.",
+    "comparators": [
+      "lexical_tf_idf",
+      "saved_vector_centroid_cosine",
+      "similar_papers_max_pairwise_cosine"
+    ],
+    "strata": [
+      "language",
+      "condition",
+      "domain"
+    ],
+    "quality_screen": "Report whether max-pairwise nDCG@10 is at least the lexical baseline; not a real-world release certification.",
+    "controls": "Four no-related seeds are excluded from positive denominators. Report returned counts and top similarity; no empty-result/score threshold is imposed.",
+    "stress": "Eight abstracts include identical administrative boilerplate to stress max-passage aggregation. No labels will be changed after observing scores."
+  },
+  "papers": [
+    {
+      "citekey": "P009",
+      "title": "Promoter activation and transcription through histone H3 lysine 4 methylation",
+      "abstract": "",
+      "domain": "Chromatin",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "O003",
+      "title": "Coastal tide forecasting from harmonic ocean cycles",
+      "abstract": "This synthetic navigation catalog concerns harmonic tide forecasting, coastal sea-level cycles, and port scheduling.",
+      "domain": "isolated-2",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "isolated synthetic control"
+    },
+    {
+      "citekey": "P028",
+      "title": "Extracellular matrix and adhesion in surface biofilms",
+      "abstract": "This synthetic record concerns biofilm matrix assembly and surface attachment. Extracellular polysaccharides, bacterial adhesion, and physical community architecture are central. Quorum signal detection is not the primary mechanism being described.",
+      "domain": "Microbial communities",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P037",
+      "title": "Photobleaching correction in fluorescence intensity measurements",
+      "abstract": "This synthetic record concerns quantitative fluorescence microscopy. Photobleaching, photon noise, and background subtraction affect measured intensities over time. It addresses intensity correction rather than identification of individual cell boundaries.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Quantitative imaging",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P007",
+      "title": "SET1-dependent H3K4 methylation at active promoters",
+      "abstract": "The subject of this synthetic record is histone H3 lysine 4 methylation by SET1. Promoter chromatin, transcription initiation, and gene activation define the topic. It does not study H3 lysine 9 heterochromatin silencing.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Chromatin",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P017",
+      "title": "FZO1とDRP1によるミトコンドリア融合と分裂",
+      "abstract": "この架空の研究要旨は、FZO1による融合とDRP1による分裂に注目する。ミトコンドリアネットワークの形態制御を対象とし、ミトコンドリアDNA複製の酵素機構とは区別する。",
+      "domain": "Mitochondria",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P029",
+      "title": "バイオフィルムの細胞外マトリックスと表面付着",
+      "abstract": "この架空の研究要旨は、細菌バイオフィルムの細胞外多糖、表面への付着、群集の物理構造を扱う。自己誘導物質によるクオラムシグナルの検出を主題とはしない。",
+      "domain": "Microbial communities",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P047",
+      "title": "脱アデニル化とRNA分解によるmRNA寿命の制御",
+      "abstract": "この架空の研究要旨は、poly-A鎖の短縮、脱アデニル化、成熟mRNAの分解と安定性を主題とする。スプライシングによるエクソン選択とは区別する。",
+      "domain": "RNA regulation",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P035",
+      "title": "根のナトリウム輸送と植物の塩ストレス耐性",
+      "abstract": "この架空の要旨は、塩ストレス条件における根のナトリウム輸送、イオン排出、イオン恒常性を対象とする。乾燥条件でのABA依存的な気孔制御とは区別する。",
+      "domain": "Plant abiotic stress",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P006",
+      "title": "FANCD2-dependent unhooking of acetaldehyde interstrand crosslinks",
+      "abstract": "",
+      "domain": "DNA repair",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P005",
+      "title": "DNA鎖間架橋とFanconi修復経路",
+      "abstract": "この架空の要旨は、アセトアルデヒドによるDNA鎖間架橋とFanconi経路を主題とする。FANCD2の活性化と架橋の切り離しを比較し、単純な二本鎖切断の相同組換えとは区別する。",
+      "domain": "DNA repair",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P016",
+      "title": "Fusion and fission control mitochondrial network morphology",
+      "abstract": "The focus of this synthetic record is mitochondrial dynamics. FZO1-mediated fusion and DRP1-mediated fission determine organelle network shape. It addresses membrane and morphology changes rather than mitochondrial DNA replication machinery.",
+      "domain": "Mitochondria",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P038",
+      "title": "蛍光強度測定における退色補正と背景差し引き",
+      "abstract": "この架空の研究要旨は、定量蛍光顕微鏡での光退色、光子ノイズ、背景の差し引きを対象とする。細胞境界を識別する画像セグメンテーションとは区別する。",
+      "domain": "Quantitative imaging",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "O004",
+      "title": "Historical bookbinding structures and leather cover conservation",
+      "abstract": "This synthetic archive catalog concerns sewn bookbinding structures, leather covers, and conservation of historical volumes.",
+      "domain": "isolated-3",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "isolated synthetic control"
+    },
+    {
+      "citekey": "P015",
+      "title": "Organelle genome stability through mitochondrial DNA polymerase and helicase",
+      "abstract": "",
+      "domain": "Mitochondria",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P021",
+      "title": "Endogenous circadian oscillation driven by FRQ and white collar feedback",
+      "abstract": "",
+      "domain": "Circadian and light regulation",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P045",
+      "title": "SR proteins and exon inclusion during alternative pre-mRNA splicing",
+      "abstract": "",
+      "domain": "RNA regulation",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "O002",
+      "title": "Ceramic kiln glazing and decorative firing schedules",
+      "abstract": "This synthetic craft catalog concerns ceramic glazes, kiln firing schedules, and decorative pottery surfaces.",
+      "domain": "isolated-1",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "isolated synthetic control"
+    },
+    {
+      "citekey": "P040",
+      "title": "Cell-boundary segmentation using watershed image masks",
+      "abstract": "This synthetic abstract concerns image segmentation and cell counting. Watershed boundaries, touching-cell separation, and object masks define the subject. It focuses on spatial object identification rather than photobleaching correction.",
+      "domain": "Quantitative imaging",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P002",
+      "title": "相同組換えによるDNA二本鎖切断の修復",
+      "abstract": "この架空の研究要旨は、RAD51とBRCA2による相同組換え修復を対象とする。姉妹染色分体を鋳型とした鎖侵入とDNA二本鎖切断の修復機構を比較する。主題はDNA架橋の除去ではなく、切断された染色体の組換え修復である。",
+      "domain": "DNA repair",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P013",
+      "title": "Mitochondrial nucleoids and maintenance of the organelle genome",
+      "abstract": "This synthetic abstract concerns mitochondrial DNA replication and genome maintenance. Nucleoids, mitochondrial polymerase, and a DNA helicase are the central subjects. Mitochondrial genome integrity is distinguished from organelle fusion and fission.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Mitochondria",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P008",
+      "title": "SET1とH3K4メチル化による転写開始の調節",
+      "abstract": "この架空の研究は、活性型プロモーターにおけるSET1依存的なヒストンH3K4メチル化を対象とする。転写開始と遺伝子活性化に注目し、H3K9によるヘテロクロマチン形成とは区別する。",
+      "domain": "Chromatin",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P018",
+      "title": "Mitochondrial membrane dynamics: FZO1 fusion versus DRP1 fission",
+      "abstract": "",
+      "domain": "Mitochondria",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P031",
+      "title": "Abscisic acid control of guard-cell closure during drought",
+      "abstract": "This synthetic record concerns plant drought responses mediated by abscisic acid. Guard-cell signaling, stomatal closure, and reduced water loss define the subject. It is distinguished from sodium exclusion under saline conditions.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Plant abiotic stress",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P020",
+      "title": "NeurosporaのFRQ負のフィードバックと概日時計",
+      "abstract": "この架空の要旨は、アカパンカビのFRQとwhite collar転写複合体が構成する概日時計を対象とする。内因性の周期性と負のフィードバックを主題とし、連続光への光受容体の順応とは区別する。",
+      "domain": "Circadian and light regulation",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P039",
+      "title": "Fluorescence time-series quantification with bleaching and background correction",
+      "abstract": "",
+      "domain": "Quantitative imaging",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P025",
+      "title": "Population-density sensing through bacterial autoinducers",
+      "abstract": "This synthetic abstract concerns bacterial quorum sensing. Autoinducer accumulation, LasR signaling, and population-density dependent gene expression define the subject. It does not focus on the physical extracellular matrix of an attached biofilm.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Microbial communities",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P023",
+      "title": "VVDによる青色光受容と連続光への順応",
+      "abstract": "この架空の研究は、糸状菌のVVDとwhite collarによる青色光応答を扱う。光入力と連続照明への順応を対象とし、自律的な概日振動の生成機構とは区別する。",
+      "domain": "Circadian and light regulation",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P022",
+      "title": "VVD photoreceptor adaptation to sustained illumination",
+      "abstract": "This synthetic record concerns fungal blue-light sensing and adaptation. VVD and white collar photoreceptor responses under continuous illumination are the main subjects. The focus is light input and adaptation rather than autonomous circadian oscillation.",
+      "domain": "Circadian and light regulation",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "O001",
+      "title": "Medieval musical notation and manuscript transcription",
+      "abstract": "This synthetic catalog vignette concerns medieval musical notation, scribal abbreviations, and historical score transcription.",
+      "domain": "isolated-0",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "isolated synthetic control"
+    },
+    {
+      "citekey": "P044",
+      "title": "スプライソソームによる選択的スプライシングとエクソン選択",
+      "abstract": "この架空の要旨は、pre-mRNAの選択的スプライシング、SRタンパク質、エクソンの取り込みによる転写産物アイソフォームの生成を対象とする。成熟mRNAの分解による寿命制御とは区別する。",
+      "domain": "RNA regulation",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P026",
+      "title": "細菌の自己誘導物質とクオラムセンシング",
+      "abstract": "この架空の要旨は、自己誘導物質の蓄積、LasRシグナル、細胞密度に依存した遺伝子発現を対象とする。付着バイオフィルムの細胞外マトリックス構造とは区別する。",
+      "domain": "Microbial communities",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P041",
+      "title": "Watershedによる細胞境界の分割と接触細胞の識別",
+      "abstract": "この架空の要旨は、画像内の細胞境界、接触細胞の分離、watershedとオブジェクトマスクによる細胞計数を扱う。蛍光強度の退色補正を主題とはしない。",
+      "domain": "Quantitative imaging",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P048",
+      "title": "Mature transcript turnover through poly-A shortening and RNA degradation",
+      "abstract": "",
+      "domain": "RNA regulation",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P001",
+      "title": "Homologous recombination at broken chromosomes",
+      "abstract": "This synthetic study concerns repair of DNA double-strand breaks by homologous recombination. RAD51 filament formation, BRCA2-dependent strand invasion, and sister-chromatid templates define the subject. The focus is chromosome break repair rather than chemical crosslinks.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "DNA repair",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P032",
+      "title": "乾燥条件でのABAシグナルと孔辺細胞の気孔閉鎖",
+      "abstract": "この架空の要旨は、植物の乾燥応答におけるアブシジン酸、孔辺細胞のシグナル伝達、気孔閉鎖と水分損失の制御を対象とする。塩ストレス下のナトリウム排出とは区別する。",
+      "domain": "Plant abiotic stress",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P036",
+      "title": "Salinity adaptation through root ion homeostasis and sodium exclusion",
+      "abstract": "",
+      "domain": "Plant abiotic stress",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P010",
+      "title": "HP1 recruitment by H3K9 methylated heterochromatin",
+      "abstract": "This synthetic record concerns H3 lysine 9 methylation, HP1 recruitment, and transcriptional silencing in heterochromatin. Centromeric chromatin and stable repression are the main themes, rather than SET1-mediated active promoters.",
+      "domain": "Chromatin",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P014",
+      "title": "ミトコンドリアDNAの複製と核様体の維持",
+      "abstract": "この架空の要旨は、ミトコンドリアDNAの複製、核様体、DNAポリメラーゼとヘリカーゼによるゲノム維持を対象とする。オルガネラの融合・分裂による形態制御とは区別する。",
+      "domain": "Mitochondria",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P046",
+      "title": "Deadenylation and decay determine mature messenger RNA lifetime",
+      "abstract": "This synthetic record concerns post-transcriptional mRNA stability. Poly-A shortening, deadenylation, and RNA decay regulate mature transcript lifetimes. It is not primarily about exon selection during spliceosome processing.",
+      "domain": "RNA regulation",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P024",
+      "title": "Blue light input and photoadaptation through fungal VVD",
+      "abstract": "",
+      "domain": "Circadian and light regulation",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P034",
+      "title": "Root sodium transport and tolerance to saline soil",
+      "abstract": "This synthetic abstract concerns salt stress in plants. Root sodium transport, ion exclusion, and ionic homeostasis during salinity are the main topics. It is not primarily about abscisic-acid regulation of stomatal opening during drought.",
+      "domain": "Plant abiotic stress",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P019",
+      "title": "FRQ feedback and circadian transcription in Neurospora",
+      "abstract": "This synthetic abstract addresses circadian oscillation in Neurospora. FRQ negative feedback and the white collar transcriptional complex define the clock mechanism. It examines endogenous rhythmic timing rather than photoreceptor adaptation to continuous light.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "Circadian and light regulation",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P012",
+      "title": "Repressive chromatin silencing through H3K9 and HP1",
+      "abstract": "",
+      "domain": "Chromatin",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P004",
+      "title": "Fanconi pathway responses to interstrand DNA crosslinks",
+      "abstract": "This synthetic abstract addresses interstrand DNA crosslinks and the Fanconi anemia repair pathway. FANCD2 activation and crosslink unhooking are the central concepts. Acetaldehyde-induced covalent links are the model lesion, distinct from an isolated double-strand break.",
+      "domain": "DNA repair",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P043",
+      "title": "Alternative exon selection by the spliceosome",
+      "abstract": "This synthetic abstract concerns alternative pre-mRNA splicing. Spliceosome assembly, SR proteins, and exon inclusion generate transcript isoforms. It is distinct from regulation of mature mRNA lifetime by deadenylation and decay.\n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. \n\nSynthetic reporting appendix. The document contains a standard description of sample identifiers, file naming, record retention, data dictionaries, figure numbering, table formatting, version tracking, and reproducibility checklists. These general administrative procedures are shared across unrelated topics and do not establish mechanistic similarity. No experimental measurements or real studies are reported. Records describe a controlled retrieval benchmark rather than empirical conclusions. ",
+      "domain": "RNA regulation",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P011",
+      "title": "H3K9メチル化とHP1によるヘテロクロマチン形成",
+      "abstract": "この架空の要旨はH3K9メチル化、HP1の結合、ヘテロクロマチンでの転写抑制を扱う。セントロメアの抑制性クロマチンを主題とし、SET1による活性プロモーターの制御とは区別する。",
+      "domain": "Chromatin",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P030",
+      "title": "Bacterial attachment and extracellular polysaccharide matrix in biofilms",
+      "abstract": "",
+      "domain": "Microbial communities",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P033",
+      "title": "Drought-induced stomatal closure through abscisic acid signaling",
+      "abstract": "",
+      "domain": "Plant abiotic stress",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P027",
+      "title": "LasR signaling links autoinducer concentration to bacterial population density",
+      "abstract": "",
+      "domain": "Microbial communities",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P003",
+      "title": "RAD51 and BRCA2 guide strand invasion during double-strand break repair",
+      "abstract": "",
+      "domain": "DNA repair",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    },
+    {
+      "citekey": "P042",
+      "title": "Object masks and separation of touching cells in microscopy segmentation",
+      "abstract": "",
+      "domain": "Quantitative imaging",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "synthetic research vignette; no actual publication"
+    }
+  ],
+  "seeds": [
+    {
+      "citekey": "P001",
+      "relevance": {
+        "P002": 2,
+        "P003": 2,
+        "P004": 1,
+        "P005": 1,
+        "P006": 1
+      }
+    },
+    {
+      "citekey": "P002",
+      "relevance": {
+        "P001": 2,
+        "P003": 2,
+        "P004": 1,
+        "P005": 1,
+        "P006": 1
+      }
+    },
+    {
+      "citekey": "P003",
+      "relevance": {
+        "P001": 2,
+        "P002": 2,
+        "P004": 1,
+        "P005": 1,
+        "P006": 1
+      }
+    },
+    {
+      "citekey": "P004",
+      "relevance": {
+        "P001": 1,
+        "P002": 1,
+        "P003": 1,
+        "P005": 2,
+        "P006": 2
+      }
+    },
+    {
+      "citekey": "P005",
+      "relevance": {
+        "P001": 1,
+        "P002": 1,
+        "P003": 1,
+        "P004": 2,
+        "P006": 2
+      }
+    },
+    {
+      "citekey": "P007",
+      "relevance": {
+        "P008": 2,
+        "P009": 2,
+        "P010": 1,
+        "P011": 1,
+        "P012": 1
+      }
+    },
+    {
+      "citekey": "P008",
+      "relevance": {
+        "P007": 2,
+        "P009": 2,
+        "P010": 1,
+        "P011": 1,
+        "P012": 1
+      }
+    },
+    {
+      "citekey": "P009",
+      "relevance": {
+        "P007": 2,
+        "P008": 2,
+        "P010": 1,
+        "P011": 1,
+        "P012": 1
+      }
+    },
+    {
+      "citekey": "P010",
+      "relevance": {
+        "P007": 1,
+        "P008": 1,
+        "P009": 1,
+        "P011": 2,
+        "P012": 2
+      }
+    },
+    {
+      "citekey": "P011",
+      "relevance": {
+        "P007": 1,
+        "P008": 1,
+        "P009": 1,
+        "P010": 2,
+        "P012": 2
+      }
+    },
+    {
+      "citekey": "P013",
+      "relevance": {
+        "P014": 2,
+        "P015": 2,
+        "P016": 1,
+        "P017": 1,
+        "P018": 1
+      }
+    },
+    {
+      "citekey": "P014",
+      "relevance": {
+        "P013": 2,
+        "P015": 2,
+        "P016": 1,
+        "P017": 1,
+        "P018": 1
+      }
+    },
+    {
+      "citekey": "P015",
+      "relevance": {
+        "P013": 2,
+        "P014": 2,
+        "P016": 1,
+        "P017": 1,
+        "P018": 1
+      }
+    },
+    {
+      "citekey": "P016",
+      "relevance": {
+        "P013": 1,
+        "P014": 1,
+        "P015": 1,
+        "P017": 2,
+        "P018": 2
+      }
+    },
+    {
+      "citekey": "P017",
+      "relevance": {
+        "P013": 1,
+        "P014": 1,
+        "P015": 1,
+        "P016": 2,
+        "P018": 2
+      }
+    },
+    {
+      "citekey": "P019",
+      "relevance": {
+        "P020": 2,
+        "P021": 2,
+        "P022": 1,
+        "P023": 1,
+        "P024": 1
+      }
+    },
+    {
+      "citekey": "P020",
+      "relevance": {
+        "P019": 2,
+        "P021": 2,
+        "P022": 1,
+        "P023": 1,
+        "P024": 1
+      }
+    },
+    {
+      "citekey": "P021",
+      "relevance": {
+        "P019": 2,
+        "P020": 2,
+        "P022": 1,
+        "P023": 1,
+        "P024": 1
+      }
+    },
+    {
+      "citekey": "P022",
+      "relevance": {
+        "P019": 1,
+        "P020": 1,
+        "P021": 1,
+        "P023": 2,
+        "P024": 2
+      }
+    },
+    {
+      "citekey": "P023",
+      "relevance": {
+        "P019": 1,
+        "P020": 1,
+        "P021": 1,
+        "P022": 2,
+        "P024": 2
+      }
+    },
+    {
+      "citekey": "P025",
+      "relevance": {
+        "P026": 2,
+        "P027": 2,
+        "P028": 1,
+        "P029": 1,
+        "P030": 1
+      }
+    },
+    {
+      "citekey": "P026",
+      "relevance": {
+        "P025": 2,
+        "P027": 2,
+        "P028": 1,
+        "P029": 1,
+        "P030": 1
+      }
+    },
+    {
+      "citekey": "P027",
+      "relevance": {
+        "P025": 2,
+        "P026": 2,
+        "P028": 1,
+        "P029": 1,
+        "P030": 1
+      }
+    },
+    {
+      "citekey": "P028",
+      "relevance": {
+        "P025": 1,
+        "P026": 1,
+        "P027": 1,
+        "P029": 2,
+        "P030": 2
+      }
+    },
+    {
+      "citekey": "P031",
+      "relevance": {
+        "P032": 2,
+        "P033": 2,
+        "P034": 1,
+        "P035": 1,
+        "P036": 1
+      }
+    },
+    {
+      "citekey": "P032",
+      "relevance": {
+        "P031": 2,
+        "P033": 2,
+        "P034": 1,
+        "P035": 1,
+        "P036": 1
+      }
+    },
+    {
+      "citekey": "P033",
+      "relevance": {
+        "P031": 2,
+        "P032": 2,
+        "P034": 1,
+        "P035": 1,
+        "P036": 1
+      }
+    },
+    {
+      "citekey": "P034",
+      "relevance": {
+        "P031": 1,
+        "P032": 1,
+        "P033": 1,
+        "P035": 2,
+        "P036": 2
+      }
+    },
+    {
+      "citekey": "P037",
+      "relevance": {
+        "P038": 2,
+        "P039": 2,
+        "P040": 1,
+        "P041": 1,
+        "P042": 1
+      }
+    },
+    {
+      "citekey": "P038",
+      "relevance": {
+        "P037": 2,
+        "P039": 2,
+        "P040": 1,
+        "P041": 1,
+        "P042": 1
+      }
+    },
+    {
+      "citekey": "P039",
+      "relevance": {
+        "P037": 2,
+        "P038": 2,
+        "P040": 1,
+        "P041": 1,
+        "P042": 1
+      }
+    },
+    {
+      "citekey": "P040",
+      "relevance": {
+        "P037": 1,
+        "P038": 1,
+        "P039": 1,
+        "P041": 2,
+        "P042": 2
+      }
+    },
+    {
+      "citekey": "P043",
+      "relevance": {
+        "P044": 2,
+        "P045": 2,
+        "P046": 1,
+        "P047": 1,
+        "P048": 1
+      }
+    },
+    {
+      "citekey": "P044",
+      "relevance": {
+        "P043": 2,
+        "P045": 2,
+        "P046": 1,
+        "P047": 1,
+        "P048": 1
+      }
+    },
+    {
+      "citekey": "P045",
+      "relevance": {
+        "P043": 2,
+        "P044": 2,
+        "P046": 1,
+        "P047": 1,
+        "P048": 1
+      }
+    },
+    {
+      "citekey": "P046",
+      "relevance": {
+        "P043": 1,
+        "P044": 1,
+        "P045": 1,
+        "P047": 2,
+        "P048": 2
+      }
+    },
+    {
+      "citekey": "O001",
+      "relevance": {}
+    },
+    {
+      "citekey": "O002",
+      "relevance": {}
+    },
+    {
+      "citekey": "O003",
+      "relevance": {}
+    },
+    {
+      "citekey": "O004",
+      "relevance": {}
+    }
+  ]
+}

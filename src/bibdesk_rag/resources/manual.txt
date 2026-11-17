@@ -559,3 +559,59 @@ rankings match baseline; positive-query Recall@10/MRR are 0.542857 for default
 and 0.885714 for fulltext. Both return empty for five no-match controls. Fulltext
 misses four attachment-free identifier cases. This is not real-library/model quality.
 Details / 詳細: docs/context-search.md, docs/search-evaluation.md
+
+類似論文 / SIMILAR PAPERS
+  bibdesk-rag --paper similar Example2025 --top 10 --format json
+  bibdesk-rag --paper similar Example2025 --year 2026 --author Smith
+  bibdesk-rag --paper similar Example2025 --citekey CandidateA --citekey CandidateB
+
+MCP similar_papers(citekey, top=10)とGUIのSimilar Papersも同じ読み取り専用処理です。
+意味検索の有効化と保存済みTitle/Abstractベクトルが必要です。モデル・NumPyは読み込まず、
+モデル取得・API送信・索引更新は行いません。起点を除外し、文献単位で重複しない順位を返します。
+標準E5は長文のTitle anchor、Titleのみの語彙順位統合、判断材料不足時の棄却を使います。
+ranking_score順、同点はcitekey順です。別モデルは最大cosineの未較正候補です。
+スコアは確率・検証済みの関連度・支持本文ではありません。
+
+MCP similar_papers(citekey, top=10) and the GUI share the same read-only service.
+Semantics must be enabled with saved Title/Abstract vectors. No model/NumPy loads,
+downloads, API submissions or index writes occur. The source is excluded and papers
+are deduplicated. Standard E5 uses title anchors, title-only lexical fusion and
+abstention, ordered by ranking_score then citekey. Other models return explicitly
+uncalibrated max-cosine candidates. Scores are not probabilities or verified evidence.
+
+year（完全一致）、author（大小文字を区別しない部分一致）、doi（正規化完全一致）、
+citekeys（候補文献）で絞れます。CLI --citekeyは候補指定です。すべて共通部分を使い、
+空結果でも勝手に広げません。GUIは現在有効なAuthor/Year/DOI/CitekeyとResultsを使います。
+abstract欠損はTitleのみで比較し、title_only/has_abstract/indexed_fieldsで明示します。
+起点未索引・不明citekey・無効設定・モデル不一致・古い/不正なベクトルは区別してエラーにします。
+candidatesは比較対象・保存ベクトルなし・空の書誌情報の件数を示します。鮮度は未確認です。
+
+Filters intersect: exact year, case-insensitive author substring, normalized exact
+DOI and candidate citekeys. CLI --citekey selects candidates. Empty results never
+broaden silently. GUI uses enabled Author/Year/DOI/Citekey filters and Results.
+Missing abstracts use Title only, marked by title_only/has_abstract/indexed_fields.
+Unknown/unembedded source, disabled semantics, model mismatch and stale/invalid
+vectors produce distinct errors. Candidate counts disclose unembedded/empty records.
+Freshness remains unverified. See docs/similar-papers.md for the complete contract.
+
+類似検索の実モデル評価 / REAL-MODEL SIMILARITY EVALUATION
+固定52文献・40起点でキャッシュ済みE5をオフライン評価しました。
+#20のRecall@10/MRR@10/nDCG@10は0.6444/0.7662/0.5535、語彙方式は
+0.4389/0.7917/0.4041でした。長文定型文8件はすべて別分野が最上位、Titleのみの
+nDCGは語彙方式を下回りました。正例なしでも候補を返し、高いcosineは関連性を保証しません。
+実ライブラリの品質・速度は未検証です。詳細・正解定義: docs/similarity-evaluation.md
+Cached E5 was evaluated offline on 52 authored synthetic papers and 40 seeds.
+#20 Recall/MRR/nDCG@10 were 0.6444/0.7662/0.5535 versus lexical
+0.4389/0.7917/0.4041. Every long-boilerplate source ranked a different domain
+first; title-only nDCG was below lexical. No-related sources still return candidates;
+high cosine is not verified relevance. Real-library quality/performance remain unverified.
+Full judgments/results: docs/similarity-evaluation.md
+
+類似検索の改善 / SIMILARITY IMPROVEMENTS
+前処理title-anchor-v2への移行には明示的な --index update が必要です。
+別評価集合36起点でnDCG@10は0.3144→0.6093、長文の首位誤り8→0、孤立対照4件すべて棄却。
+正例32起点はすべて候補を返しました。実ライブラリでの品質・速度は未検証です。
+Title-anchor-v2 requires an explicit --index update. On 36 held-out synthetic sources,
+nDCG@10 improved 0.3144→0.6093, long-source wrong tops 8→0; all four isolated controls
+abstained and all 32 positive sources returned candidates. Real-library quality/performance
+remain untested. Policy, limitations and full results: docs/similarity-improvements.md

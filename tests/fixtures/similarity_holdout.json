@@ -1,0 +1,884 @@
+{
+  "version": 1,
+  "license": "CC0-1.0; project-authored synthetic metadata only",
+  "judgment_policy": {
+    "2": "Same primary mechanism/subtopic as seed; paraphrases and translations are intentional.",
+    "1": "Same declared broad domain, different primary mechanism/subtopic.",
+    "0": "Every other candidate, including isolated controls. Cross-domain biological connections are outside this controlled task.",
+    "method": "Labels fixed by authored domain/subtopic definitions before any embeddings or scores; not independent expert judgments."
+  },
+  "split": "heldout-v1; untouched until ranking and rejection policy frozen",
+  "papers": [
+    {
+      "citekey": "H045",
+      "title": "Peptide fragmentation, tandem mass spectra, and protein identification mechanisms",
+      "abstract": "",
+      "domain": "Molecular measurement",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H026",
+      "title": "遺伝子重複とパラログの分化",
+      "abstract": "この合成文献の主題は遺伝子重複、パラログ配列の分化と遺伝子ファミリーの変化である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Evolutionary analysis",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H034",
+      "title": "Soil carbon turnover during litter decomposition",
+      "abstract": "This authored synthetic vignette concerns leaf litter decomposition, soil carbon turnover, and microbial respiration. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Ecological processes",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H011",
+      "title": "有糸分裂時の紡錘体チェックポイント",
+      "abstract": "この合成文献の主題は動原体の接着、紡錘体チェックポイントと染色体分配である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Cell cycle",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H035",
+      "title": "落葉分解と土壌炭素の循環",
+      "abstract": "この合成文献の主題は落葉の分解、土壌炭素の代謝回転と微生物呼吸である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Ecological processes",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H030",
+      "title": "DNA barcoding, taxonomic identification, and reference sequence matching mechanisms",
+      "abstract": "",
+      "domain": "Evolutionary analysis",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H008",
+      "title": "サイクリンによるG1期からS期への移行制御",
+      "abstract": "この合成文献の主題はサイクリン依存性キナーゼ、G1期の進行とDNA合成開始である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Cell cycle",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H017",
+      "title": "ミエリンによる軸索の絶縁と神経伝導",
+      "abstract": "この合成文献の主題はミエリン鞘、軸索の絶縁と電気的興奮の伝播である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Neural function",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H009",
+      "title": "Cyclin dependent kinases, G1 progression, and initiation of DNA synthesis mechanisms",
+      "abstract": "",
+      "domain": "Cell cycle",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H038",
+      "title": "細菌リボソームにおける翻訳開始",
+      "abstract": "この合成文献の主題はリボソームの動員、翻訳開始因子とメッセンジャーRNAの翻訳である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Protein production",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H004",
+      "title": "Autophagic delivery of cytoplasmic cargo to lysosomes",
+      "abstract": "This authored synthetic vignette concerns autophagosomes, cytoplasmic cargo selection, and lysosomal degradation. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Protein trafficking",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H025",
+      "title": "Gene duplication and divergence of paralogous sequences",
+      "abstract": "This authored synthetic vignette concerns gene duplication, paralog divergence, and changes in gene families. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Evolutionary analysis",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H003",
+      "title": "Secretory cargo, COPII vesicles, ER export, and Golgi delivery mechanisms",
+      "abstract": "",
+      "domain": "Protein trafficking",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H042",
+      "title": "Ubiquitin tagging, proteasomal recognition, and protein degradation mechanisms",
+      "abstract": "",
+      "domain": "Protein production",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H022",
+      "title": "Fatty acid breakdown through beta oxidation",
+      "abstract": "This authored synthetic vignette concerns fatty acid activation, beta oxidation cycles, and acetyl CoA production. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Energy metabolism",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H016",
+      "title": "Myelin insulation and axonal impulse conduction",
+      "abstract": "This authored synthetic vignette concerns myelin sheaths, axonal insulation, and propagation of electrical impulses. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Neural function",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H010",
+      "title": "Spindle checkpoint surveillance during mitosis",
+      "abstract": "This authored synthetic vignette concerns kinetochore attachment, spindle checkpoint signaling, and chromosome segregation. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Cell cycle",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H023",
+      "title": "ベータ酸化による脂肪酸分解",
+      "abstract": "この合成文献の主題は脂肪酸の活性化、ベータ酸化サイクルとアセチルCoA生成である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Energy metabolism",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H047",
+      "title": "定量PCRにおける参照遺伝子による正規化",
+      "abstract": "この合成文献の主題は定量PCR、参照遺伝子の安定性と発現量の正規化である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Molecular measurement",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H005",
+      "title": "オートファジーによる細胞質成分の分解",
+      "abstract": "この合成文献の主題はオートファゴソーム、細胞質成分の選択とリソソームへの輸送である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Protein trafficking",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H024",
+      "title": "Fatty acid activation, beta oxidation cycles, and acetyl CoA production mechanisms",
+      "abstract": "",
+      "domain": "Energy metabolism",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H036",
+      "title": "Leaf litter decomposition, soil carbon turnover, and microbial respiration mechanisms",
+      "abstract": "",
+      "domain": "Ecological processes",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H037",
+      "title": "Translation initiation on bacterial ribosomes",
+      "abstract": "This authored synthetic vignette concerns ribosome recruitment, initiation factors, and messenger RNA translation. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Protein production",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H001",
+      "title": "Secretory vesicle transport between endoplasmic reticulum and Golgi",
+      "abstract": "This authored synthetic vignette concerns secretory cargo, COPII vesicles, ER export, and Golgi delivery. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Protein trafficking",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H007",
+      "title": "Cyclin control of the G1 to S phase transition",
+      "abstract": "This authored synthetic vignette concerns cyclin dependent kinases, G1 progression, and initiation of DNA synthesis. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Cell cycle",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H012",
+      "title": "Kinetochore attachment, spindle checkpoint signaling, and chromosome segregation mechanisms",
+      "abstract": "",
+      "domain": "Cell cycle",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "HO03",
+      "title": "Mineral textures of volcanic basalt rocks",
+      "abstract": "This isolated geology vignette discusses basalt mineral textures, volcanic cooling, and thin section descriptions.",
+      "domain": "isolated-holdout-2",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "held-out isolated control"
+    },
+    {
+      "citekey": "H032",
+      "title": "動物による種子散布と生育場所への定着",
+      "abstract": "この合成文献の主題は動物による種子輸送、散布距離と植物の定着である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Ecological processes",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H046",
+      "title": "Reference gene normalization in quantitative PCR",
+      "abstract": "This authored synthetic vignette concerns quantitative PCR, reference gene stability, and expression normalization. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Molecular measurement",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H039",
+      "title": "Ribosome recruitment, initiation factors, and messenger RNA translation mechanisms",
+      "abstract": "",
+      "domain": "Protein production",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H041",
+      "title": "ユビキチン化タンパク質のプロテアソーム分解",
+      "abstract": "この合成文献の主題はユビキチン標識、プロテアソームによる認識とタンパク質分解である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Protein production",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H006",
+      "title": "Autophagosomes, cytoplasmic cargo selection, and lysosomal degradation mechanisms",
+      "abstract": "",
+      "domain": "Protein trafficking",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H018",
+      "title": "Myelin sheaths, axonal insulation, and propagation of electrical impulses mechanisms",
+      "abstract": "",
+      "domain": "Neural function",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H028",
+      "title": "Species identification using DNA barcodes",
+      "abstract": "This authored synthetic vignette concerns DNA barcoding, taxonomic identification, and reference sequence matching. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Evolutionary analysis",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H015",
+      "title": "Presynaptic calcium entry, synaptic vesicle fusion, and transmitter release mechanisms",
+      "abstract": "",
+      "domain": "Neural function",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H013",
+      "title": "Calcium triggered neurotransmitter release at synapses",
+      "abstract": "This authored synthetic vignette concerns presynaptic calcium entry, synaptic vesicle fusion, and transmitter release. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Neural function",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H002",
+      "title": "小胞体からゴルジ体への分泌輸送",
+      "abstract": "この合成文献の主題は分泌タンパク質、COPII小胞、小胞体からの搬出とゴルジ体への輸送である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Protein trafficking",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H040",
+      "title": "Proteasomal destruction of ubiquitinated proteins",
+      "abstract": "This authored synthetic vignette concerns ubiquitin tagging, proteasomal recognition, and protein degradation. The primary mechanism defines its relevance. No actual experimental findings are reported.",
+      "domain": "Protein production",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H029",
+      "title": "DNAバーコードを用いた生物種同定",
+      "abstract": "この合成文献の主題はDNAバーコーディング、分類学的同定と参照配列への照合である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Evolutionary analysis",
+      "subtopic": "B",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "HO01",
+      "title": "Maritime contract clauses in historical commercial law",
+      "abstract": "This isolated legal-history vignette discusses charter party clauses, maritime contracts, and commercial disputes.",
+      "domain": "isolated-holdout-0",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "held-out isolated control"
+    },
+    {
+      "citekey": "H020",
+      "title": "細胞質の解糖系によるグルコース分解",
+      "abstract": "この合成文献の主題はグルコース異化、細胞質の解糖系とピルビン酸生成である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Energy metabolism",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H021",
+      "title": "Glucose catabolism, cytosolic glycolysis, and pyruvate formation mechanisms",
+      "abstract": "",
+      "domain": "Energy metabolism",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H048",
+      "title": "Quantitative PCR, reference gene stability, and expression normalization mechanisms",
+      "abstract": "",
+      "domain": "Molecular measurement",
+      "subtopic": "B",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H014",
+      "title": "シナプスにおけるカルシウム依存的な伝達物質放出",
+      "abstract": "この合成文献の主題はシナプス前部へのカルシウム流入、小胞融合と伝達物質の放出である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Neural function",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H033",
+      "title": "Seed transport by animals, dispersal distances, and plant recruitment mechanisms",
+      "abstract": "",
+      "domain": "Ecological processes",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H027",
+      "title": "Gene duplication, paralog divergence, and changes in gene families mechanisms",
+      "abstract": "",
+      "domain": "Evolutionary analysis",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "title_only",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "HO04",
+      "title": "Analysis of rook endgames in competitive chess",
+      "abstract": "This isolated game-analysis vignette discusses rook endgames, pawn positions, and chess move calculation.",
+      "domain": "isolated-holdout-3",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "held-out isolated control"
+    },
+    {
+      "citekey": "H044",
+      "title": "タンデム質量分析によるペプチド同定",
+      "abstract": "この合成文献の主題はペプチド断片化、タンデム質量スペクトルとタンパク質同定である。関連度は記述された主機構に基づいて定義する。実在の研究結果は報告しない。",
+      "domain": "Molecular measurement",
+      "subtopic": "A",
+      "language": "ja",
+      "condition": "short_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "HO02",
+      "title": "Batik textile dye patterns and wax resist decoration",
+      "abstract": "This isolated craft vignette discusses wax resist patterns, textile dye baths, and batik decoration.",
+      "domain": "isolated-holdout-1",
+      "subtopic": "orphan",
+      "language": "en",
+      "condition": "no_related_control",
+      "role": "held-out isolated control"
+    },
+    {
+      "citekey": "H019",
+      "title": "Glycolytic breakdown of glucose in the cytosol",
+      "abstract": "This authored synthetic vignette concerns glucose catabolism, cytosolic glycolysis, and pyruvate formation. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Energy metabolism",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H043",
+      "title": "Peptide identification by tandem mass spectrometry",
+      "abstract": "This authored synthetic vignette concerns peptide fragmentation, tandem mass spectra, and protein identification. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Molecular measurement",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    },
+    {
+      "citekey": "H031",
+      "title": "Animal mediated seed dispersal across habitats",
+      "abstract": "This authored synthetic vignette concerns seed transport by animals, dispersal distances, and plant recruitment. The primary mechanism defines its relevance. No actual experimental findings are reported.\n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. \n\nDocumentation supplement. This passage describes common project administration: naming conventions, instrument logs, folder organization, sample labels, spreadsheet layouts, version records, archive locations, presentation formatting, and routine reporting procedures. Such documentation is shared by projects with unrelated research subjects. These descriptions are invented for a retrieval test and contain no observations from a published experiment. ",
+      "domain": "Ecological processes",
+      "subtopic": "A",
+      "language": "en",
+      "condition": "long_abstract",
+      "role": "held-out synthetic vignette"
+    }
+  ],
+  "seeds": [
+    {
+      "citekey": "H001",
+      "relevance": {
+        "H002": 2,
+        "H003": 2,
+        "H004": 1,
+        "H005": 1,
+        "H006": 1
+      }
+    },
+    {
+      "citekey": "H002",
+      "relevance": {
+        "H001": 2,
+        "H003": 2,
+        "H004": 1,
+        "H005": 1,
+        "H006": 1
+      }
+    },
+    {
+      "citekey": "H003",
+      "relevance": {
+        "H001": 2,
+        "H002": 2,
+        "H004": 1,
+        "H005": 1,
+        "H006": 1
+      }
+    },
+    {
+      "citekey": "H004",
+      "relevance": {
+        "H001": 1,
+        "H002": 1,
+        "H003": 1,
+        "H005": 2,
+        "H006": 2
+      }
+    },
+    {
+      "citekey": "H007",
+      "relevance": {
+        "H008": 2,
+        "H009": 2,
+        "H010": 1,
+        "H011": 1,
+        "H012": 1
+      }
+    },
+    {
+      "citekey": "H008",
+      "relevance": {
+        "H007": 2,
+        "H009": 2,
+        "H010": 1,
+        "H011": 1,
+        "H012": 1
+      }
+    },
+    {
+      "citekey": "H009",
+      "relevance": {
+        "H007": 2,
+        "H008": 2,
+        "H010": 1,
+        "H011": 1,
+        "H012": 1
+      }
+    },
+    {
+      "citekey": "H010",
+      "relevance": {
+        "H007": 1,
+        "H008": 1,
+        "H009": 1,
+        "H011": 2,
+        "H012": 2
+      }
+    },
+    {
+      "citekey": "H013",
+      "relevance": {
+        "H014": 2,
+        "H015": 2,
+        "H016": 1,
+        "H017": 1,
+        "H018": 1
+      }
+    },
+    {
+      "citekey": "H014",
+      "relevance": {
+        "H013": 2,
+        "H015": 2,
+        "H016": 1,
+        "H017": 1,
+        "H018": 1
+      }
+    },
+    {
+      "citekey": "H015",
+      "relevance": {
+        "H013": 2,
+        "H014": 2,
+        "H016": 1,
+        "H017": 1,
+        "H018": 1
+      }
+    },
+    {
+      "citekey": "H016",
+      "relevance": {
+        "H013": 1,
+        "H014": 1,
+        "H015": 1,
+        "H017": 2,
+        "H018": 2
+      }
+    },
+    {
+      "citekey": "H019",
+      "relevance": {
+        "H020": 2,
+        "H021": 2,
+        "H022": 1,
+        "H023": 1,
+        "H024": 1
+      }
+    },
+    {
+      "citekey": "H020",
+      "relevance": {
+        "H019": 2,
+        "H021": 2,
+        "H022": 1,
+        "H023": 1,
+        "H024": 1
+      }
+    },
+    {
+      "citekey": "H021",
+      "relevance": {
+        "H019": 2,
+        "H020": 2,
+        "H022": 1,
+        "H023": 1,
+        "H024": 1
+      }
+    },
+    {
+      "citekey": "H022",
+      "relevance": {
+        "H019": 1,
+        "H020": 1,
+        "H021": 1,
+        "H023": 2,
+        "H024": 2
+      }
+    },
+    {
+      "citekey": "H025",
+      "relevance": {
+        "H026": 2,
+        "H027": 2,
+        "H028": 1,
+        "H029": 1,
+        "H030": 1
+      }
+    },
+    {
+      "citekey": "H026",
+      "relevance": {
+        "H025": 2,
+        "H027": 2,
+        "H028": 1,
+        "H029": 1,
+        "H030": 1
+      }
+    },
+    {
+      "citekey": "H027",
+      "relevance": {
+        "H025": 2,
+        "H026": 2,
+        "H028": 1,
+        "H029": 1,
+        "H030": 1
+      }
+    },
+    {
+      "citekey": "H028",
+      "relevance": {
+        "H025": 1,
+        "H026": 1,
+        "H027": 1,
+        "H029": 2,
+        "H030": 2
+      }
+    },
+    {
+      "citekey": "H031",
+      "relevance": {
+        "H032": 2,
+        "H033": 2,
+        "H034": 1,
+        "H035": 1,
+        "H036": 1
+      }
+    },
+    {
+      "citekey": "H032",
+      "relevance": {
+        "H031": 2,
+        "H033": 2,
+        "H034": 1,
+        "H035": 1,
+        "H036": 1
+      }
+    },
+    {
+      "citekey": "H033",
+      "relevance": {
+        "H031": 2,
+        "H032": 2,
+        "H034": 1,
+        "H035": 1,
+        "H036": 1
+      }
+    },
+    {
+      "citekey": "H034",
+      "relevance": {
+        "H031": 1,
+        "H032": 1,
+        "H033": 1,
+        "H035": 2,
+        "H036": 2
+      }
+    },
+    {
+      "citekey": "H037",
+      "relevance": {
+        "H038": 2,
+        "H039": 2,
+        "H040": 1,
+        "H041": 1,
+        "H042": 1
+      }
+    },
+    {
+      "citekey": "H038",
+      "relevance": {
+        "H037": 2,
+        "H039": 2,
+        "H040": 1,
+        "H041": 1,
+        "H042": 1
+      }
+    },
+    {
+      "citekey": "H039",
+      "relevance": {
+        "H037": 2,
+        "H038": 2,
+        "H040": 1,
+        "H041": 1,
+        "H042": 1
+      }
+    },
+    {
+      "citekey": "H040",
+      "relevance": {
+        "H037": 1,
+        "H038": 1,
+        "H039": 1,
+        "H041": 2,
+        "H042": 2
+      }
+    },
+    {
+      "citekey": "H043",
+      "relevance": {
+        "H044": 2,
+        "H045": 2,
+        "H046": 1,
+        "H047": 1,
+        "H048": 1
+      }
+    },
+    {
+      "citekey": "H044",
+      "relevance": {
+        "H043": 2,
+        "H045": 2,
+        "H046": 1,
+        "H047": 1,
+        "H048": 1
+      }
+    },
+    {
+      "citekey": "H045",
+      "relevance": {
+        "H043": 2,
+        "H044": 2,
+        "H046": 1,
+        "H047": 1,
+        "H048": 1
+      }
+    },
+    {
+      "citekey": "H046",
+      "relevance": {
+        "H043": 1,
+        "H044": 1,
+        "H045": 1,
+        "H047": 2,
+        "H048": 2
+      }
+    },
+    {
+      "citekey": "HO01",
+      "relevance": {}
+    },
+    {
+      "citekey": "HO02",
+      "relevance": {}
+    },
+    {
+      "citekey": "HO03",
+      "relevance": {}
+    },
+    {
+      "citekey": "HO04",
+      "relevance": {}
+    }
+  ],
+  "predeclared_analysis": {
+    "primary": "Compare adaptive and legacy rankings, with rejection included in recall/MRR/nDCG denominators.",
+    "criteria": {
+      "long_top1_wrong_max": 2,
+      "positive_query_coverage_min": 0.9,
+      "no_related_abstention_required": 4,
+      "ndcg_ge_legacy": true,
+      "title_only_ndcg_ge_lexical": true,
+      "recall_drop_vs_legacy_max": 0.05,
+      "japanese_ndcg_drop_vs_legacy_max": 0.05
+    },
+    "restrictions": "No parameter selection from holdout results. Failures will be recorded without relabeling."
+  }
+}

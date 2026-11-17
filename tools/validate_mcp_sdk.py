@@ -83,6 +83,7 @@ async def validate(app_python: Path):
                 "build_context",
                 "get_index_status",
                 "semantic_search_papers",
+                "similar_papers",
             }
             assert all(tool.annotations.read_only_hint for tool in listing.tools)
 
@@ -137,6 +138,9 @@ async def validate(app_python: Path):
             optional = await client.call_tool("semantic_search_papers", {"query": "DNA repair"})
             assert optional.is_error and "disabled" in optional.content[0].text
             checks.append("semantic_search_papers (disabled, no model download)")
+            disabled_similar = await client.call_tool("similar_papers", {"citekey": "SDK2025"})
+            assert disabled_similar.is_error and "semantic_disabled" in disabled_similar.content[0].text
+            checks.append("similar_papers (disabled, no model load)")
             report = {
                 "mcp_sdk": version("mcp"),
                 "protocol": client.protocol_version,
@@ -149,6 +153,31 @@ async def validate(app_python: Path):
         assert {path: sha(path) for path in before} == before
         report["source_and_index_hashes_unchanged"] = True
         report["configuration_and_selection_hashes_unchanged"] = True
+        try:
+            from .similarity_fixture import create_saved_fixture
+        except ImportError:
+            from similarity_fixture import create_saved_fixture
+
+        saved_config, saved_index, saved_env = create_saved_fixture(command, root / "saved-vectors", env)
+        saved_paths = [p for p in saved_config.parent.rglob("*") if p.is_file()]
+        saved_before = {path: sha(path) for path in saved_paths}
+        saved_server = StdioServerParameters(command=str(app_python),
+            args=["-m", "bibdesk_rag.mcp_server", "--temp", str(saved_config)], env=saved_env)
+        async with Client(saved_server, read_timeout_seconds=10) as client:
+            response = await client.call_tool("similar_papers", {"citekey": "SavedSeed", "top": 2})
+            assert not response.is_error, response
+            related = json.loads(response.content[0].text)["data"]
+            assert [p["citekey"] for p in related["results"]] == ["SavedRelated", "SavedOther"]
+            assert related["results"][0]["title_only"] and related["candidates"]["missing_vectors"] == 1
+            filtered = await client.call_tool("similar_papers", {"citekey": "SavedSeed", "year": "2026"})
+            assert not filtered.is_error and len(json.loads(filtered.content[0].text)["data"]["results"]) == 1
+            assert related["assessment"]["calibrated"]
+            rejected = await client.call_tool("similar_papers", {"citekey": "SavedUnrelatedControl"})
+            rejection = json.loads(rejected.content[0].text)["data"]
+            assert not rejected.is_error and rejection["results"] == []
+            assert rejection["assessment"]["decision"] == "insufficient_evidence"
+        assert saved_before == {path: sha(path) for path in saved_paths}
+        report["saved_similarity_fixture_passed_without_model"] = True
         report["transport"] = "stdio subprocess; official SDK default auto negotiation"
         return report
 
