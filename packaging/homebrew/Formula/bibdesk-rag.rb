@@ -241,7 +241,8 @@ class BibdeskRag < Formula
       ENV.delete("PIP_NO_DEPS")
       system "python3.14", "-m", "pip", "--python", libexec/"bin/python", "check"
     end
-    pkgshare.install "tools/package_smoke.py", "tools/format_fixtures.py", "tools/pdf_fixtures.py"
+    pkgshare.install "tools/package_smoke.py", "tools/format_fixtures.py",
+                     "tools/pdf_fixtures.py", "tools/similarity_fixture.py"
   end
 
   def caveats
