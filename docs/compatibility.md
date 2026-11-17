@@ -1,6 +1,6 @@
 # Compatibility and index upgrades
 
-This contract describes v0.5.1. The first stable
+This contract describes v0.7.0. The first stable
 v1.0 release remains subject to the release gates below.
 
 ## Public interfaces
@@ -102,7 +102,7 @@ versions without executing archive code; tag builds additionally require an exac
 `v<version>` tag. SDK validation compares installed metadata, runtime, CLI and
 MCP serverInfo versions and checks response bounds, argument errors and hashes.
 
-`requirements-upgrade-baseline.txt` pins the actual v0.5.0 wheel URL and SHA-256.
+`requirements-upgrade-baseline.txt` pins the actual v0.6.0 wheel URL and SHA-256.
 The workflow installs that release in a separate environment and validates its
 generated index with the installed candidate wheel and sdist. It checks reads
 before update, legacy MCP arguments/protocol, logical-data retention, unchanged

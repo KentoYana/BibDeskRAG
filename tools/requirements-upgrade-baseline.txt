@@ -1,3 +1,3 @@
 # Last public release, verified against its GitHub release asset digest.
 # Advance deliberately after publishing a new release, never to an invented URL.
-bibdesk-rag @ https://github.com/KentoYana/BibDeskRAG/releases/download/v0.5.1/bibdesk_rag-0.5.1-py3-none-any.whl#sha256=6c8f5527e6861c84c24424cc8f96e4ce2ecdfda6ffac21d2b732bf45bad2a860
+bibdesk-rag @ https://github.com/KentoYana/BibDeskRAG/releases/download/v0.6.0/bibdesk_rag-0.6.0-py3-none-any.whl#sha256=dc1528de1f0e4892f5856ed05e99476b29d9a70adb92cc20810791af859c0966

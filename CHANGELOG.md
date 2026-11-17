@@ -4,7 +4,7 @@
 
 # Changelog
 
-## Unreleased
+## [0.7.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.7.0) — 2026-11-17
 
 - Address Similar Papers boilerplate, title-only ranking and unsupported recommendations
   with saved title anchors, lexical fusion and an explicitly scoped abstention profile.
@@ -173,7 +173,11 @@
 
 # 変更履歴
 
-## 未公開
+## [0.7.0](https://github.com/KentoYana/BibDeskRAG/releases/tag/v0.7.0) — 2026-11-17（日本語）
+
+- 長文定型文には独立Title anchor、Titleのみには語彙順位統合、判断材料不足時には
+  適用範囲を明示した棄却を追加。実E5による別集合の事前条件7件を通過。
+  title-anchor-v2への移行は明示的な索引更新で行い、原本は保持。
 
 - 類似論文検索の52文献・40起点の段階的関連度評価を固定し、キャッシュ済みE5で
   オフライン評価。語彙・平均ベクトルとの比較、再現性、原本保持、長文定型文・
