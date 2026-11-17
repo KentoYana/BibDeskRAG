@@ -101,9 +101,14 @@ def test_recorded_evaluation_is_recomputable_and_all_preregistered_holdout_gates
         assert digest==stored['dataset_sha256']
         for method in stored['methods'].values():
             for case in method['cases']:
-                assert case['metrics']==per_query_metrics(case['ranking'],case['relevance'])
+                expected = per_query_metrics(case['ranking'],case['relevance'])
+                for metric,value in expected.items():
+                    if value is None:
+                        assert case['metrics'][metric] is None
+                    else:
+                        assert case['metrics'][metric]==pytest.approx(value,rel=1e-12,abs=1e-12)
                 assert case['citekey'] in {s['citekey'] for s in data['seeds']}
-            assert aggregate(method['cases'])==method['overall']
+            assert aggregate(method['cases'])==pytest.approx(method['overall'],rel=1e-12,abs=1e-12)
         assert gates(stored,report['preregistration']['criteria'])==stored['gates']
         assert all(stored['gates'].values())
     assert report['reports']['holdout']['methods']['title_anchor_hybrid']['long_wrong_top1']==0

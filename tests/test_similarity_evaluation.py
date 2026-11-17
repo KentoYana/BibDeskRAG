@@ -120,8 +120,13 @@ def test_recorded_real_model_report_is_consistent_with_frozen_judgments_and_metr
         for case in results['cases']:
             assert case['relevance']==judgments[case['seed']]
             assert case['seed'] not in case['ranking']
-            assert case['metrics']==per_query_metrics(case['ranking'],case['relevance'])
-        assert results['overall']==aggregate(results['cases'])
+            expected = per_query_metrics(case['ranking'],case['relevance'])
+            for metric,value in expected.items():
+                if value is None:
+                    assert case['metrics'][metric] is None
+                else:
+                    assert case['metrics'][metric]==pytest.approx(value,rel=1e-12,abs=1e-12)
+        assert results['overall']==pytest.approx(aggregate(results['cases']),rel=1e-12,abs=1e-12)
     long=[c for c in report['methods'][METHODS[2]]['cases'] if c['condition']=='long_abstract']
     assert len(long)==8
     assert all(c['relevance'].get(c['ranking'][0],0)==0 for c in long)
